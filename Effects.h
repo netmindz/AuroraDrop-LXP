@@ -161,23 +161,23 @@ public:
   }
 
   void ShowFrame() {
-    //#if (FASTLED_VERSION >= 3001000)
-    //      nblendPaletteTowardPalette(currentPalette, targetPalette, 24);
-    //#else
-    currentPalette = targetPalette;
-    //#endif
+    #if (FASTLED_VERSION >= 3001000)
+          nblendPaletteTowardPalette(currentPalette, targetPalette, 24);   // was commented out
+    #else
+      currentPalette = targetPalette;
+    #endif
 
-  //  backgroundLayer.swapBuffers();
-   // leds = (CRGB*) backgroundLayer.backBuffer();
-   // LEDS.countFPS();
+    //  backgroundLayer.swapBuffers();
+    // leds = (CRGB*) backgroundLayer.backBuffer();
+    // LEDS.countFPS();
 
-	for (int y=0; y<MATRIX_HEIGHT; ++y){
-  	    for (int x=0; x<MATRIX_WIDTH; ++x){
-		//Serial.printf("Flushing x, y coord %d, %d\n", x, y);
+	  for (int y=0; y<MATRIX_HEIGHT; ++y){
+  	  for (int x=0; x<MATRIX_WIDTH; ++x){
+		    //Serial.printf("Flushing x, y coord %d, %d\n", x, y);
     		uint16_t _pixel = XY16(x,y);
     		dma_display->drawPixelRGB888( x, y, leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
 	    } // end loop to copy fast led to the dma matrix
-	}
+	  }
   }
 
   // scale the brightness of the screenbuffer down
@@ -287,8 +287,12 @@ CRGBPalette16 AllRed_p = {
       case 0:
         targetPalette = RainbowColors_p;
         currentPaletteName = (char *)"Rainbow";
+
+
         //targetPalette = AllRed_p;
         //currentPaletteName = (char *)"AllRed";
+
+
         break;
         //case 1:
         //  targetPalette = RainbowStripeColors_p;
@@ -530,24 +534,36 @@ CRGBPalette16 AllRed_p = {
 
   // create a square twister to the left or counter-clockwise
   // x and y for center, r for radius
-  void SpiralStream(int x, int y, int r, byte dimm) {
-    for (int d = r; d >= 0; d--) { // from the outside to the inside
-      for (int i = x - d; i <= x + d; i++) {
-        leds[XY16(i, y - d)] += leds[XY16(i + 1, y - d)]; // lowest row to the right
-        leds[XY16(i, y - d)].nscale8(dimm);
-      }
-      for (int i = y - d; i <= y + d; i++) {
-        leds[XY16(x + d, i)] += leds[XY16(x + d, i + 1)]; // right colum up
-        leds[XY16(x + d, i)].nscale8(dimm);
-      }
-      for (int i = x + d; i >= x - d; i--) {
-        leds[XY16(i, y + d)] += leds[XY16(i - 1, y + d)]; // upper row to the left
-        leds[XY16(i, y + d)].nscale8(dimm);
-      }
-      for (int i = y + d; i >= y - d; i--) {
-        leds[XY16(x - d, i)] += leds[XY16(x - d, i - 1)]; // left colum down
-        leds[XY16(x - d, i)].nscale8(dimm);
-      }
+   // AuroraDrop extension: CanvasId, 0=default/main canvas, 1=temporary 32x32 canvas1, 2=1=temporary 32x32 canvas1
+  void SpiralStream(int x, int y, int r, byte dimm, uint8_t CanvasId = 0) {
+    switch (CanvasId) {
+      case 1:
+        // apply effect to temporary quarter sized array 1
+        break;
+      case 2:
+        // apply effect to temporary quarter sized array 1
+        break;
+      default:
+        // standard, apply effect to main effects array
+        for (int d = r; d >= 0; d--) { // from the outside to the inside
+          for (int i = x - d; i <= x + d; i++) {
+            leds[XY16(i, y - d)] += leds[XY16(i + 1, y - d)]; // lowest row to the right
+            leds[XY16(i, y - d)].nscale8(dimm);
+          }
+          for (int i = y - d; i <= y + d; i++) {
+            leds[XY16(x + d, i)] += leds[XY16(x + d, i + 1)]; // right colum up
+            leds[XY16(x + d, i)].nscale8(dimm);
+          }
+          for (int i = x + d; i >= x - d; i--) {
+            leds[XY16(i, y + d)] += leds[XY16(i - 1, y + d)]; // upper row to the left
+            leds[XY16(i, y + d)].nscale8(dimm);
+          }
+          for (int i = y + d; i >= y - d; i--) {
+            leds[XY16(x - d, i)] += leds[XY16(x - d, i - 1)]; // left colum down
+            leds[XY16(x - d, i)].nscale8(dimm);
+          }
+        }
+        break;
     }
   }
 

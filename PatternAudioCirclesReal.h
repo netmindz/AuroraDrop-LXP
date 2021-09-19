@@ -84,67 +84,78 @@ class PatternAudioCirclesReal : public Drawable {
 
       boolean change = false;
 
-      float radius = MATRIX_WIDTH / 2;
+      float radius1 = MATRIX_WIDTH / 2;
+      float radius2 = MATRIX_WIDTH / 2;
+      float radius3 = MATRIX_WIDTH / 2;
 
-      byte data;
+      byte data1;
+      byte data2;
+      byte data3;
 
       for (int c = 0; c < CIRCLE_COUNT; c++){
 
         //testCircle[c].theta1++;
         //testCircle[c].theta1 = serialData.specData8[c+1];
-        data = serialData.specData8[c+1] / 4;
-        if (data > MATRIX_WIDTH - 1) data = MATRIX_WIDTH - 1;
-        if (insideOut) data = (MATRIX_WIDTH - 1) - data;
-        //testCircle[c].theta1 = data;
+        data1 = serialData.specData8[c+1] / 4;
+        if (data1 > MATRIX_WIDTH - 1) data1 = MATRIX_WIDTH - 1;
+        if (insideOut) data1 = (MATRIX_WIDTH - 1) - data1;
 
+        data2 = serialData.specData8[c+2] / 4;
+        if (data2 > MATRIX_WIDTH - 1) data2 = MATRIX_WIDTH - 1;
+        if (insideOut) data2 = (MATRIX_WIDTH - 1) - data2;
+
+        data3 = serialData.specData8[c+3] / 4;
+        if (data3 > MATRIX_WIDTH - 1) data3 = MATRIX_WIDTH - 1;
+        if (insideOut) data3 = (MATRIX_WIDTH - 1) - data3;
 
 
 
 
       for (int c = 0; c < CIRCLE_COUNT; c++) {
 
-        radius = data;
+        radius1 = data1;
+        radius2 = data2;
+        radius3 = data3;
         
-        for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data) / 8)) {   // 0.1
+        for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data1) / 8)) {   // 0.1
             float angle = i * 3.14 / 180;
-            int x = (int)(MATRIX_CENTRE_X + radius * cos(angle));
-            int y = (int)(MATRIX_CENTRE_Y + radius * sin(angle));
+            int x = (int)(MATRIX_CENTRE_X + radius1 * cos(angle));
+            int y = (int)(MATRIX_CENTRE_Y + radius1 * sin(angle));
             if (caleidoscopeMode) {
-              /*
-              if (caleidoscopeModeB) {
-                x = (x / 2) + (MATRIX_WIDTH / 4);
-                y = (y / 2);
-              }
-              else {
-                x = x / 2;
-                y = y / 2;
-              }
-              */
               x = x / 2;
               y = y / 2;
             }
-
-            CRGB color = CRGB::Purple;
-            /*
-            if (c==0)
-              color = CRGB::Orange; // dma_display->color565(c*255, c*32, 64);
-            if (c==1)
-              color = CRGB::Green; // dma_display->color565(c*255, c*32, 64);
-            if (c==2)
-              color = CRGB::Cyan; // dma_display->color565(c*255, c*32, 64);
-            */
-
+            CRGB color = effects.ColorFromCurrentPalette(data1 * 1);
             effects.leds[XY(x, y)] = color;
+          }
 
+        for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data2) / 8)) {   // 0.1
+            float angle = i * 3.14 / 180;
+            int x = (int)(MATRIX_CENTRE_X + radius2 * cos(angle));
+            int y = (int)(MATRIX_CENTRE_Y + radius2 * sin(angle));
+            if (caleidoscopeMode) {
+              x = x / 2;
+              y = y / 2;
             }
+            CRGB color = effects.ColorFromCurrentPalette(data2 * 2);
+            effects.leds[XY(x, y)] = color;
+          }
+
+        for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data3) / 8)) {   // 0.1
+            float angle = i * 3.14 / 180;
+            int x = (int)(MATRIX_CENTRE_X + radius3 * cos(angle));
+            int y = (int)(MATRIX_CENTRE_Y + radius3 * sin(angle));
+            if (caleidoscopeMode) {
+              x = x / 2;
+              y = y / 2;
+            }
+            CRGB color = effects.ColorFromCurrentPalette(data3 * 3);
+            effects.leds[XY(x, y)] = color;
+          }
 
 
       }
-
-
-
-
-      }
+    }
 
 
 

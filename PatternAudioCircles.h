@@ -145,7 +145,7 @@ class PatternAudioCircles : public Drawable {
           CRGB color = effects.ColorFromCurrentPalette(testCircle[c].hueoffset + i * testCircle[c].spirooffset, 128);
           // test colors
           //color = dma_display->color565(128+(i*32), 128+(i*32), 128+(i*32));
-          color = dma_display->color565(16*i, 32*i, 64*i);
+          color = effects.ColorFromCurrentPalette(data * 2);; // dma_display->color565(16*i, 32*i, 64*i);
 
           if (serialData.specData8[c+1] > 0)
             effects.leds[XY(x1, y1)] += color;
