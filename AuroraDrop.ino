@@ -1,5 +1,5 @@
 /*
-*   Suggested hardware:-
+*   Suggested simple hardware solution:-
 *   
 *   ESP32 I2S Matrix Shield
 *   https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
@@ -29,7 +29,7 @@
 #define B_PIN 19 // Changed from library default
 #define C_PIN 5
 #define D_PIN 17
-#define E_PIN 18 // 32
+#define E_PIN 18 // 32 or 18
 #define LAT_PIN 4
 #define OE_PIN 15
 #define CLK_PIN 16
@@ -42,7 +42,7 @@
 #define MATRIX_CENTRE_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTRE_Y (MATRIX_HEIGHT / 2)
 #define PANELS_NUMBER 1                         // Number of chained panels, if just a single panel, obviously set to 1
-#define PIN_E 18  //32
+//#define PIN_E 32  // 32 or 18
 
 
 #define MAX_PATTERNS_EFFECT 2
@@ -83,7 +83,7 @@ void setup()
   mxconfig.mx_height = MATRIX_HEIGHT;               // we have 64 pix heigh panels
   mxconfig.mx_width = MATRIX_WIDTH;                 // we have 64 pix heigh panels
   mxconfig.chain_length = PANELS_NUMBER;            // we have 2 panels chained
-  mxconfig.gpio.e = PIN_E;                          // we MUST assign pin e to some free pin on a board to drive 64 pix height panels with 1/32 scan
+  mxconfig.gpio.e = E_PIN;                          // we MUST assign pin e to some free pin on a board to drive 64 pix height panels with 1/32 scan
   mxconfig.clkphase = false;                        // change this if you have issues with ghosting.
   mxconfig.driver = HUB75_I2S_CFG::FM6126A;         // in case that we use panels based on FM6126A chip, we can change that
 
@@ -235,7 +235,7 @@ void loop()
       patternsAudio[i].ms_previous = millis();
       patternsAudio[i].fps_timer = millis();
       // Select a random palette as well
-      //effects.RandomPalette();
+      effects.RandomPalette();
     }
     if ( 1000 / patternsAudio[i].pattern_fps + patternsAudio[i].last_frame < millis())
     {
