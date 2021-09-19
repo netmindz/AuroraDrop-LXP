@@ -1,3 +1,20 @@
+/*
+*   Suggested hardware:-
+*   
+*   ESP32 I2S Matrix Shield
+*   https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
+*   https://www.youtube.com/watch?v=ZiR93TmSyE0
+*
+*   Libraries needed:-
+*
+*   FastLED (tested with v3.4)
+*   https://github.com/FastLED/FastLED
+*
+*   ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.5)
+*   https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
+*
+*/
+
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include <FastLED.h>
 
