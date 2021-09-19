@@ -3,6 +3,7 @@
 RGB Matrix Audio Visualiser for ESP32
 
 Based on the Auroa Demo by Jason Coon.
+
 Welcome. Work is in progress, updates may appear now and then.
 
 Introduction
