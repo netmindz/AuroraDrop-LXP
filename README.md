@@ -29,6 +29,26 @@ visualisations.
 https://github.com/uklooney/AuroraDropCompanion
 
 
+
+
+
+Suggested simple hardware solution:-
+   
+ * ESP32 I2S Matrix Shield
+ * https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
+ * https://www.youtube.com/watch?v=ZiR93TmSyE0
+
+Libraries needed:-
+
+ * FastLED (tested with v3.4)
+ * https://github.com/FastLED/FastLED
+
+ * ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.5)
+ * https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
+
+
+
+
 Based on:
 
  Lots, including...
@@ -36,6 +56,9 @@ Based on:
  * Aurora: https://github.com/pixelmatix/aurora
  * Copyright (c) 2014 Jason Coon
 
+ * ESP32-HUB75-MatrixPanel-I2S-DMA and Examples: https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
+ * Copyright (c) 2021 mrfaptastic
+ 
  * Portions of this code are adapted from "Flocking" in "The Nature of Code" by Daniel Shiffman: http://natureofcode.com/
  * Copyright (c) 2014 Daniel Shiffman
  * http://www.shiffman.net
@@ -58,20 +81,3 @@ Based on:
  * Portions of this code are adapted from LedEffects Plasma by Robert Atkins:
  * https://bitbucket.org/ratkins/ledeffects/src/26ed3c51912af6fac5f1304629c7b4ab7ac8ca4b/Plasma.cpp?at=default
  * Copyright (c) 2013 Robert Atkins
-
-
-
-
-Suggested simple hardware solution:-
-   
- * ESP32 I2S Matrix Shield
- * https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
- * https://www.youtube.com/watch?v=ZiR93TmSyE0
-
-Libraries needed:-
-
- * FastLED (tested with v3.4)
- * https://github.com/FastLED/FastLED
-
- * ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.5)
- * https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
