@@ -54,10 +54,10 @@ Based on:
  Lots, including...
 
  * Aurora: https://github.com/pixelmatix/aurora
- * Copyright (c) 2014 Jason Coon
+ Copyright (c) 2014 Jason Coon
 
  * ESP32-HUB75-MatrixPanel-I2S-DMA and Examples: https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
- * Copyright (c) 2021 mrfaptastic
+ Copyright (c) 2021 mrfaptastic
  
  * Portions of this code are adapted from "Flocking" in "The Nature of Code" by Daniel Shiffman: http://natureofcode.com/
  * Copyright (c) 2014 Daniel Shiffman
