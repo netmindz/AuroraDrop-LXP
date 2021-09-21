@@ -1,7 +1,7 @@
-#ifndef PatternAudioSpectrumCircle_H
-#define PatternAudioSpectrumCircle_H
+#ifndef PatternAudioBigSpark_H
+#define PatternAudioBigSpark_H
 
-class PatternAudioSpectrumCircle : public Drawable {
+class PatternAudioBigSpark : public Drawable {
   private:
 
     uint8_t color1 = 0;
@@ -13,40 +13,41 @@ class PatternAudioSpectrumCircle : public Drawable {
     uint8_t canvasCentreX;
     uint8_t canvasCentreY;
 
-    uint8_t colorEffect = 0;              // use palette or special (fire, ice, etc.)
-    bool cycleColors;                     // todo
-    bool insideOut = false;               // todo
-    bool spin = true;                     // rotate yes/no
+    // theses are mostly radomised at initial start
+    uint8_t colorEffect = 0;              // TODO: use standard palette or special (fire, ice, etc.)
+    bool cycleColors;                     // todo: cylce through the color spectrum
+    bool insideOut = false;               // todo: instead of starting lines at centre and go out, start at fixed radiusand draw line inwards towards the centre
+    int8_t spin = 1;                      // 1/-1=rotate clockwise/counter, 0=no rotate
     int spinVal = 0;                      // value to rotate by
-    bool caleidoscope = false;            // drawn on quarter scrren and apply caleidoscope effect
+    bool backdrop = true;                 // draw a scaled backdrop
+    bool caleidoscope = false;            // drawn on quarter screen and apply caleidoscope effect
     uint8_t caleidoscopeEffect = 0;       // which caleidoscope effect to apply
-
-
+    uint8_t sprites = 0;                  // will we used half width sprites, if so how many....
+    uint8_t spriteBehaviour = 0;          // 0=stationary, 1=revolving around screen
 
   public:
 
 
-    PatternAudioSpectrumCircle() {
-      name = (char *)"Audio Spectrum Circle";
+    PatternAudioBigSpark() {
+      name = (char *)"Audio 01 - Big Spark";
     }
 
     // #------------- START -------------#
     void start(uint8_t _order) {
-      // determine the colour effect to use. pallete or special (fire, ice, etc.)
 
-      // randomise stuff
-      cycleColors = random(0, 2);
-      insideOut = random(0, 2);
-      spin = true;
-      if (spinVal==0) spinVal = random(0, 360);                   // start at random angle for the first time      ### USED TO BREAK STUFF? ###
+      // randomly determine the colour effect to use, etc.
+      cycleColors = random(0, 2);                                 // TODO: 
+      insideOut = random(0, 2);                                   // TODO: 
+      spin = random(0, 2); if (spin==0) spin = -1;                // 1=clockwise, -1 = anticlockwise, 0=no spin (disabled))
+      if (spinVal==0) spinVal = random(0, 360);                   // choose random angle at initial start      ### USED TO BREAK STUFF? ###
       caleidoscope = random(0, 2);
       caleidoscopeEffect = random(0, 2);
       
       // override for testing
       cycleColors = false;        // does nothing just yet
-      //caleidoscope = true;
-      //caleidoscopeEffect = 1;
-
+      caleidoscope = false;
+      caleidoscopeEffect = 0;
+      backdrop = true;
 
       // setup parameters depending on random stuff
       if (caleidoscope) {
@@ -112,14 +113,28 @@ class PatternAudioSpectrumCircle : public Drawable {
       int x,y;
 
       // add spin to rotation value (0-360)
-      spinVal++;
+      spinVal += spin;
       if (spinVal > 360) spinVal = 0;
+      if (spinVal < 0) spinVal = 360;
 
+
+
+
+      // determine if we want to first draw to a blank half width canvas first, or directly to the existing screen
+      if (backdrop || sprites > 0) {
+        effects.ClearCanvas(1);        // clear half width canvas
+
+
+      // # -------------- NEW CANVAS METHOD ------------------ #
+
+      uint8_t canvasScale = 2;
+      uint8_t audioScale = canvasScale;
+      uint8_t centreX = (MATRIX_WIDTH  / 2) / canvasScale;
+      uint8_t centreY = (MATRIX_HEIGHT  / 2) / canvasScale;
       for (int i=0; i<BINS; i++) {
         audioData = serialData.specData[i] / 6;
         if (audioData>maxData) audioData = maxData;
-        // scale data if in quarter screen
-        if (caleidoscope) audioData = audioData /2;
+        audioData = audioData / audioScale;
         // the radius of the circle is the data value
         radius = audioData;
         rotation = i * ratio;
@@ -127,13 +142,24 @@ class PatternAudioSpectrumCircle : public Drawable {
         if (rotation > 360.0) rotation = rotation - 360.0;
         // calculate angle, then xy
         angle = rotation * 3.14 / 180;
-        x = (int)(canvasCentreX + radius * cos(angle));
-        y = (int)(canvasCentreY + radius * sin(angle));
+        x = (int)(centreX + radius * cos(angle));
+        y = (int)(centreY + radius * sin(angle));
         if (audioData > 0)
-          effects.BresenhamLine(canvasCentreX, canvasCentreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
-        // brighter dots at end of lines this can look bad on quarter screen
-        CRGB color = CRGB::White;
-        if (!caleidoscope) effects.leds[XY(x, y)] = color;
+          effects.BresenhamLineCanvasH(centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
+      }
+
+      effects.ApplyCanvasH(0, effects.p[2]-16, 1);
+      effects.ApplyCanvasH(32, effects.p[2]-16, 1);
+      //effects.ApplyCanvasH(effects.p[2] / 2, 32, 1);
+
+
+      if (backdrop) {
+        effects.ApplyCanvasH(-32, -32, 4.0, 128);   // 128 = medium blur
+      }
+
+      // # --------------------------------------------------- #
+
+      effects.MoveOscillators();
       }
 
 

@@ -16,8 +16,15 @@
 #include "PatternAudioDiagonalSpectrum.h"
 #include "PatternAudioSpectrumCircle.h"
 
+#include "PatternCanvasTest.h"
+
+#include "PatternAudio01_BigSpark.h"
+#include "PatternAudio02_8x8Squares.h"
+
 class Patterns_Audio : public Playlist {
   private:
+    PatternAudioBigSpark audioBigSpark;
+    PatternAudio8x8Squares audio8x8Squares;
     PatternAudioLines audioLines;
     PatternAudioCircles audioCircles;
     PatternAudioTriangles audioTriangles;
@@ -30,6 +37,9 @@ class Patterns_Audio : public Playlist {
     PatternAudioCirclesReal audioCirclesReal;
     PatternAudioDiagonalSpectrum audioDiagonalSpectrum;
     PatternAudioSpectrumCircle audioSpectrumCircle;
+    
+
+    PatternCanvasTest canvasTest;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -39,25 +49,26 @@ class Patterns_Audio : public Playlist {
     }
 
     // always use static on esp32 !!!!
-    const static int PATTERN_COUNT = 8;
+    const static int PATTERN_COUNT = 9;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
-      &audioTriangles,                       // triangles
+      &audio8x8Squares,
+      &audioBigSpark,
+
+      &audioTriangles,                    // triangles
       &audioSpectrum1,                    // 16 lines
       &audioDotsSingle,                   // dancing/rolling dots
-&audioSpectrum2,
-      &audioCircles,
+      &audioSpectrum2,      // to sort
+      &audioCirclesReal,    // to sort
+      &audioDiagonalSpectrum,   // to tidy
+      &audioSpectrumCircle,     // spectrum lines from centre out, rotating around 360 degrees
 
-      &audioCirclesReal,
+      //&canvasTest,
 
-      &audioDiagonalSpectrum,
-
-      &audioSpectrumCircle,
-
+      //&audioCircles,      // needs more work
       //&audioWaveSingle,   // doing
-      
       //&audioLines,
       //&testCircles,
       //&testSpectrum,

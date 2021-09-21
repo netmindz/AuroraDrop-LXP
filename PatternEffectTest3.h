@@ -52,7 +52,7 @@ public:
     // ##################
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
         zzzz++;
-        if (zzzz > MATRIX_CENTRE_X) zzzz = 0;
+        if (zzzz > MATRIX_CENTER_X) zzzz = 0;
 
         // test 1 pretty shitty
         //effects.Expand(MATRIX_CENTRE_X, MATRIX_CENTRE_Y, zzzz, 128);

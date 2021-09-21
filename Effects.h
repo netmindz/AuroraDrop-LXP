@@ -31,19 +31,24 @@
 
 /* ---------------------------- GLOBAL CONSTANTS ----------------------------- */
 
-const int  MATRIX_CENTER_X = MATRIX_WIDTH / 2;
-const int  MATRIX_CENTER_Y = MATRIX_HEIGHT / 2;
+//const int  MATRIX_CENTER_X = MATRIX_WIDTH / 2;
+//const int  MATRIX_CENTER_Y = MATRIX_HEIGHT / 2;
 // US vs GB, huh? :)
 //const byte MATRIX_CENTRE_X = MATRIX_CENTER_X - 1;
 //const byte MATRIX_CENTRE_Y = MATRIX_CENTER_Y - 1;
-#define MATRIX_CENTRE_X MATRIX_CENTER_X
-#define MATRIX_CENTRE_Y MATRIX_CENTER_Y
+//#define MATRIX_CENTRE_X MATRIX_CENTER_X
+//#define MATRIX_CENTRE_Y MATRIX_CENTER_Y
 
 
 const uint16_t NUM_LEDS = (MATRIX_WIDTH * MATRIX_HEIGHT) + 1; // one led spare to capture out of bounds
 
 // forward declaration
 uint16_t XY16( uint16_t x, uint16_t y);
+// AuroraDrop canvases
+uint16_t CANVAS_FULL( uint16_t x, uint16_t y);      // full width canvas
+uint16_t CANVAS_HALF( uint16_t x, uint16_t y);      // half width
+uint16_t CANVAS_QUARTER( uint16_t x, uint16_t y);   // quarter
+
 
 /* Convert x,y co-ordinate to flat array index. 
  * x and y positions start from 0, so must not be >= 'real' panel width or height 
@@ -67,6 +72,15 @@ uint16_t XY16( uint16_t x, uint16_t y)
     if( y >= MATRIX_HEIGHT) return 0;
 
     return (y * MATRIX_WIDTH) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
+}
+
+// AuroraDrop: 
+uint16_t CANVAS_HALF( uint16_t x, uint16_t y) 
+{
+    if( x >= MATRIX_WIDTH / 2) return 0;
+    if( y >= MATRIX_HEIGHT / 2) return 0;
+
+    return (y * (MATRIX_WIDTH / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
 }
 
 
@@ -114,10 +128,19 @@ public:
   CRGB *leds;
   //CRGB leds[NUM_LEDS];
   //CRGB leds2[NUM_LEDS]; // Faptastic: getting rid of this and any dependant effects or algos. to save memory 24*64*32 bytes of ram (50k).
+  // AuroraDrop: adding new for canvases
+  CRGB *canvasF;    // full size
+  CRGB *canvasH;    // half
+  CRGB *canvasQ;    // quarter
+
 
   Effects(){
     // we do dynamic allocation for leds buffer, otherwise esp32 toolchain can't link static arrays of such a big size for 256+ matrixes
     leds = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
+    canvasF = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
+    canvasH = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
+    canvasQ = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 16);
+
 
     // allocate mem for noise effect
     // (there should be some guards for malloc errors eventually)
@@ -194,7 +217,28 @@ public:
       memset(leds, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
   }
   
-	 
+  // AuroraDrop:
+  void ClearCanvas(uint8_t id = 255)
+  {
+    switch (id) {
+      // 0=full canvas, 1=half, 2=quarter, empty/255 = clear all
+      case 0:
+        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
+        break;
+      case 1:
+        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+        break;
+      case 2:
+        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+        break;
+      case 255:
+        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
+        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+        break;
+    }
+  }
+
   
 /*
   void CircleStream(uint8_t value) {
@@ -477,7 +521,7 @@ CRGBPalette16 AllRed_p = {
 
   // copy one diagonal triangle into the other one within a 16x16
   void Caleidoscope3() {
-    for (int x = 0; x <= MATRIX_CENTRE_X && x < MATRIX_HEIGHT; x++) {
+    for (int x = 0; x <= MATRIX_CENTER_X && x < MATRIX_HEIGHT; x++) {
       for (int y = 0; y <= x && y<MATRIX_HEIGHT; y++) {
         leds[XY16(x, y)] = leds[XY16(y, x)];
       }
@@ -486,9 +530,9 @@ CRGBPalette16 AllRed_p = {
 
   // copy one diagonal triangle into the other one within a 16x16 (90 degrees rotated compared to Caleidoscope3)
   void Caleidoscope4() {
-    for (int x = 0; x <= MATRIX_CENTRE_X; x++) {
-      for (int y = 0; y <= MATRIX_CENTRE_Y - x; y++) {
-        leds[XY16(MATRIX_CENTRE_Y - y, MATRIX_CENTRE_X - x)] = leds[XY16(x, y)];
+    for (int x = 0; x <= MATRIX_CENTER_X; x++) {
+      for (int y = 0; y <= MATRIX_CENTER_Y - x; y++) {
+        leds[XY16(MATRIX_CENTER_Y - y, MATRIX_CENTER_X - x)] = leds[XY16(x, y)];
       }
     }
   }
@@ -817,6 +861,58 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
+  // AuroraDrop: 
+  void BresenhamLineCanvasH(int x0, int y0, int x1, int y1, CRGB color)
+  {
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy, e2;
+    for (;;) {
+      canvasH[CANVAS_HALF(x0, y0)] += color;
+      if (x0 == x1 && y0 == y1) break;
+      e2 = 2 * err;
+      if (e2 > dy) {
+        err += dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  }
+
+
+  // AuroraDrop: apply the half width canvas to the screen
+  void ApplyCanvasH(int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
+    // use integer maths if we're not scaling, allow signed x/y for better scaling up options
+    if (scale == 0.0 || scale == 1.0) {
+      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
+          leds[XY16(x + x_offset, y + y_offset)] += canvasH[CANVAS_HALF(x, y)];
+        }
+      }
+    }
+    else {
+      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
+          //if ((x * scale) + x_offset < MATRIX_WIDTH / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
+          leds[XY16((x * scale) + x_offset, (y * scale) + y_offset)] += canvasH[CANVAS_HALF(x, y)];
+        }
+      }
+
+    }
+    // 2d blur if we are scaling up
+    if (blur > 0) {
+
+      blur2d(leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, blur);   //  255=heavy blurring
+
+      // effects.blur2d(canvasH)
+    }
+  }
+
+
+
 
   CRGB ColorFromCurrentPalette(uint8_t index = 0, uint8_t brightness = 255, TBlendType blendType = LINEARBLEND) {
     return ColorFromPalette(currentPalette, index, brightness, currentBlendType);
@@ -841,10 +937,10 @@ CRGBPalette16 AllRed_p = {
 
   void FillNoise() {
     for (uint16_t i = 0; i < MATRIX_WIDTH; i++) {
-      uint32_t ioffset = noise_scale_x * (i - MATRIX_CENTRE_Y);
+      uint32_t ioffset = noise_scale_x * (i - MATRIX_CENTER_Y);
 
       for (uint16_t j = 0; j < MATRIX_HEIGHT; j++) {
-        uint32_t joffset = noise_scale_y * (j - MATRIX_CENTRE_Y);
+        uint32_t joffset = noise_scale_y * (j - MATRIX_CENTER_Y);
 
         byte data = inoise16(noise_x + ioffset, noise_y + joffset, noise_z) >> 8;
 

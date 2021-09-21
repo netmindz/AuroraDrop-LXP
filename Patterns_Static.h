@@ -49,20 +49,21 @@ class Patterns_Static : public Playlist {
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
-      //&patternTest,
 
       &spiral,                  // spiraling lines
       &flock,
       &attract,
       &flowField,
-      
       &staticBounce,
       
+
+
       //&spin,                  // BAD freezes randomly
 
 
       //&radar,
 
+      //&patternTest,
       //&incrementalDrift,
       //&spiro,
       //&electricMandella,   // plasma effect

@@ -84,7 +84,7 @@ class PatternSpiro : public Drawable {
         effects.leds[XY((x2/2)+32, (y2/2)+32)] += color;
         
         if((x2 == MATRIX_CENTER_X && y2 == MATRIX_CENTER_Y) ||
-           (x2 == MATRIX_CENTRE_X && y2 == MATRIX_CENTRE_Y)) change = true;
+           (x2 == MATRIX_CENTER_X && y2 == MATRIX_CENTER_Y)) change = true;
       }
 
       theta2 += 1;

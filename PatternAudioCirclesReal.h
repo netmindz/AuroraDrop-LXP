@@ -119,8 +119,8 @@ class PatternAudioCirclesReal : public Drawable {
         
         for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data1) / 8)) {   // 0.1
             float angle = i * 3.14 / 180;
-            int x = (int)(MATRIX_CENTRE_X + radius1 * cos(angle));
-            int y = (int)(MATRIX_CENTRE_Y + radius1 * sin(angle));
+            int x = (int)(MATRIX_CENTER_X + radius1 * cos(angle));
+            int y = (int)(MATRIX_CENTER_Y + radius1 * sin(angle));
             if (caleidoscopeMode) {
               x = x / 2;
               y = y / 2;
@@ -131,8 +131,8 @@ class PatternAudioCirclesReal : public Drawable {
 
         for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data2) / 8)) {   // 0.1
             float angle = i * 3.14 / 180;
-            int x = (int)(MATRIX_CENTRE_X + radius2 * cos(angle));
-            int y = (int)(MATRIX_CENTRE_Y + radius2 * sin(angle));
+            int x = (int)(MATRIX_CENTER_X + radius2 * cos(angle));
+            int y = (int)(MATRIX_CENTER_Y + radius2 * sin(angle));
             if (caleidoscopeMode) {
               x = x / 2;
               y = y / 2;
@@ -143,8 +143,8 @@ class PatternAudioCirclesReal : public Drawable {
 
         for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data3) / 8)) {   // 0.1
             float angle = i * 3.14 / 180;
-            int x = (int)(MATRIX_CENTRE_X + radius3 * cos(angle));
-            int y = (int)(MATRIX_CENTRE_Y + radius3 * sin(angle));
+            int x = (int)(MATRIX_CENTER_X + radius3 * cos(angle));
+            int y = (int)(MATRIX_CENTER_Y + radius3 * sin(angle));
             if (caleidoscopeMode) {
               x = x / 2;
               y = y / 2;
@@ -178,7 +178,7 @@ class PatternAudioCirclesReal : public Drawable {
 
     //effects.SpiralStream(31, 15, 64, 128);        // for 64 pixel wide matrix!
 
-    effects.DimAll(150);
+    effects.DimAll(230);
 
     return 0;
   }

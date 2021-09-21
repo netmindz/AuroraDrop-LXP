@@ -151,7 +151,7 @@ class PatternAudioCircles : public Drawable {
             effects.leds[XY(x1, y1)] += color;
         
           if((x1 == MATRIX_CENTER_X && y1 == MATRIX_CENTER_Y) ||
-             (x1 == MATRIX_CENTRE_X && y1 == MATRIX_CENTRE_Y)) testCircle[c].change = true;
+             (x1 == MATRIX_CENTER_X && y1 == MATRIX_CENTER_Y)) testCircle[c].change = true;
 
           // randomise this?
           //testCircle[c].theta2++;

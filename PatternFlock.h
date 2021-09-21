@@ -105,6 +105,9 @@ class PatternFlock : public Drawable {
         // effects.leds[XY(location.x, location.y)] += color;
         effects.drawBackgroundFastLEDPixelCRGB(location.x, location.y, color);
 
+        // test draw canvas
+        //effects.ApplyCanvasH(location.x - 8, location.y - 8, 1);
+
         if (applyWind) {
           boid->applyForce(wind);
           applyWind = false;

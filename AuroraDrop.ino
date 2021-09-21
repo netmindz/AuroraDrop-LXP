@@ -29,7 +29,7 @@
 #define B_PIN 19 // Changed from library default
 #define C_PIN 5
 #define D_PIN 17
-#define E_PIN 18 // 32 or 18
+#define E_PIN 32 // 32 or 18
 #define LAT_PIN 4
 #define OE_PIN 15
 #define CLK_PIN 16
@@ -39,15 +39,14 @@
 /*--------------------- MATRIX PANEL CONFIG -------------------------*/
 #define MATRIX_HEIGHT 64
 #define MATRIX_WIDTH 64
-#define MATRIX_CENTRE_X (MATRIX_WIDTH / 2)
-#define MATRIX_CENTRE_Y (MATRIX_HEIGHT / 2)
+#define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
+#define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
 #define PANELS_NUMBER 1                         // Number of chained panels, if just a single panel, obviously set to 1
-//#define PIN_E 32  // 32 or 18
 
 
 #define MAX_PATTERNS_EFFECT 2
 //#define MAX_PATTERNS_AMBIENT_BACKGROUND 1    // useful?
-#define MAX_PATTERNS_AUDIO 3
+#define MAX_PATTERNS_AUDIO 2
 #define MAX_PATTERNS_STATIC 2
 
 
@@ -70,11 +69,31 @@ Effects effects;
 #include "Patterns_Audio.h"
 #include "Patterns_Static.h"
 
-Patterns_InitEffects patternsInitEffects[MAX_PATTERNS_EFFECT];
-Patterns_Audio patternsAudio[MAX_PATTERNS_AUDIO];
-Patterns_Static patternsStatic[MAX_PATTERNS_STATIC];
-Patterns_InitEffects patternsFinalEffects[MAX_PATTERNS_EFFECT];
+// for simpler testing
+#if(MAX_PATTERNS_EFFECT > 0)
+  Patterns_InitEffects patternsInitEffects[MAX_PATTERNS_EFFECT];
+#else
+  Patterns_InitEffects patternsInitEffects[1];
+#endif  
+#if(MAX_PATTERNS_AUDIO > 0)
+  Patterns_Audio patternsAudio[MAX_PATTERNS_AUDIO];
+#else
+  Patterns_Audio patternsAudio[MAX_PATTERNS_EFFECT];
+#endif  
+#if(MAX_PATTERNS_STATIC > 0)
+  Patterns_Static patternsStatic[MAX_PATTERNS_STATIC];
+#else
+  Patterns_Static patternsStatic[1];
+#endif  
+#if(MAX_PATTERNS_EFFECT > 0)
+  Patterns_InitEffects patternsFinalEffects[MAX_PATTERNS_EFFECT];
+#else
+  Patterns_InitEffects patternsFinalEffects[1];
+#endif  
 
+static uint8_t patternsAudioBackgroundCount = 0;
+static uint8_t patternsAudioCaleidoscopeCount = 0;
+static uint16_t patternsAudioBluringCount = 0;
 
 /* -------------------------- Setup -------------------------- */
 void setup()
@@ -184,7 +203,7 @@ void loop()
 
   for (uint8_t i=0; i < MAX_PATTERNS_EFFECT; i++)
   {
-    // #-------- start next animation if maxduration reached --------#
+    // #-------- start next animation if max duration reached --------#
     if ( (millis() - patternsInitEffects[i].ms_previous) > patternsInitEffects[i].ms_animation_max_duration) 
     {
       patternsInitEffects[i].stop();      
@@ -220,7 +239,10 @@ void loop()
 
   }
 
-
+  // clear counters/flags for psuedo randomness workings inside pattern setup
+  patternsAudioBackgroundCount = 0;
+  patternsAudioCaleidoscopeCount = 0;
+  patternsAudioBluringCount = 0;
   for (uint8_t i=0; i < MAX_PATTERNS_AUDIO; i++)
   {
     // #-------- start next animation if maxduration reached --------#
@@ -253,6 +275,8 @@ void loop()
     }
 
   }
+
+
 
   for (uint8_t i=0; i < MAX_PATTERNS_STATIC; i++)
   {

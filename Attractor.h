@@ -33,7 +33,7 @@ public:
     PVector location;   // Location
 
     Attractor() {
-        location = PVector(MATRIX_CENTRE_X, MATRIX_CENTRE_Y);
+        location = PVector(MATRIX_CENTER_X, MATRIX_CENTER_Y);
         mass = 10;
         G = .5;
     }

@@ -60,10 +60,10 @@ class PatternAudioWaveSingle : public Drawable {
       if (data2 > MATRIX_HEIGHT - 10) data2 = MATRIX_HEIGHT - 10;
 
         x0 = i;
-        y0 = (-data1 * invert2) + MATRIX_CENTRE_Y;
+        y0 = (-data1 * invert2) + MATRIX_CENTER_Y;
 
         x1 = x0 + 4;
-        y1 = (data2 * invert2) + MATRIX_CENTRE_Y;
+        y1 = (data2 * invert2) + MATRIX_CENTER_Y;
 
 
 /*
@@ -97,7 +97,7 @@ class PatternAudioWaveSingle : public Drawable {
     // TODO: only draw bars if there is non zero data
     // final clean-up line
     if (!serialData.noAudio)
-      effects.BresenhamLine(x1, y1, MATRIX_WIDTH, MATRIX_CENTRE_Y, dma_display->color565(128, 128, 128));
+      effects.BresenhamLine(x1, y1, MATRIX_WIDTH, MATRIX_CENTER_Y, dma_display->color565(128, 128, 128));
 
 
 

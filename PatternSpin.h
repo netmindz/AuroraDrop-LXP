@@ -32,7 +32,7 @@ public:
         effects.DimAll(250);
 
         radius = serialData.specData8[1] / 6; // bass
-        if (radius > MATRIX_CENTRE_X/2 - 1) radius = MATRIX_CENTRE_X/2 - 1;
+        if (radius > MATRIX_CENTER_X/2 - 1) radius = MATRIX_CENTER_X/2 - 1;
 
 
         CRGB color1 = effects.ColorFromCurrentPalette(speed * 8);

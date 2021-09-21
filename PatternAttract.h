@@ -69,8 +69,12 @@ public:
             boid.applyForce(force);
 
             boid.update();
+
+            // test extra duplicate effects.drawBackgroundFastLEDPixelCRGB(boid.location.x / 2, boid.location.y / 2, effects.ColorFromCurrentPalette(boid.colorIndex));
+
+
             effects.drawBackgroundFastLEDPixelCRGB(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
-            //effects.drawBackgroundFastLEDPixelCRGB(boid.location.x / 2, boid.location.y / 2, effects.ColorFromCurrentPalette(boid.colorIndex));
+            //effects.ApplyCanvasH(boid.location.x - 8, boid.location.y - 8, 1);
 
             staticBoids[_pattern][i] = boid;
         }
