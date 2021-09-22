@@ -13,6 +13,7 @@ sequenced, multi-parallelized, unpredictable flow. Thrown in are a few random ef
 and complimentary fixed and re-active animations, also borrowed from the Jason's Auroa demo.
 
 
+![example_matrix_animation1](https://user-images.githubusercontent.com/4552572/134411163-7eed342a-f806-48df-8284-c8c2a170b4af.gif)
 
 
 
