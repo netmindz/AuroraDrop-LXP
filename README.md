@@ -9,7 +9,7 @@ Welcome. Work is in progress, updates may appear now and then.
 Introduction
 
 AuroraDrop creates and runs multiple random patterns based on audio input from your PC, and renders them in a
-sequenced, multi-parallelized, unpredictable flow. Thrown in are a few random efects, some image manipulations
+sequenced, multi-parallelized, unpredictable flow. Thrown in are a few random effects, some image manipulations
 and complimentary fixed and re-active animations, also borrowed from the Jason's Auroa demo.
 
 
@@ -21,7 +21,7 @@ and complimentary fixed and re-active animations, also borrowed from the Jason's
 
 Notes:
 
-AuroraDrop's audio visualisaions currently only work when your ESP32 is connected to your PC via the USB connection,
+AuroraDrop's audio visualisations currently only work when your ESP32 is connected to your PC via the USB connection,
 and you are running the companion windows application 'AuroraDrop Companion'. This application captures and processes
 the current audio playing on your PC and passes this to the ESP32 via serial communications, which then renders the
 visualisations.
