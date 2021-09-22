@@ -2,7 +2,7 @@
 
 RGB Matrix Audio Visualiser for ESP32
 
-Based on the Auroa Demo by Jason Coon.
+Based on the Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic.
 
 Welcome. Work is in progress, updates may appear now and then.
 
