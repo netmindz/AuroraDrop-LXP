@@ -33,6 +33,8 @@ https://github.com/uklooney/AuroraDropCompanion
 
 
 
+Tested on 64x64 1/32 scan LED Matrix
+
 Suggested simple hardware solution:-
    
  * ESP32 I2S Matrix Shield
