@@ -1,4 +1,4 @@
-# AuroraDrop v0.0.1
+# AuroraDrop v0.0.2
 
 RGB Matrix Audio Visualiser for ESP32
 
