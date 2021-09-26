@@ -73,7 +73,7 @@ MatrixPanel_I2S_DMA *dma_display = nullptr;
 //static uint8_t maxPatternAmbient = 0;       // not implemented yet! for plasma effects etc.
 static uint8_t maxPatternInitEffect = 1;      // <------- 1 or 2 is reasonable
 static uint8_t maxPatternAudio = 3;           // <------- 2/3
-static uint8_t maxPatternStatic = 1;          // <------- 2/3
+static uint8_t maxPatternStatic = 2;          // <------- 2/3
 static uint8_t maxPatternFinalEffect = 0;     // not used yet! can have a big impact on rendered output
 
 // diagnostic options, these can be set via web interface when enabled
