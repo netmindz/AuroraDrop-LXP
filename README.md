@@ -12,9 +12,11 @@ AuroraDrop creates and runs multiple random patterns based on audio input from y
 sequenced, multi-parallelized, unpredictable flow. Thrown in are a few random effects, some image manipulations
 and complimentary fixed and re-active animations, also borrowed from the Jason's Auroa demo.
 
-
 ![example_matrix_animation1](https://user-images.githubusercontent.com/4552572/134411163-7eed342a-f806-48df-8284-c8c2a170b4af.gif)
 
+[![AuroraDrop](http://img.youtube.com/vi/6lSb6BLZaRQ/0.jpg)](http://www.youtube.com/watch?v=6lSb6BLZaRQ "AuroraDrop 0.0.3")
+
+https://youtu.be/6lSb6BLZaRQ
 
 ## Latest Updates
 
