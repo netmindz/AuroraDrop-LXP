@@ -47,7 +47,7 @@
 #define B_PIN 19 // Changed from library default
 #define C_PIN 5
 #define D_PIN 17
-#define E_PIN 32 // 18 (or non-default 32)
+#define E_PIN 18 // 18 (or non-default 32)
 #define LAT_PIN 4
 #define OE_PIN 15
 #define CLK_PIN 16
