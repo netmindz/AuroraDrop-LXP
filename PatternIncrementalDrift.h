@@ -7,6 +7,7 @@ class PatternIncrementalDrift : public Drawable {
   public:
     PatternIncrementalDrift() {
       name = (char *)"Incremental Drift";
+      id2 = 1;
     }
 
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {

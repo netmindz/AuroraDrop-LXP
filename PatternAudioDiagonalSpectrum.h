@@ -7,6 +7,7 @@ class PatternAudioDiagonalSpectrum : public Drawable {
   public:
     PatternAudioDiagonalSpectrum() {
       name = (char *)"Audio Lines";
+      id = (char *)"d";
     }
 
     bool cycleColors;

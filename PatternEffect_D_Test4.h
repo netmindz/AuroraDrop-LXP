@@ -1,38 +1,14 @@
-/*
- * Portions of this code are adapted from "Funky Clouds" by Stefan Petrick:
- * https://gist.github.com/anonymous/876f908333cd95315c35
- *
- * Copyright (c) 2014 Stefan Petrick
- * http://www.stefan-petrick.de/wordpress_beta
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+#ifndef PatternEffectTest4_H
+#define PatternEffectTest4_H
 
-#ifndef PatternEffectTest3_H
-#define PatternEffectTest3_H
-
-class PatternEffectTest3 : public Drawable {
+class PatternEffectTest4 : public Drawable {
 private:
 
 
 public:
-    PatternEffectTest3() {
-        name = (char *)"Effect Test 1";
+    PatternEffectTest4() {
+      name = (char *)"Effect Test 4";
+      id = "D";
     }
 
 
@@ -67,10 +43,10 @@ public:
         //effects.StreamDown(128);
 
         // test 5 - OK
-        effects.StreamUp(128);
+        //effects.StreamUp(128);
 
         // test 6 - OK
-        //effects.StreamUpAndLeft(128);
+        effects.StreamUpAndLeft(128);
 
         // test 7 - OK
         //effects.StreamUpAndRight(128);

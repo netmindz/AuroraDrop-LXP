@@ -7,6 +7,7 @@ class PatternAudioTriangles : public Drawable {
   public:
     PatternAudioTriangles() {
       name = (char *)"Audio Triangles";
+      id = (char *)"T";;
     }
 
     bool cycleColors;

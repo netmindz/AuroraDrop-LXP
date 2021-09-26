@@ -37,6 +37,7 @@ class PatternAudioCirclesReal : public Drawable {
   public:
     PatternAudioCirclesReal() {
       name = (char *)"Audio Circles Real";
+      id = (char *)"R";
     }
 
 
@@ -117,7 +118,7 @@ class PatternAudioCirclesReal : public Drawable {
         radius2 = data2;
         radius3 = data3;
         
-        for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data1) / 8)) {   // 0.1
+        for (float i = 0.0; i < 360.0; i += 6) { // ((MATRIX_WIDTH - data1) / 8)) {   // 0.1
             float angle = i * 3.14 / 180;
             int x = (int)(MATRIX_CENTER_X + radius1 * cos(angle));
             int y = (int)(MATRIX_CENTER_Y + radius1 * sin(angle));
@@ -129,7 +130,7 @@ class PatternAudioCirclesReal : public Drawable {
             effects.leds[XY(x, y)] = color;
           }
 
-        for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data2) / 8)) {   // 0.1
+        for (float i = 0.0; i < 360.0; i += 6) { // ((MATRIX_WIDTH - data2) / 8)) {   // 0.1
             float angle = i * 3.14 / 180;
             int x = (int)(MATRIX_CENTER_X + radius2 * cos(angle));
             int y = (int)(MATRIX_CENTER_Y + radius2 * sin(angle));
@@ -141,7 +142,7 @@ class PatternAudioCirclesReal : public Drawable {
             effects.leds[XY(x, y)] = color;
           }
 
-        for (float i = 0.0; i < 360.0; i += ((MATRIX_WIDTH - data3) / 8)) {   // 0.1
+        for (float i = 0.0; i < 360.0; i += 6) { // ((MATRIX_WIDTH - data3) / 8)) {   // 0.1
             float angle = i * 3.14 / 180;
             int x = (int)(MATRIX_CENTER_X + radius3 * cos(angle));
             int y = (int)(MATRIX_CENTER_Y + radius3 * sin(angle));

@@ -14,6 +14,8 @@ class PatternAudioSpectrum1 : public Drawable {
     PatternAudioSpectrum1() 
     {
       name = (char *)"Audio Spectrum 1";
+      id2 = 1;
+      id = (char *)"S";
     }
 
 

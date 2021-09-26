@@ -3,6 +3,10 @@
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
+#include "PatternAudio_A_8x8Squares.h"
+#include "PatternAudio_B_BigSpark.h"
+
+// test patterns to integrate
 #include "PatternAudioLines.h"
 #include "PatternAudioCircles.h"
 #include "PatternAudioTriangles.h"
@@ -18,13 +22,13 @@
 
 #include "PatternCanvasTest.h"
 
-#include "PatternAudio01_BigSpark.h"
-#include "PatternAudio02_8x8Squares.h"
 
 class Patterns_Audio : public Playlist {
   private:
-    PatternAudioBigSpark audioBigSpark;
     PatternAudio8x8Squares audio8x8Squares;
+    PatternAudioBigSpark audioBigSpark;
+
+    // test
     PatternAudioLines audioLines;
     PatternAudioCircles audioCircles;
     PatternAudioTriangles audioTriangles;
@@ -37,8 +41,6 @@ class Patterns_Audio : public Playlist {
     PatternAudioCirclesReal audioCirclesReal;
     PatternAudioDiagonalSpectrum audioDiagonalSpectrum;
     PatternAudioSpectrumCircle audioSpectrumCircle;
-    
-
     PatternCanvasTest canvasTest;
 
     int currentIndex = 0;
@@ -49,7 +51,7 @@ class Patterns_Audio : public Playlist {
     }
 
     // always use static on esp32 !!!!
-    const static int PATTERN_COUNT = 9;
+    const static int PATTERN_COUNT = 8;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -61,13 +63,15 @@ class Patterns_Audio : public Playlist {
       &audioSpectrum1,                    // 16 lines
       &audioDotsSingle,                   // dancing/rolling dots
       &audioSpectrum2,      // to sort
-      &audioCirclesReal,    // to sort
       &audioDiagonalSpectrum,   // to tidy
       &audioSpectrumCircle,     // spectrum lines from centre out, rotating around 360 degrees
 
-      //&canvasTest,
+      //&audioCirclesReal,    // to sort (slow)
 
-      //&audioCircles,      // needs more work
+
+
+      //&canvasTest,
+      //&audioCircles,      // needs work
       //&audioWaveSingle,   // doing
       //&audioLines,
       //&testCircles,
@@ -87,7 +91,7 @@ class Patterns_Audio : public Playlist {
 
       this->currentItem = items[0];
 
-      for (int i=0; i < MAX_PATTERNS_AUDIO; i++) 
+      for (int i=0; i < maxPatternAudio; i++) 
       {
       this->currentItem->start(i); 
       }
@@ -188,6 +192,17 @@ class Patterns_Audio : public Playlist {
     {
       return currentItem->name;      
     }
+
+    uint8_t getCurrentPatternId2()
+    {
+      return currentItem->id2;      
+    }
+
+    char * getCurrentPatternId()
+    {
+      return currentItem->id;      
+    }
+
 
     void moveTo(int index, uint8_t _pattern) {
       if (currentItem)

@@ -28,6 +28,7 @@ class PatternAudioSpectrumCircle : public Drawable {
 
     PatternAudioSpectrumCircle() {
       name = (char *)"Audio Spectrum Circle";
+      id = (char *)"f";
     }
 
     // #------------- START -------------#
@@ -96,7 +97,7 @@ class PatternAudioSpectrumCircle : public Drawable {
     unsigned int drawFrame(uint8_t _order, uint8_t _total) {
       // _order indicates the order in which the effect is drawn, use the appropriate pre and post effects, if any
 
-      static const uint8_t BINS = BARS;
+      //static const uint8_t BINS = BINS;
       byte audioData;
       uint8_t maxData = 127;
 

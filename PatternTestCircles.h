@@ -7,6 +7,7 @@ class PatternTestCircles : public Drawable {
   public:
     PatternTestCircles() {
       name = (char *)"Test Cirlces";
+      id2 = 1;
     }
 
     uint8_t xxxx1 = 0;

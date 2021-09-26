@@ -48,6 +48,7 @@ class PatternAudioCircles : public Drawable {
   public:
     PatternAudioCircles() {
       name = (char *)"Audio Circles";
+      id2 = 1;
     }
 
 

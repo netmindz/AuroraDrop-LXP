@@ -8,7 +8,8 @@
 class PatternSpin : public Drawable {
 public:
     PatternSpin() {
-        name = (char *)"Spin";
+      name = (char *)"Spin";
+      id2 = 1;
     }
 
     float degrees = 0;

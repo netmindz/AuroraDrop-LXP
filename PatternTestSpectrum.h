@@ -12,6 +12,7 @@ class PatternTestSpectrum : public Drawable {
     PatternTestSpectrum() 
     {
       name = (char *)"Test Spectrum Pattern";
+      id2 = 1;
     }
 
 

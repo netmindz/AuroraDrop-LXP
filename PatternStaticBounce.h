@@ -24,13 +24,14 @@
 
 class PatternStaticBounce : public Drawable {
 private:
-    static const int count = 32;
+    static const int count = 64;
     PVector gravity = PVector(0, 0.0125);
     //PVector gravity = PVector(0, 0.125);
 
 public:
     PatternStaticBounce() {
-        name = (char *)"Bounce";
+      name = (char *)"Bounce";
+      id = "B";
     }
 
     void start(uint8_t _pattern) {

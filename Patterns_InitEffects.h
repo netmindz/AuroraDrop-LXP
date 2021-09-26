@@ -6,17 +6,21 @@
 
 //#include "Vector.h"
 
-#include "PatternEffectTest1.h"
-#include "PatternEffectTestBlur2d.h"
-#include "PatternEffectTest3.h"
+#include "PatternEffect_A_TestBlur2d.h"
+#include "PatternEffect_B_Test2.h"
+#include "PatternEffect_C_Test3.h"
+#include "PatternEffect_D_Test4.h"
+#include "PatternEffect_E_Test5.h"
 
 
 class Patterns_InitEffects : public Playlist {
   private:
 
-    PatternEffectTest1 effectTest1;
+    PatternEffectTest2 effectTest2;
     PatternEffectTestBlur2d effectTestBlur2d;
     PatternEffectTest3 effectTest3;
+    PatternEffectTest4 effectTest4;
+    PatternEffectTest5 effectTest5;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -30,9 +34,11 @@ class Patterns_InitEffects : public Playlist {
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
-      &effectTest1,
       &effectTestBlur2d,
-      &effectTest3,
+      //&effectTest2,
+      //&effectTest3,
+      &effectTest4,
+      &effectTest5,
 
     };
 
@@ -47,7 +53,7 @@ class Patterns_InitEffects : public Playlist {
 
       this->currentItem = items[0];
 
-      for (int i=0; i < MAX_PATTERNS_EFFECT; i++) 
+      for (int i=0; i < maxPatternInitEffect; i++) 
       {
       this->currentItem->start(i); 
       }
@@ -148,6 +154,12 @@ class Patterns_InitEffects : public Playlist {
     {
       return currentItem->name;      
     }
+
+    char * getCurrentPatternId()
+    {
+      return currentItem->id;      
+    }
+
 
     void moveTo(int index, uint8_t _pattern) {
       if (currentItem)

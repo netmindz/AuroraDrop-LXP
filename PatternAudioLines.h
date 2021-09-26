@@ -7,6 +7,7 @@ class PatternAudioLines : public Drawable {
   public:
     PatternAudioLines() {
       name = (char *)"Audio Lines";
+      id2 = 1;
     }
 
     bool cycleColors;

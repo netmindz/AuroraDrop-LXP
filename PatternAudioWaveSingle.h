@@ -14,6 +14,7 @@ class PatternAudioWaveSingle : public Drawable {
     PatternAudioWaveSingle() 
     {
       name = (char *)"Audio Wave Single";
+      id2 = 1;
     }
 
 

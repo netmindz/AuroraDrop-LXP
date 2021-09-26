@@ -19,7 +19,8 @@ class PatternAudioDotsSingle : public Drawable {
   public:
     PatternAudioDotsSingle() 
     {
-      name = (char *)"Audio Wave Single";
+      name = (char *)"Audio Dots Single";
+      id = (char *)"D";
     }
 
 

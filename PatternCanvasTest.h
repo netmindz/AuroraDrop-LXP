@@ -28,6 +28,7 @@ class PatternCanvasTest : public Drawable {
 
     PatternCanvasTest() {
       name = (char *)"Canvas Test";
+      id2 = 1;
     }
 
     // #------------- START -------------#
@@ -129,7 +130,7 @@ class PatternCanvasTest : public Drawable {
 
 
 
-      static const uint8_t BINS = BARS;
+      //static const uint8_t BINS = BINS;
       byte audioData;
       uint8_t maxData = 127;
 
@@ -170,7 +171,7 @@ class PatternCanvasTest : public Drawable {
         x = (int)(centreX + radius * cos(angle));
         y = (int)(centreY + radius * sin(angle));
         if (audioData > 0)
-          effects.BresenhamLineCanvasH(centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
+          effects.BresenhamLineCanvas(effects.canvasH, centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
       }
 
       //effects.ApplyCanvasH(32, effects.p[2] / 2, 1);
@@ -178,7 +179,7 @@ class PatternCanvasTest : public Drawable {
 
       effects.MoveOscillators();
 
-      effects.ApplyCanvasH(-32, -32, 4.0);
+      effects.ApplyCanvas(effects.canvasH, -32, -32, 4.0);
 
 
       // # --------------------------------------------------- #

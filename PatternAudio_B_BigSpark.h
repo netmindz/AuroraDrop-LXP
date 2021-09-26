@@ -4,6 +4,7 @@
 class PatternAudioBigSpark : public Drawable {
   private:
 
+    // not using these at the moment
     uint8_t color1 = 0;
     uint8_t color2 = 64;
     uint8_t color3 = 128;
@@ -14,7 +15,8 @@ class PatternAudioBigSpark : public Drawable {
     uint8_t canvasCentreY;
 
     // theses are mostly radomised at initial start
-    uint8_t colorEffect = 0;              // TODO: use standard palette or special (fire, ice, etc.)
+    uint8_t paletteType = 0;              // TODO: use standard random palette or special (fire, ice, etc.)
+    uint8_t colorEffect = 0;              // TODO: 
     bool cycleColors;                     // todo: cylce through the color spectrum
     bool insideOut = false;               // todo: instead of starting lines at centre and go out, start at fixed radiusand draw line inwards towards the centre
     int8_t spin = 1;                      // 1/-1=rotate clockwise/counter, 0=no rotate
@@ -29,11 +31,15 @@ class PatternAudioBigSpark : public Drawable {
 
 
     PatternAudioBigSpark() {
-      name = (char *)"Audio 01 - Big Spark";
+      name = (char *)"Audio 02 - Big Spark (WIP)";
+      id2 = 9;
+      id = (char *)"B";;
     }
 
     // #------------- START -------------#
     void start(uint8_t _order) {
+
+      id2 = 9;
 
       // randomly determine the colour effect to use, etc.
       cycleColors = random(0, 2);                                 // TODO: 
@@ -97,7 +103,7 @@ class PatternAudioBigSpark : public Drawable {
     unsigned int drawFrame(uint8_t _order, uint8_t _total) {
       // _order indicates the order in which the effect is drawn, use the appropriate pre and post effects, if any
 
-      static const uint8_t BINS = BARS;
+      //static const uint8_t BINS = BINS;
       byte audioData;
       uint8_t maxData = 127;
 
@@ -145,16 +151,16 @@ class PatternAudioBigSpark : public Drawable {
         x = (int)(centreX + radius * cos(angle));
         y = (int)(centreY + radius * sin(angle));
         if (audioData > 0)
-          effects.BresenhamLineCanvasH(centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
+          effects.BresenhamLineCanvas(effects.canvasH, centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
       }
 
-      effects.ApplyCanvasH(0, effects.p[2]-16, 1);
-      effects.ApplyCanvasH(32, effects.p[2]-16, 1);
+      effects.ApplyCanvas(effects.canvasH, 0, effects.p[2]-16, 1);
+      effects.ApplyCanvas(effects.canvasH, 32, effects.p[2]-16, 1);
       //effects.ApplyCanvasH(effects.p[2] / 2, 32, 1);
 
 
       if (backdrop) {
-        effects.ApplyCanvasH(-32, -32, 4.0, 128);   // 128 = medium blur
+        effects.ApplyCanvas(effects.canvasH, -32, -32, 4.0, 128);   // 128 = medium blur
       }
 
       // # --------------------------------------------------- #

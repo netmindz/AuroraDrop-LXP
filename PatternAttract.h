@@ -29,7 +29,8 @@ private:
 
 public:
     PatternAttract() {
-        name = (char *)"Attract";
+      name = (char *)"Attract";
+      id = "A";
     }
 
     // #############

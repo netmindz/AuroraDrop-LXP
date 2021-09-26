@@ -61,7 +61,8 @@ private:
 
 public:
     PatternSpiral() {
-        name = (char *)"Spiral";
+      name = (char *)"Spiral";
+      id = "P";
     }
 
 

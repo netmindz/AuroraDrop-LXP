@@ -81,7 +81,7 @@ class Patterns_Static : public Playlist {
 
       this->currentItem = items[0];
 
-      for (int i=0; i < MAX_PATTERNS_STATIC; i++) 
+      for (int i=0; i < maxPatternStatic; i++) 
       {
       this->currentItem->start(i); 
       }
@@ -182,6 +182,12 @@ class Patterns_Static : public Playlist {
     {
       return currentItem->name;      
     }
+
+    char * getCurrentPatternId()
+    {
+      return currentItem->id;      
+    }
+
 
     void moveTo(int index, uint8_t _pattern) {
       if (currentItem)

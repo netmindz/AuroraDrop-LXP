@@ -8,6 +8,7 @@ class PatternTest : public Drawable {
   public:
     PatternTest() {
       name = (char *)"Test Pattern";
+      id2 = 1;
     }
 
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {

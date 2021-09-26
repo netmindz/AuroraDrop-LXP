@@ -44,10 +44,11 @@ const uint16_t NUM_LEDS = (MATRIX_WIDTH * MATRIX_HEIGHT) + 1; // one led spare t
 
 // forward declaration
 uint16_t XY16( uint16_t x, uint16_t y);
-// AuroraDrop canvases
-uint16_t CANVAS_FULL( uint16_t x, uint16_t y);      // full width canvas
+
+// AuroraDrop Additions:  canvas forward declarations
+//uint16_t CANVAS_FULL( uint16_t x, uint16_t y);      // full width canvas
 uint16_t CANVAS_HALF( uint16_t x, uint16_t y);      // half width
-uint16_t CANVAS_QUARTER( uint16_t x, uint16_t y);   // quarter
+//uint16_t CANVAS_QUARTER( uint16_t x, uint16_t y);   // quarter
 
 
 /* Convert x,y co-ordinate to flat array index. 
@@ -73,16 +74,6 @@ uint16_t XY16( uint16_t x, uint16_t y)
 
     return (y * MATRIX_WIDTH) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
 }
-
-// AuroraDrop: 
-uint16_t CANVAS_HALF( uint16_t x, uint16_t y) 
-{
-    if( x >= MATRIX_WIDTH / 2) return 0;
-    if( y >= MATRIX_HEIGHT / 2) return 0;
-
-    return (y * (MATRIX_WIDTH / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
-}
-
 
 uint8_t beatcos8(accum88 beats_per_minute, uint8_t lowest = 0, uint8_t highest = 255, uint32_t timebase = 0, uint8_t phase_offset = 0)
 {
@@ -130,7 +121,8 @@ public:
   //CRGB leds2[NUM_LEDS]; // Faptastic: getting rid of this and any dependant effects or algos. to save memory 24*64*32 bytes of ram (50k).
   // AuroraDrop: adding new for canvases
   CRGB *canvasF;    // full size
-  CRGB *canvasH;    // half
+  CRGB *canvasH;    // half width canvas no.1
+  CRGB *canvasH2;    // half width canvas no.2
   CRGB *canvasQ;    // quarter
 
 
@@ -139,6 +131,7 @@ public:
     leds = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
     canvasF = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
     canvasH = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
+    canvasH2 = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
     canvasQ = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 16);
 
 
@@ -217,28 +210,6 @@ public:
       memset(leds, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
   }
   
-  // AuroraDrop:
-  void ClearCanvas(uint8_t id = 255)
-  {
-    switch (id) {
-      // 0=full canvas, 1=half, 2=quarter, empty/255 = clear all
-      case 0:
-        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
-        break;
-      case 1:
-        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-        break;
-      case 2:
-        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
-        break;
-      case 255:
-        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
-        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
-        break;
-    }
-  }
-
   
 /*
   void CircleStream(uint8_t value) {
@@ -485,28 +456,6 @@ CRGBPalette16 AllRed_p = {
       }
     }
   }
-
-  void Caleidoscope1Centre() {
-    // copy original
-
-    for (int x = 0; x < MATRIX_CENTER_X; x++) {
-      for (int y = 0; y < MATRIX_CENTER_Y; y++) {
-        leds[XY16(MATRIX_WIDTH - 1 - x, y)] = leds[XY16(x, y)];
-        leds[XY16(MATRIX_WIDTH - 1 - x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
-        leds[XY16(x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
-      }
-    }
-    int x2,y2;
-    // copy centre in reverse tp prevent overwrire
-    for (int x = MATRIX_CENTER_X - 1; x >= 0 ; x--) {
-      for (int y = MATRIX_CENTER_Y - 1; y >= 0; y--) {
-        //x2 = MATRIX_CENTER_X - 1 - x;
-        //y2 = MATRIX_CENTER_Y - 1 - y;
-        leds[XY16(x + (MATRIX_WIDTH / 4), y + (MATRIX_HEIGHT / 4))] += leds[XY16(x, y)];
-      }
-    }
-  }
-
 
   // mirror the first 16x16 quadrant 3 times onto a 32x32
   void Caleidoscope2() {
@@ -861,56 +810,6 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
-  // AuroraDrop: 
-  void BresenhamLineCanvasH(int x0, int y0, int x1, int y1, CRGB color)
-  {
-    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-    int err = dx + dy, e2;
-    for (;;) {
-      canvasH[CANVAS_HALF(x0, y0)] += color;
-      if (x0 == x1 && y0 == y1) break;
-      e2 = 2 * err;
-      if (e2 > dy) {
-        err += dy;
-        x0 += sx;
-      }
-      if (e2 < dx) {
-        err += dx;
-        y0 += sy;
-      }
-    }
-  }
-
-
-  // AuroraDrop: apply the half width canvas to the screen
-  void ApplyCanvasH(int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
-    // use integer maths if we're not scaling, allow signed x/y for better scaling up options
-    if (scale == 0.0 || scale == 1.0) {
-      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
-        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
-          leds[XY16(x + x_offset, y + y_offset)] += canvasH[CANVAS_HALF(x, y)];
-        }
-      }
-    }
-    else {
-      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
-        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
-          //if ((x * scale) + x_offset < MATRIX_WIDTH / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
-          leds[XY16((x * scale) + x_offset, (y * scale) + y_offset)] += canvasH[CANVAS_HALF(x, y)];
-        }
-      }
-
-    }
-    // 2d blur if we are scaling up
-    if (blur > 0) {
-
-      blur2d(leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, blur);   //  255=heavy blurring
-
-      // effects.blur2d(canvasH)
-    }
-  }
-
 
 
 
@@ -1020,6 +919,177 @@ CRGBPalette16 AllRed_p = {
       }
     } // end column loop
   } /// MoveY
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // ------- AuroraDrop Additions: ----------------------------------------------------------------------------------------------
+
+
+  // crap: use aurora ocilators
+  // goes from 0-255 BPM times per minute
+  uint8_t bpmTest = 0;
+  uint32_t bpmStartMillis = millis();   // record the start time of the minute
+
+  uint32_t xStartMillis = millis();   // record the start time of the minute
+
+  uint32_t beat_length_ms, since_beat_ms, beat_osci;
+
+  uint16_t ms_diff;
+
+  void updateBpmOscillators() {
+
+    // determine length of beat in millis (todo: move logic to serialdata?)
+    beat_length_ms = 60000 / serialData.bpm;  
+
+
+    // if the beat is up, start over
+    if (millis() > bpmStartMillis + beat_length_ms) {
+      bpmStartMillis = millis();
+    }
+
+    // determine how long since start of beat
+    since_beat_ms = millis() - bpmStartMillis;
+
+    // determine value from 0-255;
+    beat_osci = (float)since_beat_ms * (float)(255.0 / (float)beat_length_ms);
+
+
+
+    if (millis() >= xStartMillis + 1000) {
+      xStartMillis = xStartMillis + 1000;
+    }
+
+    ms_diff = (uint16_t)(millis() - xStartMillis);
+
+    beat_osci = scale16by8(ms_diff, 65);
+  }
+
+
+
+// AuroraDrop: copied from XY16( uint16_t x, uint16_t y)
+uint16_t CANVAS_HALF( uint16_t x, uint16_t y) 
+{
+    if( x >= MATRIX_WIDTH / 2) return 0;
+    if( y >= MATRIX_HEIGHT / 2) return 0;
+
+    return (y * (MATRIX_WIDTH / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
+}
+
+
+
+  // AuroraDrop: modifed from from ClearFrame()
+  void ClearCanvas(uint8_t id = 255)
+  {
+    switch (id) {
+      // 0=full canvas, 1=half, 2=quarter, empty/255 = clear all
+      case 0:
+        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
+        break;
+      case 1:
+        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+        break;
+      case 2:
+        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+        break;
+      case 255:
+        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
+        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+        break;
+    }
+  }
+
+
+  // AuroraDrop: draw line on canvas
+  void BresenhamLineCanvas(CRGB *canvas, int x0, int y0, int x1, int y1, CRGB color)
+  {
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy, e2;
+    for (;;) {
+      canvas[CANVAS_HALF(x0, y0)] += color;
+      if (x0 == x1 && y0 == y1) break;
+      e2 = 2 * err;
+      if (e2 > dy) {
+        err += dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  }
+
+  // AuroraDrop: apply the canvas to the frame/screen
+  void ApplyCanvas(CRGB *canvas, int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
+    // use integer maths if we're not scaling, allow signed x/y for better scaling up options
+    if (scale == 0.0 || scale == 1.0) {
+      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
+          leds[XY16(x + x_offset, y + y_offset)] += canvas[CANVAS_HALF(x, y)];
+        }
+      }
+    }
+    else {
+      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
+          //if ((x * scale) + x_offset < MATRIX_WIDTH / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
+          leds[XY16((x * scale) + x_offset, (y * scale) + y_offset)] += canvas[CANVAS_HALF(x, y)];
+        }
+      }
+
+    }
+    // 2d blur if we are scaling up
+    if (blur > 0) {
+
+      blur2d(leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, blur);   //  255=heavy blurring
+
+      // effects.blur2d(canvas)
+    }
+  }
+
+
+
+
+
+
+
+  // AuroraDrop: same but try to do middle too
+  void Caleidoscope1Centre() {
+    // copy original
+
+    for (int x = 0; x < MATRIX_CENTER_X; x++) {
+      for (int y = 0; y < MATRIX_CENTER_Y; y++) {
+        leds[XY16(MATRIX_WIDTH - 1 - x, y)] = leds[XY16(x, y)];
+        leds[XY16(MATRIX_WIDTH - 1 - x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
+        leds[XY16(x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
+      }
+    }
+    int x2,y2;
+    // copy centre in reverse tp prevent overwrire
+    for (int x = MATRIX_CENTER_X - 1; x >= 0 ; x--) {
+      for (int y = MATRIX_CENTER_Y - 1; y >= 0; y--) {
+        //x2 = MATRIX_CENTER_X - 1 - x;
+        //y2 = MATRIX_CENTER_Y - 1 - y;
+        leds[XY16(x + (MATRIX_WIDTH / 4), y + (MATRIX_HEIGHT / 4))] += leds[XY16(x, y)];
+      }
+    }
+  }
+
+
+
+
 
   
 };

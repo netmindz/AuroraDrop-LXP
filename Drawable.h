@@ -27,14 +27,20 @@ class Drawable{
 public:
     char* name;
 
-    // adding by TONY
+    // modified by AuroraDrop
+    uint8_t randomWeight = 10;            // for helping weighted random selection (ha) of better patterns into playlists, 0=low, 10=high
     unsigned int default_fps = 90;
     unsigned long ms_animation_max_duration = 10000;    // 10 default seconds
-    unsigned long fps = 0;   // fps (this is NOT a matix refresh rate!)
+    unsigned long fps = 0;   // running fps (this is NOT a matix refresh rate!)
+    unsigned long fps_last = 0;   // fps
     unsigned long  fps_timer = 0; 
     unsigned int  pattern_fps = 90;
     unsigned long last_frame = 0;
     unsigned long  ms_previous = 0;
+    unsigned long render_ms;
+
+    char* id;
+    uint8_t id2;
 
 
 
