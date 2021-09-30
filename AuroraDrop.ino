@@ -29,8 +29,10 @@
 
 // ------------ optional basic web server for testing ------------
 // -- uncomment below lines to enable basic web sever interface --
-//#define USE_WIFI
-//const char* ssid = "your_SSID_here";
+#define USE_WIFI
+const char* ssid = "FauldsWyndCCTV";
+const char* password = "123456789a";
+//const char* ssid = "your_ssid";
 //const char* password = "your_password";
 
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
@@ -47,19 +49,22 @@
 #define B_PIN 19 // Changed from library default
 #define C_PIN 5
 #define D_PIN 17
-#define E_PIN 18 // 18 (or non-default 32)
+#define E_PIN 18 // 18 (or 32, whatever?)
 #define LAT_PIN 4
 #define OE_PIN 15
 #define CLK_PIN 16
 
-#define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit messaging...
 
 /*--------------------- MATRIX PANEL CONFIG -------------------------*/
 #define MATRIX_HEIGHT 64
 #define MATRIX_WIDTH 64
+#define PANELS_NUMBER 1                         // Number of chained panels, if just a single panel, obviously set to 1
 #define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
-#define PANELS_NUMBER 1                         // Number of chained panels, if just a single panel, obviously set to 1
+
+MatrixPanel_I2S_DMA *dma_display = nullptr;
+
+#define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit messaging...
 
 // fixed maximums here for memory allocation, these must be >= variables used below
 //#define MAX_PATTERNS_AMBIENT_BACKGROUND 1     // not used yet? useful? plasma effects?
@@ -67,28 +72,31 @@
 #define MAX_PATTERNS_AUDIO 4                    // audio re-active effects
 #define MAX_PATTERNS_STATIC 4                   // standard non-audio animations inc. boids etc.
 
-MatrixPanel_I2S_DMA *dma_display = nullptr;
 
 // (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
-//static uint8_t maxPatternAmbient = 0;       // not implemented yet! for plasma effects etc.
+//static uint8_t maxPatternAmbient = 0;       // not implemented yet! for plasma effects, backgrounds, etc.
 static uint8_t maxPatternInitEffect = 1;      // <------- 1 or 2 is reasonable
-static uint8_t maxPatternAudio = 3;           // <------- 2/3
+static uint8_t maxPatternAudio = 2;           // <------- 2/3
 static uint8_t maxPatternStatic = 2;          // <------- 2/3
-static uint8_t maxPatternFinalEffect = 0;     // not used yet! can have a big impact on rendered output
+static uint8_t maxPatternFinalEffect = 0;     // not used yet! you can try it, but can have a big impact on rendered output at the moment
 
 // diagnostic options, these can be set via web interface when enabled
-bool option1Diagnostics = true;
+bool option1Diagnostics = false;
 bool option2LockFps = true;
-bool option3ShowRenderTime = true;
+bool option3ShowRenderTime = false;
 bool option4PauseCycling = false;
 bool option5ChangeEffects = false;
+bool option6DisableInitialEffects = false;
+bool option7DisableAudio = false;
+bool option8DisableStatic = false;
+bool option9DisableFinalEffects = false;
 
 #ifdef USE_WIFI
   #include "ServerDiagnostics.h"
 #endif
 
-#include "SerialData.h"
-SerialData serialData;
+#include "FFTData.h"
+FFTData fftData;
 
 #include "Effects.h"
 Effects effects;
@@ -113,6 +121,7 @@ static uint8_t PatternsAudioMainEffectCount = 0;
 static uint8_t PatternsAudioBackdropCount = 0;
 static uint8_t PatternsAudioCaleidoscopeCount = 0;
 static uint16_t PatternsAudioBluringCount = 0;
+uint32_t startMillis = millis();
 
 #include "Diagnostics.h"
 
@@ -239,18 +248,26 @@ void setup()
 void loop()
 {
 
+
+  // record start time
+  start_render_ms = millis();
+
+  // show diagnostics info if optioned
+  UpdateDiagnosticsData();
+
+
   // check if WiFi has connected yet
   #ifdef USE_WIFI
     checkWifiStatus();
   #endif
 
   // check if there is any new audio data and proccess it to useful bins and flags used by the patterns
-  serialData.processSerialData();
+  fftData.processSerialData();
 
   // TODO: implement aurora demo menu system or own?
   // menu.run(mainMenuItems, mainMenuItemCount);  
 
-  if (maxPatternInitEffect==0) effects.DimAll(250);       // if we have no effects enabled, dim screen by small amount (e.g. for when testing)
+  if (maxPatternInitEffect==0 || option6DisableInitialEffects) effects.DimAll(230);       // if we have no effects enabled, dim screen by small amount (e.g. during testing)
 
   // clear counters/flags for psuedo randomness workings inside pattern setup and drawing
   PatternsAudioMainEffectCount = 0;
@@ -258,10 +275,10 @@ void loop()
   PatternsAudioCaleidoscopeCount = 0;
   PatternsAudioBluringCount = 0;
 
-  UpdateDiagnosticsData();
 
   // -------------- loop through, and apply each of the initial effects patterns ----------------
-  start_render_ms = millis();
+
+  if (!option6DisableInitialEffects) {
   for (uint8_t i=0; i < maxPatternInitEffect; i++)
   {
     // -------- start next animation if max duration reached --------
@@ -297,10 +314,11 @@ void loop()
       patternsInitEffects[i].fps = 0;
     }
   }
-
+  }
 
 
   // -------------- loop through, and apply each of the audio re-active patterns ----------------
+  if (!option7DisableAudio) {
   for (uint8_t i=0; i < maxPatternAudio; i++)
   {
     // -------- start next animation if max duration reached --------
@@ -343,11 +361,12 @@ void loop()
       patternsAudio[i].fps = 0;
     }
   }
-
+  }
 
 
 
   // ---------- loop through, and apply each of the audio static (mostly) patterns, e.g. boids --------
+  if (!option8DisableStatic) {
   for (uint8_t i=0; i < maxPatternStatic; i++)
   {
     // -------- start next animation if max duration reached --------
@@ -383,10 +402,11 @@ void loop()
       patternsStatic[i].fps = 0;
     }
   }
-
+  }
 
 
   // apply final set of effects   ??? WE NEED BETTER POST EFFECTS RANDONISM ???
+  if (!option9DisableFinalEffects) {
   for (uint8_t i=0; i < maxPatternFinalEffect; i++)
   {
     // #-------- start next animation if maxduration reached --------#
@@ -423,33 +443,21 @@ void loop()
     }
 
   }
+  }
 
 
-
-  // still testing bpm oscillators
+  // still tweaking bpm oscillators
   effects.updateBpmOscillators();
-  effects.MoveOscillators();
-  effects.drawBackgroundFastLEDPixelCRGB(effects.beat_osci/4, 10, CRGB::White);
-  effects.drawBackgroundFastLEDPixelCRGB(effects.osci[0]/4, 20, CRGB::White);
-  effects.drawBackgroundFastLEDPixelCRGB(effects.osci[1]/4, 30, CRGB::White);
-  effects.drawBackgroundFastLEDPixelCRGB(effects.osci[2]/4, 40, CRGB::White);
-  effects.drawBackgroundFastLEDPixelCRGB(effects.osci[3]/4, 50, CRGB::White);
-  effects.drawBackgroundFastLEDPixelCRGB(effects.osci[4]/4, 60, CRGB::White);
-
-  effects.drawBackgroundFastLEDPixelCRGB(effects.beat_osci/4, 62, CRGB::Pink);
-  effects.drawBackgroundFastLEDPixelCRGB(effects.beat_osci/4, 63, CRGB::Pink);
+  // effects.MoveOscillators();     // old aurora
 
 
   // BLINK BPM still testing bpm!
-  if (effects.beat_osci > 200) {
+  if (effects.beatSawOsci8[0] > 200) {
     effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 4, 2, CRGB::Pink);
     effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 3, 2, CRGB::Pink);
     effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 4, 3, CRGB::Pink);
     effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 3, 3, CRGB::Pink);
   }
-  effects.drawBackgroundFastLEDPixelCRGB(effects.beat_osci/4, 62, CRGB::Pink);
-  effects.drawBackgroundFastLEDPixelCRGB(effects.beat_osci/4, 63, CRGB::Pink);
-
 
   actual_render_ms = millis() - start_render_ms;
   // if optioned wait the full XXms before we render
@@ -460,11 +468,8 @@ void loop()
   }
   total_render_ms = millis() - start_render_ms;
 
-  // update the panel frame with the final rendered frame
+  // update the panel frame with the final effects rendered frame
   effects.ShowFrame();
-
-
-
 
   // ----------------------- end ---------------------------
 
