@@ -29,9 +29,7 @@
 
 // ------------ optional basic web server for testing ------------
 // -- uncomment below lines to enable basic web sever interface --
-#define USE_WIFI
-const char* ssid = "FauldsWyndCCTV";
-const char* password = "123456789a";
+//#define USE_WIFI
 //const char* ssid = "your_ssid";
 //const char* password = "your_password";
 
