@@ -41,6 +41,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
 <body>
   <h2>AuroraDrop</h2>
+  %SLIDERPLACEHOLDER%
   %BUTTONPLACEHOLDER%
 <script>function toggleCheckbox(element) {
   var xhr = new XMLHttpRequest();
@@ -65,7 +66,7 @@ String optionState(bool option){
 // Replaces placeholder with button section in your web page
 String processor(const String& var){
   //Serial.println(var);
-  if(var == "BUTTONPLACEHOLDER"){
+  if(var == "SLIDERPLACEHOLDER"){
     String buttons = "";
     buttons += "<h4>Diagnostics</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"1\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
     buttons += "<h4>Lock Frame Rate</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
@@ -73,7 +74,16 @@ String processor(const String& var){
     buttons += "<h4>Pause Effect Cycling</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
     buttons += "<h4>Pause Palette Cycling (Future)</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
     buttons += "<h4>Change Effects (Future)</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"5\" " + optionState(option5ChangeEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h4>Disable Initial Effects</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"6\" " + optionState(option6DisableInitialEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h4>Disable Audio Patterns</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"7\" " + optionState(option7DisableAudio) + "><span class=\"slider\"></span></label>";
+    buttons += "<h4>Disable Static Patterns</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"8\" " + optionState(option8DisableStatic) + "><span class=\"slider\"></span></label>";
+    buttons += "<h4>Disable Final Effects</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"9\" " + optionState(option9DisableFinalEffects) + "><span class=\"slider\"></span></label>";
     return buttons;
+  }
+  if(var == "BUTTONPLACEHOLDER"){
+    String buttons2 = "";
+    buttons2 += "<h4>TEST</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"10\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
+    return buttons2;
   }
   return String();
 }
@@ -116,6 +126,18 @@ void checkWifiStatus() {
               break;
             case 5:
               option5ChangeEffects = inputMessage2.toInt();
+              break;
+            case 6:
+              option6DisableInitialEffects = inputMessage2.toInt();
+              break;
+            case 7:
+              option7DisableAudio = inputMessage2.toInt();
+              break;
+            case 8:
+              option8DisableStatic = inputMessage2.toInt();
+              break;
+            case 9:
+              option9DisableFinalEffects = inputMessage2.toInt();
               break;
           }
         }

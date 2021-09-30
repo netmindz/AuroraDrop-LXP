@@ -1,4 +1,4 @@
-# AuroraDrop v0.0.3
+# AuroraDrop v0.0.4
 
 RGB Matrix Audio Visualiser for ESP32
 
@@ -20,6 +20,12 @@ https://youtu.be/6lSb6BLZaRQ
 
 ## Latest Updates
 
+0.0.4
+* Fixes
+* Additions to testing web interface
+* Tweaks to test patterns.
+
+0.0.3
 * Added diagnostics.
 * Added basic web server. (uncomment #define USE_WIFI in source code)
 * Implemented fps capping.

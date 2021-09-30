@@ -23,10 +23,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PatternSpiral_H
-#define PatternSpiral_H
+#ifndef PatternSpiralLines_H
+#define PatternSpiralLines_H
 
-class PatternSpiral : public Drawable {
+class PatternSpiralLines : public Drawable {
 private:
     // Timer stuff (Oszillators)
     struct timer {
@@ -60,7 +60,7 @@ private:
     }
 
 public:
-    PatternSpiral() {
+    PatternSpiralLines() {
       name = (char *)"Spiral";
       id = "P";
     }
@@ -116,30 +116,51 @@ public:
         UpdateTimers();
 
         // only show the lines if there is audio present
-        if (!serialData.noAudio) {
+        if (!fftData.noAudio) {
             // draw just a line defined by 5 oszillators
+            byte audio;
+            audio = fftData.specData[40];
+            if (audio > 127) audio = 127;
+            audio = audio * 2;
             effects.BresenhamLine(
                 multiTimer[3].count,  // x1
                 multiTimer[4].count,  // y1
                 multiTimer[0].count,  // x2
                 multiTimer[1].count,  // y2
-                multiTimer[2].count); // color
+                multiTimer[2].count, audio); // color, brightness
 
-            // TONYS DUPLICATE draw just a line defined by 5 oszillators
+            // AuroraDrop DUPLICATE draw just a line defined by 5 oszillators
+            audio = fftData.specData[44];
+            if (audio > 127) audio = 127;
+            audio = audio * 2;
             effects.BresenhamLine(
                 multiTimer[3].count / 2,  // x1
                 multiTimer[4].count / 2,  // y1
                 multiTimer[0].count / 2,  // x2
                 multiTimer[1].count / 2,  // y2
-                multiTimer[2].count); // color
+                multiTimer[2].count, audio); // color
 
-            // TONYS DUPLICATE draw just a line defined by 5 oszillators
+            // AuroraDrop DUPLICATE draw just a line defined by 5 oszillators
+            audio = fftData.specData[48];
+            if (audio > 127) audio = 127;
+            audio = audio * 2;
             effects.BresenhamLine(
                 MATRIX_WIDTH - multiTimer[3].count,  // x1
                 MATRIX_HEIGHT - multiTimer[4].count,  // y1
                 MATRIX_WIDTH - multiTimer[0].count,  // x2
                 MATRIX_HEIGHT - multiTimer[1].count,  // y2
-                multiTimer[2].count); // color
+                multiTimer[2].count, audio); // color, brightness
+
+            // AuroraDrop DUPLICATE draw just a line defined by 5 oszillators
+            audio = fftData.specData[52];
+            if (audio > 127) audio = 127;
+            audio = audio * 2;
+            effects.BresenhamLine(
+                MATRIX_WIDTH - multiTimer[3].count / 2,  // x1
+                MATRIX_HEIGHT - multiTimer[4].count / 2,  // y1
+                MATRIX_WIDTH - multiTimer[0].count / 2,  // x2
+                MATRIX_HEIGHT - multiTimer[1].count / 2,  // y2
+                multiTimer[2].count, audio); // color, brightness
         }
 
 
@@ -160,7 +181,7 @@ public:
         effects.DimAll(250);
         //////effects.ShowFrame();
 
-        return 0;
+        return 0;   // 4 
     }
 };
 

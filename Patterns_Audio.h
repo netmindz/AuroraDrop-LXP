@@ -5,6 +5,8 @@
 
 #include "PatternAudio_A_8x8Squares.h"
 #include "PatternAudio_B_BigSpark.h"
+#include "PatternAudio_C_RotatingTorus.h"
+
 
 // test patterns to integrate
 #include "PatternAudioLines.h"
@@ -27,6 +29,8 @@ class Patterns_Audio : public Playlist {
   private:
     PatternAudio8x8Squares audio8x8Squares;
     PatternAudioBigSpark audioBigSpark;
+    PatternAudioRotatingTorus audioRotatingTorus;
+
 
     // test
     PatternAudioLines audioLines;
@@ -51,14 +55,16 @@ class Patterns_Audio : public Playlist {
     }
 
     // always use static on esp32 !!!!
-    const static int PATTERN_COUNT = 8;
+    const static int PATTERN_COUNT = 9;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
       &audio8x8Squares,
       &audioBigSpark,
+      &audioRotatingTorus,
 
+      // working initial proof of concept
       &audioTriangles,                    // triangles
       &audioSpectrum1,                    // 16 lines
       &audioDotsSingle,                   // dancing/rolling dots

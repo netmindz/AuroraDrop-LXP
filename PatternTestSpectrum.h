@@ -38,7 +38,7 @@ class PatternTestSpectrum : public Drawable {
     for (byte i = 0; i < MATRIX_WIDTH; i++) 
     {
       //effects.BresenhamLine(i, serialData.specData[i] / 3, i, 0, dma_display->color565(128, 128, 128));
-      effects.BresenhamLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(serialData.specData[i] / 3), dma_display->color565(128, 128, 128));
+      effects.BresenhamLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / 3), dma_display->color565(128, 128, 128));
     }
 
     //////effects.ShowFrame();

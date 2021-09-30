@@ -61,7 +61,8 @@ public:
         // dim all pixels on the display
         uint8_t dim = beatsin8(2, 170, 250);
 
-        effects.DimAll(dim);
+        //effects.DimAll(dim);
+        effects.DimAll(250);
 
         for (int i = 0; i < count; i++) {
             Boid boid = staticBoids[_pattern][i];

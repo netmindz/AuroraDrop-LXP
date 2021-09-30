@@ -54,8 +54,8 @@ class PatternAudioWaveSingle : public Drawable {
     for (byte i = 0; i < MATRIX_WIDTH - 4; i=i+2) 
     {
       // use the 16 bins for these!
-      data1 = serialData.specData32[i/2] / 6;
-      data2 = serialData.specData32[(i/2) + 1] / 6; 
+      data1 = fftData.specData32[i/2] / 6;
+      data2 = fftData.specData32[(i/2) + 1] / 6; 
       // limit peaks
       if (data1 > MATRIX_HEIGHT - 10) data1 = MATRIX_HEIGHT - 10;
       if (data2 > MATRIX_HEIGHT - 10) data2 = MATRIX_HEIGHT - 10;
@@ -87,7 +87,7 @@ class PatternAudioWaveSingle : public Drawable {
 
 
       // TODO: only draw bars if there is non zero data
-      if (!serialData.noAudio)
+      if (!fftData.noAudio)
         effects.BresenhamLine(x0, y0, x1, y1, dma_display->color565(128, 128, 128));
 
       // invert direction next loop
@@ -97,7 +97,7 @@ class PatternAudioWaveSingle : public Drawable {
     }
     // TODO: only draw bars if there is non zero data
     // final clean-up line
-    if (!serialData.noAudio)
+    if (!fftData.noAudio)
       effects.BresenhamLine(x1, y1, MATRIX_WIDTH, MATRIX_CENTER_Y, dma_display->color565(128, 128, 128));
 
 

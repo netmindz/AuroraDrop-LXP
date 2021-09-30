@@ -47,7 +47,7 @@ class PatternAudioSpectrum1 : public Drawable {
       uint8_t data;
       for (byte i = 0; i < 64; i=i+4) 
       {
-        data = serialData.specData16[i/4] / 3;    // use the 16 bins for this!
+        data = fftData.specData16[i/4] / 3;    // use the 16 bins for this!
         if (data > 63) data = 63;
         x1 = i;
         x2 = i+4;
@@ -70,7 +70,7 @@ class PatternAudioSpectrum1 : public Drawable {
       uint8_t data;
       for (byte i = 0; i < 32; i=i+2) 
       {
-        data = serialData.specData16[i/2] / 6;
+        data = fftData.specData16[i/2] / 6;
         if (data > 31) data = 31;
         x1 = i;
         x2 = i+4;

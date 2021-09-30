@@ -97,15 +97,15 @@ class PatternAudioCirclesReal : public Drawable {
 
         //testCircle[c].theta1++;
         //testCircle[c].theta1 = serialData.specData8[c+1];
-        data1 = serialData.specData8[c+1] / 4;
+        data1 = fftData.specData8[c+1] / 4;
         if (data1 > MATRIX_WIDTH - 1) data1 = MATRIX_WIDTH - 1;
         if (insideOut) data1 = (MATRIX_WIDTH - 1) - data1;
 
-        data2 = serialData.specData8[c+2] / 4;
+        data2 = fftData.specData8[c+2] / 4;
         if (data2 > MATRIX_WIDTH - 1) data2 = MATRIX_WIDTH - 1;
         if (insideOut) data2 = (MATRIX_WIDTH - 1) - data2;
 
-        data3 = serialData.specData8[c+3] / 4;
+        data3 = fftData.specData8[c+3] / 4;
         if (data3 > MATRIX_WIDTH - 1) data3 = MATRIX_WIDTH - 1;
         if (insideOut) data3 = (MATRIX_WIDTH - 1) - data3;
 

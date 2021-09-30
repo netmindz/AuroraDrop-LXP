@@ -38,7 +38,7 @@ class PatternAudioSpectrum2 : public Drawable {
     uint8_t data;
     for (byte i = 0; i < 32; i++) 
     {
-      data = serialData.specData32[i] / 3;
+      data = fftData.specData32[i] / 3;
       x1 = i;
       x2 = i;
       y1 = MATRIX_HEIGHT - 1;

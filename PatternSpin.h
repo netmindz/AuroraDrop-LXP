@@ -32,7 +32,7 @@ public:
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
         effects.DimAll(250);
 
-        radius = serialData.specData8[1] / 6; // bass
+        radius = fftData.specData8[1] / 6; // bass
         if (radius > MATRIX_CENTER_X/2 - 1) radius = MATRIX_CENTER_X/2 - 1;
 
 

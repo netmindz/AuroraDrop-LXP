@@ -8,8 +8,14 @@
 //#include "Boid.h"
 //#include "Attractor.h"
 
+// these are work in progress
+#include "PatternStatic_A_Worms.h"
+#include "PatternStatic_X_Atom.h"
+#include "PatternStatic_X_SimpleStars.h"
+
+// theses are all just proof of concept from aurora demo, still need work, randomizing etc.
 #include "PatternTest.h"
-#include "PatternSpiral.h"
+#include "PatternSpiralLines.h"
 #include "PatternIncrementalDrift.h"
 #include "PatternFlock.h"
 #include "PatternFlowField.h"
@@ -25,8 +31,12 @@
 class Patterns_Static : public Playlist {
   private:
 
+    PatternStaticWorms staticWorms;
+    PatternStaticSimpleStars staticSimpleStars;
+    PatternStaticAtom staticAtom;
+
     PatternTest patternTest;
-    PatternSpiral spiral;
+    PatternSpiralLines spiralLines;
     PatternIncrementalDrift incrementalDrift;
     PatternFlock flock;
     PatternFlowField flowField;
@@ -44,18 +54,22 @@ class Patterns_Static : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 5;       // always use static on esp32 !!!!
+    const static int PATTERN_COUNT = 6;       // always use static on esp32 !!!!
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
 
-      &spiral,                  // spiraling lines
+      &staticWorms,
+
+      &spiralLines,                  // spiraling lines
       &flock,
       &attract,
       &flowField,
       &staticBounce,
       
+      //&staticSimpleStars,       // don't work
+      //&staticAtom,              // don't work
 
 
       //&spin,                  // BAD freezes randomly

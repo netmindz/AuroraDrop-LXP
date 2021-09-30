@@ -785,9 +785,9 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
-  void BresenhamLine(int x0, int y0, int x1, int y1, byte colorIndex)
+  void BresenhamLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness = 255)
   {
-    BresenhamLine(x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex));
+    BresenhamLine(x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
   }
 
   void BresenhamLine(int x0, int y0, int x1, int y1, CRGB color)
@@ -934,64 +934,91 @@ CRGBPalette16 AllRed_p = {
 
   // ------- AuroraDrop Additions: ----------------------------------------------------------------------------------------------
 
+  #define CALEIDOSCOPE_COUNT 5
 
-  // crap: use aurora ocilators
-  // goes from 0-255 BPM times per minute
-  uint8_t bpmTest = 0;
-  uint32_t bpmStartMillis = millis();   // record the start time of the minute
+  uint16_t beatSineOsci[6];            // full 0-65535
+  uint8_t beatSineOsci8[6];            // byte sized 0-255
+  uint8_t beatSineOsciWidth[6];        // matrix width, 0-63 or whatever...
+  uint8_t beatCosineOsciWidth[6];      // matrix width, 0-63 or whatever...
+  uint8_t beatSawOsci8[6];
+  uint8_t beatSawOsciWidth[6];
+  uint8_t beatSquareOsci8[6];
+  uint8_t beatSquareOsciWidth[6];
 
-  uint32_t xStartMillis = millis();   // record the start time of the minute
 
-  uint32_t beat_length_ms, since_beat_ms, beat_osci;
-
-  uint16_t ms_diff;
-
+  // general system bpm oscillators, patterns can set up their own if they need to be more specific
   void updateBpmOscillators() {
+    // oscillators for sine wave forms at variuos rates proportional to the tempo
+    // do we need all these? used anywhere?
+    // scaled 0-65535
+    beatSineOsci[0] = beatsin16(fftData.bpm, 0, 65535);
+    beatSineOsci[1] = beatsin16(fftData.bpm / 2, 0, 65535);
+    beatSineOsci[2] = beatsin16(fftData.bpm / 4, 0, 65535);
+    beatSineOsci[3] = beatsin16(fftData.bpm / 8, 0, 65535);
+    beatSineOsci[4] = beatsin16(fftData.bpm / 16, 0, 65535);
+    beatSineOsci[5] = beatsin16(fftData.bpm / 32, 0, 65535);
+    // scaled 0-255
+    beatSineOsci8[0] = beatsin16(fftData.bpm, 0, 255);
+    beatSineOsci8[1] = beatsin16(fftData.bpm / 2, 0, 255);
+    beatSineOsci8[2] = beatsin16(fftData.bpm / 4, 0, 255);
+    beatSineOsci8[3] = beatsin16(fftData.bpm / 8, 0, 255);
+    beatSineOsci8[4] = beatsin16(fftData.bpm / 16, 0, 255);
+    beatSineOsci8[5] = beatsin16(fftData.bpm / 32, 0, 255);
+    // scaled for matrix width (e.g. 0-63)
+    beatSineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_WIDTH-1);
+    beatSineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_WIDTH-1);
+    beatSineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_WIDTH-1);
+    beatSineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_WIDTH-1);
+    beatSineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_WIDTH-1);
+    beatSineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_WIDTH-1);
+    beatCosineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_WIDTH-1, 0 , 16384);
+    beatCosineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_WIDTH-1, 0 , 16384);
+    beatCosineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_WIDTH-1, 0 , 16384);
+    beatCosineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_WIDTH-1, 0 , 16384);
+    beatCosineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_WIDTH-1, 0 , 16384);
+    beatCosineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_WIDTH-1, 0 , 16384);
+    // oscillators for saw tooth wave forms, scaled 0-255
+    beatSawOsci8[0] = beat8(fftData.bpm);
+    beatSawOsci8[1] = beat8(fftData.bpm / 2);
+    beatSawOsci8[2] = beat8(fftData.bpm / 4);
+    beatSawOsci8[3] = beat8(fftData.bpm / 8);
+    beatSawOsci8[4] = beat8(fftData.bpm / 16);
+    beatSawOsci8[5] = beat8(fftData.bpm / 32);
+    // scaled for matrix width
+    beatSawOsciWidth[0] = map8(beatSawOsci8[0], 0, MATRIX_WIDTH - 1);
+    beatSawOsciWidth[1] = map8(beatSawOsci8[1], 0, MATRIX_WIDTH - 1);
+    beatSawOsciWidth[2] = map8(beatSawOsci8[2], 0, MATRIX_WIDTH - 1);
+    beatSawOsciWidth[3] = map8(beatSawOsci8[3], 0, MATRIX_WIDTH - 1);
+    beatSawOsciWidth[4] = map8(beatSawOsci8[4], 0, MATRIX_WIDTH - 1);
+    beatSawOsciWidth[5] = map8(beatSawOsci8[5], 0, MATRIX_WIDTH - 1);
+    // oscillators for square wave forms, scaled 0-255
+    beatSquareOsci8[0] = squarewave8(beat8(fftData.bpm), 128);
+    beatSquareOsci8[1] = squarewave8(beat8(fftData.bpm / 2), 128);
+    beatSquareOsci8[2] = squarewave8(beat8(fftData.bpm / 4), 128);
+    beatSquareOsci8[3] = squarewave8(beat8(fftData.bpm / 8), 128);
+    beatSquareOsci8[4] = squarewave8(beat8(fftData.bpm / 16), 128);
+    beatSquareOsci8[5] = squarewave8(beat8(fftData.bpm / 32), 128);
 
-    // determine length of beat in millis (todo: move logic to serialdata?)
-    beat_length_ms = 60000 / serialData.bpm;  
+  }
 
 
-    // if the beat is up, start over
-    if (millis() > bpmStartMillis + beat_length_ms) {
-      bpmStartMillis = millis();
-    }
-
-    // determine how long since start of beat
-    since_beat_ms = millis() - bpmStartMillis;
-
-    // determine value from 0-255;
-    beat_osci = (float)since_beat_ms * (float)(255.0 / (float)beat_length_ms);
-
-
-
-    if (millis() >= xStartMillis + 1000) {
-      xStartMillis = xStartMillis + 1000;
-    }
-
-    ms_diff = (uint16_t)(millis() - xStartMillis);
-
-    beat_osci = scale16by8(ms_diff, 65);
+  // AuroraDrop: copied from XY16( uint16_t x, uint16_t y)
+  uint16_t XYCH( uint16_t x, uint16_t y) 
+  {
+    // ensure given half scaled matrix positions are within limits
+    if( x >= MATRIX_WIDTH / 2) return 0;
+    if( y >= MATRIX_HEIGHT / 2) return 0;
+    return (y * (MATRIX_WIDTH / 2)) + x;
+    //return (y * (MATRIX_WIDTH / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
   }
 
 
 
-// AuroraDrop: copied from XY16( uint16_t x, uint16_t y)
-uint16_t CANVAS_HALF( uint16_t x, uint16_t y) 
-{
-    if( x >= MATRIX_WIDTH / 2) return 0;
-    if( y >= MATRIX_HEIGHT / 2) return 0;
-
-    return (y * (MATRIX_WIDTH / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
-}
-
-
-
-  // AuroraDrop: modifed from from ClearFrame()
+  // AuroraDrop: modifed from ClearFrame()
   void ClearCanvas(uint8_t id = 255)
   {
     switch (id) {
-      // 0=full canvas, 1=half, 2=quarter, empty/255 = clear all
+      // 0=full canvas, 1/2=half widths, 3=quarter, empty/255 = clear all
       case 0:
         memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
         break;
@@ -999,11 +1026,15 @@ uint16_t CANVAS_HALF( uint16_t x, uint16_t y)
         memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
         break;
       case 2:
+        memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+        break;
+      case 3:
         memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
         break;
       case 255:
         memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
         memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+        memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
         memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
         break;
     }
@@ -1017,7 +1048,7 @@ uint16_t CANVAS_HALF( uint16_t x, uint16_t y)
     int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int err = dx + dy, e2;
     for (;;) {
-      canvas[CANVAS_HALF(x0, y0)] += color;
+      canvas[XYCH(x0, y0)] += color;
       if (x0 == x1 && y0 == y1) break;
       e2 = 2 * err;
       if (e2 > dy) {
@@ -1037,7 +1068,7 @@ uint16_t CANVAS_HALF( uint16_t x, uint16_t y)
     if (scale == 0.0 || scale == 1.0) {
       for (int x=0; x < MATRIX_WIDTH / 2; x++) {
         for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
-          leds[XY16(x + x_offset, y + y_offset)] += canvas[CANVAS_HALF(x, y)];
+          leds[XY16(x + x_offset, y + y_offset)] += canvas[XYCH(x, y)];
         }
       }
     }
@@ -1045,7 +1076,11 @@ uint16_t CANVAS_HALF( uint16_t x, uint16_t y)
       for (int x=0; x < MATRIX_WIDTH / 2; x++) {
         for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
           //if ((x * scale) + x_offset < MATRIX_WIDTH / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
-          leds[XY16((x * scale) + x_offset, (y * scale) + y_offset)] += canvas[CANVAS_HALF(x, y)];
+          
+          // bug here? without this line pixel is always set to white, is clear function working properly?
+          //if (x == 31 && x == 31) canvas[CANVAS_HALF(x, y)] = 0;
+
+          leds[XY16((x * scale) + x_offset, (y * scale) + y_offset)] += canvas[XYCH(x, y)];
         }
       }
 
@@ -1087,6 +1122,53 @@ uint16_t CANVAS_HALF( uint16_t x, uint16_t y)
     }
   }
 
+  void RandomCaleidoscope(uint8_t id = 0) 
+  {
+
+    Serial.print("Caleidoscope Pattern: ");
+    Serial.print(id);
+    Serial.print("\n");
+
+    uint8_t randId = id;
+    if (id==0) randId = random8(1,CALEIDOSCOPE_COUNT + 1);
+
+    switch (randId) 
+    {
+      case 1:
+        Caleidoscope1();
+        break;
+      case 2:
+        Caleidoscope2();
+        break;
+      case 3:
+        // rework Caleidoscope4 to mirror bottom right!
+        Caleidoscope4Rework();
+        Caleidoscope1();
+        break;
+      case 4:
+        // rework Caleidoscope4 to mirror bottom right!
+        Caleidoscope4Rework();
+        Caleidoscope2();
+        break;
+      case 5:
+        Caleidoscope4();
+        Caleidoscope1();
+        break;
+      default:
+        Caleidoscope1();
+        break;
+    }
+
+  }
+
+  // copy one diagonal triangle into the other one within a 16x16 (90 degrees rotated compared to Caleidoscope3)
+  void Caleidoscope4Rework() {
+    for (int x = 0; x <= MATRIX_CENTER_X; x++) {
+      for (int y = 0; y <= MATRIX_CENTER_Y - x; y++) {
+        leds[XY16(x, y)] = leds[XY16(MATRIX_CENTER_Y - y, MATRIX_CENTER_X - x)];
+      }
+    }
+  }
 
 
 

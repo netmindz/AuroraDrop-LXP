@@ -58,7 +58,7 @@ class PatternAudioDotsSingle : public Drawable {
 
     for (byte i = 0; i < MATRIX_WIDTH; i++) 
     {
-      data1 = serialData.specData[i] / 6;
+      data1 = fftData.specData[i] / 6;
       if (data1 >  MATRIX_CENTER_Y - 1) data1 = MATRIX_CENTER_Y - 1;
 
         x0 = i;
@@ -69,7 +69,7 @@ class PatternAudioDotsSingle : public Drawable {
         if (x0 > MATRIX_WIDTH) x0 = x0 - MATRIX_WIDTH;
 
       // only draw bars if there is non zero data
-      if (!serialData.noAudio) {
+      if (!fftData.noAudio) {
         //effects.BresenhamLine(x0, y0, x1, y1, dma_display->color565(128, 128, 128));
         effects.drawBackgroundFastLEDPixelCRGB(x0, y0, dma_display->color565(128, i, 128));
 

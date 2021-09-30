@@ -1,7 +1,7 @@
-#ifndef PatternAudio8x8Squares_H
-#define PatternAudio8x8Squares_H
+#ifndef PatternStaticAtom_H
+#define PatternStaticAtom_H
 
-class PatternAudio8x8Squares : public Drawable {
+class PatternStaticAtom : public Drawable {
   private:
 
     // used for internal colour cycling
@@ -38,15 +38,13 @@ class PatternAudio8x8Squares : public Drawable {
 
   public:
 
-    PatternAudio8x8Squares() {
-      name = (char *)"Audio 01 - 8x8 Squares (WIP)";
-      id = (char *)"A";
+    PatternStaticAtom() {
+      name = (char *)"Audio C - Tunnel (WIP)";
+      id = (char *)"X";
     }
 
     // #------------- START -------------#
     void start(uint8_t _order) {
-
-      id2 = 8;
 
       // randomize the effects to use
       generalRand1 = random(0, 2);                      // for stream effect directions
@@ -116,18 +114,98 @@ class PatternAudio8x8Squares : public Drawable {
     };
 
 
+      uint8_t theta1 = 0;
+      uint8_t theta2 = 0;
+      uint8_t theta3 = 0;
+      uint8_t minx = 16;
+      uint8_t miny = 16;
+      uint8_t maxx = 48;
+      uint8_t maxy = 48;
+      uint8_t spirooffset = 16;   // 32= hexagon,  16=
+      uint8_t radiusx = 8;
+      uint8_t radiusy = 12;
+      uint8_t hueoffset = 0;
+
+      uint8_t lastx = 0;
+      uint8_t lasty = 0;
+
+      bool useCanvas = true;
+
 
     // #------------- DRAW FRAME -------------#
     unsigned int drawFrame(uint8_t _order, uint8_t _total) {
       // order - indicates the order in which the effect is being drawn, patterns can use the appropriate pre and post effects, if any, depending on order etc.
       // total - the total number of audio effect animations being played simultaineously
 
+
+
+
+      // brightness = LO
+      byte audio = fftData.specData8[6];
+      if (audio > 63) audio = 63;
+      audio = audio * 4;
+
+      // draw to half width canvas
+      if (useCanvas) {
+        effects.ClearCanvas(1);        // clear half width canvas 1
+      }
+
+      effects.ClearCanvas(1);
+
+      CRGB color;
+      uint8_t x,y,x2,y2;
+      // always draws hexagon?
+      for (int i = 0; i < 17; i++) {
+        x = mapsin8(theta1 + i * spirooffset, minx, maxx);
+        y = mapcos8(theta1 + i * spirooffset, miny, maxy);
+        x2 = mapsin8(theta2 + i * spirooffset, x - radiusx, x + radiusx);
+        y2 = mapcos8(theta2 + i * spirooffset, y - radiusy, y + radiusy);
+        color = effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, audio);
+        
+        
+        //effects.leds[XY(x2, y2)] += color;
+        //effects.canvasH[XY(x2/2, y2/2)] += color;
+
+
+
+/*
+        x = mapsin8(128 + theta1 + i * spirooffset, minx, maxx);
+        y = mapcos8(128 + theta1 + i * spirooffset, miny, maxy);
+        x2 = mapsin8(128 + theta2 + i * spirooffset, x - (radiusx/2), x + radiusx);
+        y2 = mapcos8(128 + theta2 + i * spirooffset, y - (radiusy/2), y + radiusy);
+        color = effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, audio);
+        effects.leds[XY(x2, y2)] += color;
+*/
+
+
+        if (i>0) {
+        //effects.BresenhamLine(lastx, lasty, x2, y2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, audio / 4));
+        effects.BresenhamLineCanvas(effects.canvasH, lastx/2, lasty/2, x2/2, y2/2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, fftData.specData[i*6]));
+        }
+
+
+        lastx = x2;
+        lasty = y2;
+      }
+
+
+      theta1 = theta1 + 2;
+      theta2++;
+      theta3++;
+
+      hueoffset++;
+
+      //effects.DimAll(230);
+
+      return 0;
+
+
       // todo
       float radius = canvasWidth / 2;
       float ratio = 360.0 / BINS;        // rotate around 360 degrees
       float rotation = 0.0;
       float angle = 0;
-      int x,y;
+      //int x,y;
 
       // general cyclic stuff
       if (cycleColors) {

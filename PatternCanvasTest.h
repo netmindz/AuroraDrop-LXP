@@ -158,7 +158,7 @@ class PatternCanvasTest : public Drawable {
       uint8_t centreX = (MATRIX_WIDTH  / 2) / canvasScale;
       uint8_t centreY = (MATRIX_HEIGHT  / 2) / canvasScale;
       for (int i=0; i<BINS; i++) {
-        audioData = serialData.specData[i] / 6;
+        audioData = fftData.specData[i] / 6;
         if (audioData>maxData) audioData = maxData;
         audioData = audioData / audioScale;
         // the radius of the circle is the data value

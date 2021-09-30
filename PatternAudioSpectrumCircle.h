@@ -117,7 +117,7 @@ class PatternAudioSpectrumCircle : public Drawable {
       if (spinVal > 360) spinVal = 0;
 
       for (int i=0; i<BINS; i++) {
-        audioData = serialData.specData[i] / 6;
+        audioData = fftData.specData[i] / 6;
         if (audioData>maxData) audioData = maxData;
         // scale data if in quarter screen
         if (caleidoscope) audioData = audioData /2;

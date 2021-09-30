@@ -50,24 +50,24 @@ class PatternAudioLines : public Drawable {
     }
 
     int x1,y1,x2,y2,x3,y3;
-    x1 = serialData.specData[05] / 3;
-    y1 = serialData.specData[10] / 3;
-    x2 = serialData.specData[15] / 3;
-    y2 = serialData.specData[20] / 3;
-    x3 = serialData.specData[25] / 3;
-    y3 = serialData.specData[30] / 3;
+    x1 = fftData.specData[05] / 3;
+    y1 = fftData.specData[10] / 3;
+    x2 = fftData.specData[15] / 3;
+    y2 = fftData.specData[20] / 3;
+    x3 = fftData.specData[25] / 3;
+    y3 = fftData.specData[30] / 3;
     effects.BresenhamLine(x1, y1, x2, y2, effects.ColorFromCurrentPalette(color1,255)); //  dma_display->color444(15, 0, 0)); // red
 
-    x1 = serialData.specData[25] / 3;
-    y1 = serialData.specData[30] / 3;
-    x2 = serialData.specData[35] / 3;
-    y2 = serialData.specData[40] / 3;
+    x1 = fftData.specData[25] / 3;
+    y1 = fftData.specData[30] / 3;
+    x2 = fftData.specData[35] / 3;
+    y2 = fftData.specData[40] / 3;
     effects.BresenhamLine(x1, y1, x2, y2, effects.ColorFromCurrentPalette(color2,255)); // green
 
-    x1 = serialData.specData[45] / 3;
-    y1 = serialData.specData[50] / 3;
-    x2 = serialData.specData[55] / 3;
-    y2 = serialData.specData[60] / 3;
+    x1 = fftData.specData[45] / 3;
+    y1 = fftData.specData[50] / 3;
+    x2 = fftData.specData[55] / 3;
+    y2 = fftData.specData[60] / 3;
     effects.BresenhamLine(x1, y1, x2, y2, effects.ColorFromCurrentPalette(color3,255)); // green
 
 

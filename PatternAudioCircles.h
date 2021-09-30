@@ -130,7 +130,7 @@ class PatternAudioCircles : public Drawable {
 
         //testCircle[c].theta1++;
         //testCircle[c].theta1 = serialData.specData8[c+1];
-        data = serialData.specData8[c+1];
+        data = fftData.specData8[c+1];
         if (data > 127) data = 127;
         data = data * 2;
         if (insideOut) data = 255 - data;
@@ -148,7 +148,7 @@ class PatternAudioCircles : public Drawable {
           //color = dma_display->color565(128+(i*32), 128+(i*32), 128+(i*32));
           color = effects.ColorFromCurrentPalette(data * 2);; // dma_display->color565(16*i, 32*i, 64*i);
 
-          if (serialData.specData8[c+1] > 0)
+          if (fftData.specData8[c+1] > 0)
             effects.leds[XY(x1, y1)] += color;
         
           if((x1 == MATRIX_CENTER_X && y1 == MATRIX_CENTER_Y) ||

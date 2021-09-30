@@ -26,6 +26,8 @@ class PatternAudioBigSpark : public Drawable {
     uint8_t caleidoscopeEffect = 0;       // which caleidoscope effect to apply
     uint8_t sprites = 0;                  // will we used half width sprites, if so how many....
     uint8_t spriteBehaviour = 0;          // 0=stationary, 1=revolving around screen
+    bool dimPreRender = false;            // dim prior to frame render 
+    uint8_t dimAmount = 0;
 
   public:
 
@@ -48,12 +50,15 @@ class PatternAudioBigSpark : public Drawable {
       if (spinVal==0) spinVal = random(0, 360);                   // choose random angle at initial start      ### USED TO BREAK STUFF? ###
       caleidoscope = random(0, 2);
       caleidoscopeEffect = random(0, 2);
+      dimPreRender = random8(0, 2);
+      dimAmount = random8(150, 250);
       
       // override for testing
       cycleColors = false;        // does nothing just yet
-      caleidoscope = false;
-      caleidoscopeEffect = 0;
+      //caleidoscope = true;
+      //caleidoscopeEffect = 0;
       backdrop = true;
+      dimAmount = 150;
 
       // setup parameters depending on random stuff
       if (caleidoscope) {
@@ -109,7 +114,11 @@ class PatternAudioBigSpark : public Drawable {
 
       // good pair of effects for non caleioscope mode
       //effects.SpiralStream(31, 31, 64, 128);        // for 64 pixel wide matrix!
-      //effects.DimAll(220);
+      
+      // dimming is useful on this pattern and can clean things up
+      if (dimPreRender) {
+        effects.DimAll(dimAmount);
+      }
 
 
       float radius = canvasWidth / 2;
@@ -124,53 +133,56 @@ class PatternAudioBigSpark : public Drawable {
       if (spinVal < 0) spinVal = 360;
 
 
+      // --------- draw any canvas requirements --------------- #
 
 
       // determine if we want to first draw to a blank half width canvas first, or directly to the existing screen
       if (backdrop || sprites > 0) {
         effects.ClearCanvas(1);        // clear half width canvas
 
+        uint8_t canvasScale = 2;
+        uint8_t audioScale = canvasScale;
+        uint8_t centreX = (MATRIX_WIDTH  / 2) / canvasScale;
+        uint8_t centreY = (MATRIX_HEIGHT  / 2) / canvasScale;
+        for (int i=0; i<BINS; i++) {
+          audioData = fftData.specData[i] / 6;
+          if (audioData>maxData) audioData = maxData;
+          audioData = audioData / audioScale;
+          // the radius of the circle is the data value
+          radius = audioData;
+          rotation = i * ratio;
+          rotation = rotation + spinVal;
+          if (rotation > 360.0) rotation = rotation - 360.0;
+          // calculate angle, then xy
+          angle = rotation * 3.14 / 180;
+          x = (int)(centreX + radius * cos(angle));
+          y = (int)(centreY + radius * sin(angle));
+          if (audioData > 0)
+            effects.BresenhamLineCanvas(effects.canvasH, centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
+        }
 
-      // # -------------- NEW CANVAS METHOD ------------------ #
+        // two sprite moving up and down
+        effects.ApplyCanvas(effects.canvasH, 0, MATRIX_HEIGHT - (effects.beatSineOsciWidth[3] + 16), 1);
+        effects.ApplyCanvas(effects.canvasH, 32, effects.beatSineOsciWidth[3] - 16, 1);
 
-      uint8_t canvasScale = 2;
-      uint8_t audioScale = canvasScale;
-      uint8_t centreX = (MATRIX_WIDTH  / 2) / canvasScale;
-      uint8_t centreY = (MATRIX_HEIGHT  / 2) / canvasScale;
-      for (int i=0; i<BINS; i++) {
-        audioData = serialData.specData[i] / 6;
-        if (audioData>maxData) audioData = maxData;
-        audioData = audioData / audioScale;
-        // the radius of the circle is the data value
-        radius = audioData;
-        rotation = i * ratio;
-        rotation = rotation + spinVal;
-        if (rotation > 360.0) rotation = rotation - 360.0;
-        // calculate angle, then xy
-        angle = rotation * 3.14 / 180;
-        x = (int)(centreX + radius * cos(angle));
-        y = (int)(centreY + radius * sin(angle));
-        if (audioData > 0)
-          effects.BresenhamLineCanvas(effects.canvasH, centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
+        // two orbiting sprites
+        effects.ApplyCanvas(effects.canvasH, effects.beatSineOsciWidth[3] - 8, effects.beatCosineOsciWidth[3] - 8, 0.5);
+        effects.ApplyCanvas(effects.canvasH, MATRIX_WIDTH - (effects.beatSineOsciWidth[3] + 8), MATRIX_HEIGHT - (effects.beatCosineOsciWidth[3] + 8), 0.5);
+
+        // another two orbiting other way
+        effects.ApplyCanvas(effects.canvasH, effects.beatSineOsciWidth[3] - 8, MATRIX_HEIGHT - (effects.beatCosineOsciWidth[3] + 8), 0.5);
+        effects.ApplyCanvas(effects.canvasH, MATRIX_WIDTH - (effects.beatSineOsciWidth[3] + 8), effects.beatCosineOsciWidth[3] - 8, 0.5);
+
+
+
+        if (backdrop) {
+          effects.ApplyCanvas(effects.canvasH, -32, -32, 4.0, 128);   // 128 = medium blur
+        }
       }
-
-      effects.ApplyCanvas(effects.canvasH, 0, effects.p[2]-16, 1);
-      effects.ApplyCanvas(effects.canvasH, 32, effects.p[2]-16, 1);
-      //effects.ApplyCanvasH(effects.p[2] / 2, 32, 1);
-
-
-      if (backdrop) {
-        effects.ApplyCanvas(effects.canvasH, -32, -32, 4.0, 128);   // 128 = medium blur
-      }
-
-      // # --------------------------------------------------- #
-
-      effects.MoveOscillators();
-      }
-
-
-
       
+
+
+
       if (caleidoscope) {
         effects.Caleidoscope1Centre();          // default for now
         switch (caleidoscopeEffect) {
@@ -188,7 +200,8 @@ class PatternAudioBigSpark : public Drawable {
     //effects.DimAll(220);
 
 
-    effects.DimAll(220);
+    // don't dim at end, removes clarity
+    //effects.DimAll(220);
 
 
     return 0;

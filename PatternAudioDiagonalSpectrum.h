@@ -78,7 +78,7 @@ class PatternAudioDiagonalSpectrum : public Drawable {
       if (mirrorMode == 0 || mirrorMode == 2) {
         //for (int i=canvasWidth/8; i<canvasWidth-(canvasWidth/8); i++) {
         for (int i=0; i<canvasWidth; i++) {
-          height = serialData.specData[i] / (512 / canvasWidth);
+          height = fftData.specData[i] / (512 / canvasWidth);
           if (height > 0) {
             tx1 = i;
             ty1 = i;
@@ -98,7 +98,7 @@ class PatternAudioDiagonalSpectrum : public Drawable {
       } 
       else {
         for (int i=0; i<canvasWidth; i++) {
-          height = serialData.specData[i] / (512 / canvasWidth);
+          height = fftData.specData[i] / (512 / canvasWidth);
           if (height > 0) {
             tx1 = canvasWidth - i;
             ty1 = i;
