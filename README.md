@@ -41,10 +41,10 @@ https://youtu.be/6lSb6BLZaRQ
 
 ## Notes
 
-AuroraDrop's audio visualisations currently only work when your ESP32 is connected to your PC via the USB connection,
-and you are running the companion windows application 'AuroraDrop Companion'. This application captures and processes
-the current audio playing on your PC and passes this to the ESP32 via serial communications, which then renders the
-visualisations.
+AuroraDrop's audio visualisations currently only works when your ESP32 is connected to your PC via the USB connection (there is an WIP
+experimental network streaming mode), and you are running the companion windows application 'AuroraDrop Companion'. This application
+captures and processes the current audio playing on your PC and passes this to the ESP32 via serial communications, which then renders
+the visualisations.
 
 https://github.com/uklooney/AuroraDropCompanion
 
