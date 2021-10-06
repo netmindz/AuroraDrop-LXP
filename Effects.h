@@ -785,7 +785,8 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
-  void BresenhamLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness = 255)
+  //void BresenhamLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness = 255)
+  void BresenhamLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness)
   {
     BresenhamLine(x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
   }
@@ -934,7 +935,7 @@ CRGBPalette16 AllRed_p = {
 
   // ------- AuroraDrop Additions: ----------------------------------------------------------------------------------------------
 
-  #define CALEIDOSCOPE_COUNT 5
+  #define CALEIDOSCOPE_COUNT 9
 
   uint16_t beatSineOsci[6];            // full 0-65535
   uint8_t beatSineOsci8[6];            // byte sized 0-255
@@ -1041,6 +1042,11 @@ CRGBPalette16 AllRed_p = {
   }
 
 
+  void BresenhamLineCanvas(CRGB *canvas, int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness)
+  {
+    BresenhamLineCanvas(canvas, x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
+  }
+
   // AuroraDrop: draw line on canvas
   void BresenhamLineCanvas(CRGB *canvas, int x0, int y0, int x1, int y1, CRGB color)
   {
@@ -1094,6 +1100,37 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
+  void ApplyCanvasMirror(CRGB *canvas, int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
+    // use integer maths if we're not scaling, allow signed x/y for better scaling up options
+    if (scale == 0.0 || scale == 1.0) {
+      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
+          leds[XY16(((MATRIX_WIDTH/2) - x) + x_offset, y + y_offset)] += canvas[XYCH(x, y)];
+        }
+      }
+    }
+    else {
+      for (int x=0; x < MATRIX_WIDTH / 2; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
+          //if ((x * scale) + x_offset < MATRIX_WIDTH / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
+          
+          // bug here? without this line pixel is always set to white, is clear function working properly?
+          //if (x == 31 && x == 31) canvas[CANVAS_HALF(x, y)] = 0;
+
+          leds[XY16((((MATRIX_WIDTH/2) - x) * scale) + x_offset, (y * scale) + y_offset)] += canvas[XYCH(x, y)];
+        }
+      }
+
+    }
+    // 2d blur if we are scaling up
+    if (blur > 0) {
+
+      blur2d(leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, blur);   //  255=heavy blurring
+
+      // effects.blur2d(canvas)
+    }
+  }
+
 
 
 
@@ -1122,12 +1159,139 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
+
+  void CaleidoscopeA1() {
+    // copy centre left quarter around
+
+    // 1. copy bottom half to above areas
+    for (int x = 0; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_CENTER_Y; y < MATRIX_HEIGHT - (MATRIX_HEIGHT / 4); y++) {
+        leds[XY16(x, y - MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+        leds[XY16(x + MATRIX_CENTER_X, y - MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+      }
+    }
+    // b. copy top half to below areas
+    for (int x = 0; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_CENTER_Y - (MATRIX_HEIGHT / 4); y < MATRIX_CENTER_Y; y++) {
+        leds[XY16(x, y + MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+        leds[XY16(x + MATRIX_CENTER_X, y + MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+      }
+    }
+
+    // iii. copy whole area to the right
+    for (int x = 0; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_CENTER_Y - (MATRIX_HEIGHT / 4); y < MATRIX_HEIGHT - (MATRIX_HEIGHT / 4); y++) {
+        leds[XY16(x + MATRIX_CENTER_X, y)] = leds[XY16(x, y)];
+      }
+    }
+
+  }
+
+
+  void CaleidoscopeA2() {
+    // simlilar but mirrors parts on right
+
+    // 1. copy bottom half to above areas
+    for (int x = 0; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_CENTER_Y; y < MATRIX_HEIGHT - (MATRIX_HEIGHT / 4); y++) {
+        leds[XY16(x, y - MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+        leds[XY16(x + MATRIX_CENTER_X, y - MATRIX_CENTER_Y)] = leds[XY16(MATRIX_CENTER_X - x, y)];
+      }
+    }
+    // b. copy top half to below areas
+    for (int x = 0; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_CENTER_Y - (MATRIX_HEIGHT / 4); y < MATRIX_CENTER_Y; y++) {
+        leds[XY16(x, y + MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+        leds[XY16(x + MATRIX_CENTER_X, y + MATRIX_CENTER_Y)] = leds[XY16(MATRIX_CENTER_X - x, y)];
+      }
+    }
+
+    // iii. copy whole area to the right
+    for (int x = 0; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_CENTER_Y - (MATRIX_HEIGHT / 4); y < MATRIX_HEIGHT - (MATRIX_HEIGHT / 4); y++) {
+        leds[XY16(x + MATRIX_CENTER_X, y)] = leds[XY16(MATRIX_CENTER_X - x, y)];
+      }
+    }
+
+
+  }
+
+  void CaleidoscopeB1() {
+    // copy the quarters of the centre to corners
+    uint8_t matrixQW = MATRIX_WIDTH / 4;
+    uint8_t matrixQH = MATRIX_HEIGHT / 4;
+
+    // 1. copy top left quadrant to top left corner
+    for (int x = matrixQW; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_HEIGHT / 4; y < MATRIX_CENTER_Y; y++) {
+        leds[XY16(x - matrixQW, y - matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+    // 2. copy top right quadrant to top right corner
+    for (int x = MATRIX_CENTER_X; x < MATRIX_WIDTH - matrixQW; x++) {
+      for (int y = MATRIX_HEIGHT / 4; y < MATRIX_CENTER_Y; y++) {
+        leds[XY16(x + matrixQW, y - matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+    // 3. copy bottom left quadrant to bottom left corner
+    for (int x = matrixQW; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_CENTER_Y; y < MATRIX_HEIGHT - matrixQH; y++) {
+        leds[XY16(x - matrixQW, y + matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+    // 4. copy bottom right quadrant to bottom right corner
+    for (int x = MATRIX_CENTER_X; x < MATRIX_WIDTH - matrixQW; x++) {
+      for (int y = MATRIX_CENTER_Y; y < MATRIX_HEIGHT - matrixQH; y++) {
+        leds[XY16(x + matrixQW, y + matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+
+  }
+
+  void CaleidoscopeB2() {
+    // copy the halves of the centre to corners
+    uint8_t matrixQW = MATRIX_WIDTH / 4;
+    uint8_t matrixQH = MATRIX_HEIGHT / 4;
+
+    // 1. copy left half to top left corner
+    for (int x = matrixQW; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_HEIGHT / 4; y < MATRIX_HEIGHT - matrixQH; y++) {
+        leds[XY16(x - matrixQW, y - matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+    // 2. copy right half to top right corner
+    for (int x = MATRIX_CENTER_X; x < MATRIX_WIDTH - matrixQW; x++) {
+      for (int y = MATRIX_HEIGHT / 4; y < MATRIX_HEIGHT - matrixQH; y++) {
+        leds[XY16(x + matrixQW, y - matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+    // 3. copy left half to bottom left corner
+    for (int x = matrixQW; x < MATRIX_CENTER_X; x++) {
+      for (int y = MATRIX_HEIGHT / 4; y < MATRIX_HEIGHT - matrixQH; y++) {
+        leds[XY16(x - matrixQW, y + matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+    // 4. copy right half to bottom right corner
+    for (int x = MATRIX_CENTER_X; x < MATRIX_WIDTH - matrixQW; x++) {
+      for (int y = MATRIX_HEIGHT / 4; y < MATRIX_HEIGHT - matrixQH; y++) {
+        leds[XY16(x + matrixQW, y + matrixQH)] = leds[XY16(x, y)];
+      }
+    }
+
+  }
+
+
+
   void RandomCaleidoscope(uint8_t id = 0) 
   {
 
-    Serial.print("Caleidoscope Pattern: ");
-    Serial.print(id);
-    Serial.print("\n");
+    //CaleidoscopeB2();
+    //return;
+
+
+    //Serial.print("Caleidoscope Pattern: ");
+    //Serial.print(id);
+    //Serial.print("\n");
 
     uint8_t randId = id;
     if (id==0) randId = random8(1,CALEIDOSCOPE_COUNT + 1);
@@ -1141,16 +1305,28 @@ CRGBPalette16 AllRed_p = {
         Caleidoscope2();
         break;
       case 3:
+        CaleidoscopeA1();
+        break;
+      case 4:
+        CaleidoscopeA2();
+        break;
+      case 5:
+        CaleidoscopeB1();
+        break;
+      case 6:
+        CaleidoscopeB2();
+        break;
+      case 7:
         // rework Caleidoscope4 to mirror bottom right!
         Caleidoscope4Rework();
         Caleidoscope1();
         break;
-      case 4:
+      case 8:
         // rework Caleidoscope4 to mirror bottom right!
         Caleidoscope4Rework();
         Caleidoscope2();
         break;
-      case 5:
+      case 9:
         Caleidoscope4();
         Caleidoscope1();
         break;

@@ -9,6 +9,11 @@ class PatternAudioDotsSingle : public Drawable {
     bool diagonalLines = true;
     bool diagonalOffset = 4;
     uint8_t caleido = 0;
+    uint8_t caleidoscopeEffect;
+
+    bool useCurrentPalette = false;
+    uint8_t colorSpread = 1;
+    bool upwards = true;
 
     uint8_t rolling = 0;
 
@@ -20,7 +25,7 @@ class PatternAudioDotsSingle : public Drawable {
     PatternAudioDotsSingle() 
     {
       name = (char *)"Audio Dots Single";
-      id = (char *)"D";
+      id = (char *)"M";
     }
 
 
@@ -29,9 +34,14 @@ class PatternAudioDotsSingle : public Drawable {
     // #############
     void start(uint8_t _pattern){
       flipVert = random(0,2);           // 50% chance of bveing flipped
-      caleido = random(0,3);            // 1 in 3 change of not getting caleidoscope
+      caleido = random(0,3);            // 1 in 3 chance of not getting caleidoscope
+      caleidoscopeEffect = random8(1, CALEIDOSCOPE_COUNT + 1);
+
       diagonalLines = random(0,10);     // 1 in 10 chance we'll get dialgonal lines
       diagonalOffset = diagonalLines ? 0 : 4;
+      useCurrentPalette = random(0,6);
+      colorSpread = random(1,5);
+      upwards = random(0,2);
 
       ms_previous = millis();
 
@@ -70,13 +80,30 @@ class PatternAudioDotsSingle : public Drawable {
 
       // only draw bars if there is non zero data
       if (!fftData.noAudio) {
-        //effects.BresenhamLine(x0, y0, x1, y1, dma_display->color565(128, 128, 128));
-        effects.drawBackgroundFastLEDPixelCRGB(x0, y0, dma_display->color565(128, i, 128));
 
-        // need more sparkles?
-        if (data1 >= MATRIX_CENTER_Y - 3) {
-          effects.drawBackgroundFastLEDPixelCRGB(x0, y0, dma_display->color565(255, 255, 255));
-          effects.drawBackgroundFastLEDPixelCRGB(x0, y0 / 2, dma_display->color565(255, 255, 255));
+
+        if (useCurrentPalette)
+        {
+          // current palette
+          if (upwards) 
+          {
+            effects.drawBackgroundFastLEDPixelCRGB(x0, MATRIX_CENTER_Y - y0, effects.ColorFromCurrentPalette(i * colorSpread));
+          }
+          else
+          {
+            effects.drawBackgroundFastLEDPixelCRGB(x0, y0, effects.ColorFromCurrentPalette(i * colorSpread));
+          }
+        }
+        else
+        {
+          // original fixed palette, need to add more options
+          effects.drawBackgroundFastLEDPixelCRGB(x0, y0, dma_display->color565(128, i, 128));
+
+          // need more sparkles? don't work well
+          if (data1 >= MATRIX_CENTER_Y - 3) {
+            effects.drawBackgroundFastLEDPixelCRGB(x0, y0, dma_display->color565(255, 255, 255));
+            effects.drawBackgroundFastLEDPixelCRGB(x0, y0 / 2, dma_display->color565(255, 255, 255));
+          }
         }
 
 
@@ -85,7 +112,10 @@ class PatternAudioDotsSingle : public Drawable {
 
     }
 
-
+    if (caleido) 
+    {
+    effects.RandomCaleidoscope(caleidoscopeEffect);
+/*
     switch (caleido) {
       case 1:
         effects.Caleidoscope1();
@@ -94,7 +124,8 @@ class PatternAudioDotsSingle : public Drawable {
         effects.Caleidoscope2();
         break;
     }
-
+*/
+    }
 
     // roll the display sideways one more pixel
     if (ms_previous + rollDelay < millis()) {

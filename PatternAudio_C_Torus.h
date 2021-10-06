@@ -1,7 +1,7 @@
-#ifndef PatternAudioRotatingTorus_H
-#define PatternAudioRotatingTorus_H
+#ifndef PatternAudioTorus_H
+#define PatternAudioTorus_H
 
-class PatternAudioRotatingTorus : public Drawable {
+class PatternAudioTorus : public Drawable {
   private:
 
     // used for internal colour cycling
@@ -9,18 +9,12 @@ class PatternAudioRotatingTorus : public Drawable {
     uint8_t color2 = 64;
     uint8_t color3 = 128;
     uint8_t color4 = 192;
-    // used for internal scaling functions
-    uint8_t canvasWidth;
-    uint8_t canvasCentreX;
-    uint8_t canvasCentreY;
     // used for internal audio calcs
     byte audioData;
     uint8_t maxData = 127;
 
     // pattern specific parameters used for randomizing, theses are mostly radomized at initial start and
     // determine the style of backdrop and main effects to render
-    bool generalRand1 = false;            // general use, either true/false
-    bool generalRand2 = false;            // general use
     bool cycleColors = true;              // cylce through the color spectrum or not
     bool caleidoscope = false;
     uint8_t caleidoscopeEffect = 0;
@@ -29,7 +23,7 @@ class PatternAudioRotatingTorus : public Drawable {
 
   public:
 
-    PatternAudioRotatingTorus() {
+    PatternAudioTorus() {
       name = (char *)"Audio C - Rotating Torus (WIP)";
       id = (char *)"C";
     }
@@ -38,19 +32,12 @@ class PatternAudioRotatingTorus : public Drawable {
     void start(uint8_t _order) {
 
       // randomize the effects to use
-      generalRand1 = random8(0, 2);                             // for stream effect directions
       cycleColors = random8(0, 3);                              // 75% of the time, the color palette will be cycled
       caleidoscope = random8(0, 2);                             // 50% chance of caleidoscope
       caleidoscopeEffect = random8(1, CALEIDOSCOPE_COUNT + 1); 
       if (caleidoscopeEffect==5) caleidoscopeEffect = 3;
       dimAll = random8(0, 10);                                  // 90% chance of dimming the output render
-      dimAmount = random8(180, 240); 
-
-      // ## ----- override random stuff for testing ----- ##
-      //caleidoscope = 3;
-
-      // generate random canvas, sprites etc. to use in animations
-
+      dimAmount = random8(200, 240); 
 
     };
 
@@ -75,6 +62,12 @@ class PatternAudioRotatingTorus : public Drawable {
     unsigned int drawFrame(uint8_t _order, uint8_t _total) {
       // order - indicates the order in which the effect is being drawn, patterns can use the appropriate pre and post effects, if any, depending on order etc.
       // total - the total number of audio effect animations being played simultaineously
+
+      // this patterns looks good with dimming so do it sometimes
+      if (dimAll) {
+        effects.DimAll(dimAmount);
+      }
+
 
       // general cyclic stuff
       if (cycleColors) {
@@ -129,11 +122,6 @@ class PatternAudioRotatingTorus : public Drawable {
       // do caleidoscope sometimes
       if (caleidoscope) {
         effects.RandomCaleidoscope(caleidoscopeEffect);
-      }
-
-      // this patterns looks good with dimming so do it sometimes
-      if (dimAll) {
-        effects.DimAll(dimAmount);
       }
 
       return 0;

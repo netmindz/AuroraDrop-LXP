@@ -56,6 +56,14 @@ void UpdateDiagnosticsData() {
     }
   #endif
 
+  // BLINK BPM still testing bpm!
+  if (effects.beatSawOsci8[0] > 200) {
+    dma_display->drawPixelRGB888(MATRIX_WIDTH - 4, 2, 255, 255, 255);
+    dma_display->drawPixelRGB888(MATRIX_WIDTH - 3, 2, 255, 255, 255);
+    dma_display->drawPixelRGB888(MATRIX_WIDTH - 4, 3, 255, 255, 255);
+    dma_display->drawPixelRGB888(MATRIX_WIDTH - 3, 3, 255, 255, 255);
+  }
+
   // ---------------------- DIAGNOSTICS -------------------------
 
   if (option1Diagnostics) {
@@ -69,6 +77,11 @@ void UpdateDiagnosticsData() {
     dma_display->setCursor(2,46);
     dma_display->print(actual_fps);
     dma_display->print("fps");
+    // testing udp packet xfer rate
+    //dma_display->setCursor(2,46);
+    //dma_display->print(fftData.test1);
+    //dma_display->print("pk");
+    
 
     dma_display->setCursor(2,56);
     dma_display->print(fftData.bpm);
@@ -105,7 +118,7 @@ void UpdateDiagnosticsData() {
       //dma_display->print(patternsStatic[i].fps_last);
   }
 
-  for (uint8_t i=MATRIX_HEIGHT-22; i<MATRIX_HEIGHT-19; i++) {
+  for (uint8_t i=MATRIX_HEIGHT-10; i<MATRIX_HEIGHT-8; i++) {
 
     // saw wave
     dma_display->drawPixelRGB888(effects.beatSawOsciWidth[0], i, 0, 0, 128);          // blue - fast
@@ -113,14 +126,42 @@ void UpdateDiagnosticsData() {
     dma_display->drawPixelRGB888(effects.beatSawOsciWidth[2], i, 128, 0, 0);          // red
     dma_display->drawPixelRGB888(effects.beatSawOsciWidth[3], i, 128, 128, 128);      // white - slow
     // sine wave
-    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[0], i-4, 0, 0, 128);
-    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[1], i-4, 0, 128, 0);
-    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[2], i-4, 128, 0, 0);
-    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[3], i-4, 128, 128, 128);   // white - slow
+    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[0], i-1, 0, 0, 128);
+    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[1], i-1, 0, 128, 0);
+    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[2], i-1, 128, 0, 0);
+    dma_display->drawPixelRGB888(effects.beatSineOsciWidth[3], i-1, 128, 128, 128);   // white - slow
     // square wave
     dma_display->drawPixelRGB888(effects.beatSquareOsci8[0] / 4, i, 128, 0, 128);
  
   }
+
+  // audio spectrum - what a mess
+  for (uint8_t i=0; i < MATRIX_WIDTH; i++) {
+      uint8_t height = map8(fftData.specData[i],0,15);
+      dma_display->drawFastVLine(i, 36 + (8-height), height, GREEN);
+  }
+ 
+  /*
+  static uint16_t offset = 0;
+
+  for (uint8_t i=0; i < MATRIX_WIDTH; i++) {
+      uint16_t x = i + offset;
+      if (x >= MATRIX_WIDTH) {
+        x = x - 64;
+      }
+      uint16_t color = RED;
+      if (i+offset > 32) color = GREEN;
+      if (i+offset > 64) color = CYAN;
+      //color = i * 1024;   // 682 for 96
+      uint8_t height = map8(fftData.specData[i+offset],0,16);
+      dma_display->drawFastVLine(x, 36 + (8-height), height, color);
+  }
+
+  offset++;
+  if (offset >= 32) {
+    offset = offset - 32;
+  }
+  */
 
 
 

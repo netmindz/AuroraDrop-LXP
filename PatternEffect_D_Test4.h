@@ -4,6 +4,8 @@
 class PatternEffectTest4 : public Drawable {
 private:
 
+  uint8_t direction;
+
 
 public:
     PatternEffectTest4() {
@@ -20,6 +22,8 @@ public:
     void start(uint8_t _pattern) {
         
         effects.NoiseVariablesSetup();
+
+        direction = random8(0,2);
         
     }
 
@@ -27,32 +31,31 @@ public:
     // ### DRAW FRAME ###
     // ##################
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
-        zzzz++;
-        if (zzzz > MATRIX_CENTER_X) zzzz = 0;
 
-        // test 1 pretty shitty
-        //effects.Expand(MATRIX_CENTRE_X, MATRIX_CENTRE_Y, zzzz, 128);
 
-        // test 2 - OK
-        //effects.StreamRight(128);  // 128 = 128
+        effects.DimAll(200);
 
-        // test 3 - wonky?
-        //effects.StreamLeft(128);
-
-        // test 4 - OK
-        //effects.StreamDown(128);
-
-        // test 5 - OK
-        //effects.StreamUp(128);
-
-        // test 6 - OK
-        effects.StreamUpAndLeft(128);
-
-        // test 7 - OK
-        //effects.StreamUpAndRight(128);
-
-        // test 8
-        //effects.MoveDown();
+        switch (direction) 
+        {
+          case 0:
+            effects.MoveY(1);
+            effects.MoveX(1);
+            break;
+          case 1:
+            effects.MoveDown();
+            break;
+          case 2:
+            // not used
+            effects.MoveY(2);
+            effects.MoveX(1);
+            break;
+          case 3:
+            // not used
+            effects.MoveY(1);
+            effects.MoveX(2);
+            break;
+            
+        }
 
         // test 9 - buggered
         //effects.RotateTriangle();
@@ -62,23 +65,7 @@ public:
 
 
 
-        // manipulate the screen buffer
-        // with fixed parameters (could be oszillators too)
-        // Params: center x, y, radius, scale color down
-        // --> NOTE: Affects always a SQUARE with an odd length
-     //   effects.SpiralStream(15, 15, 10, 128);
-
-        //effects.SpiralStream(31, 15, 64, 128);        // for 64 pixel wide matrix!
-        //effects.SpiralStreamVer2(31, 15, 64, 128);        // for 64 pixel wide matrix!
-      //  effects.SpiralStream(47, 15, 10, 128);        // for 64 pixel wide matrix!
-
-        // why not several times?!
-       // effects.SpiralStream(16, 6, 6, 128);
-       // effects.SpiralStream(10, 24, 10, 128);
-
-        // increase the contrast
        
-        effects.DimAll(250);
 
 
 

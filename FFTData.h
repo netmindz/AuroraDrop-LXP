@@ -4,7 +4,7 @@ class FFTData{
   #define MAX_SERIAL_MSG_LENGTH 255       // re-think !!!
   #define BINS 96     // re-think !!!, 192/2 = 96, 192/3 = 64
 
-
+  uint8_t test1;
 
 
 //  const uint8_t SERIAL_MSG_AUDIO_SPECTRUM = 65;  // A
@@ -280,6 +280,38 @@ class FFTData{
       // end 
     }
   }
+
+
+  void processUDPData(uint8_t data[]) 
+  {
+    // audio spectrum data, 96 bytes long
+
+    
+            //PRINTS("Audio Spectrum Data\n");
+            if (iSilence < 255) iSilence++;
+            // we expect to find 96 bytes of data
+            noAudio = true;
+            specDataMinVolume = specData[0];
+            specDataMaxVolume = 0;
+            for (uint8_t i = 0; i < (BINS); i++) 
+            {
+              // if we see any data, clear the noAudio flag
+              if (specData[i] > 0) noAudio = false;
+
+              // if min/max volume breached then update
+              if (specData[i] > specDataMaxVolume) specDataMaxVolume = specData[i];
+              if (specData[i] < specDataMinVolume) specDataMinVolume = specData[i];
+
+              // new array, audio data 0-255 where 127 is peak, > 127 over peak
+              specData[i] = data[i+7];              // version, a value from 0 to 255, where 0 = silence
+
+
+            }
+
+
+
+  }
+
 
 };
 

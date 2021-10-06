@@ -1,13 +1,13 @@
-#ifndef PatternEffectTest5_H
-#define PatternEffectTest5_H
+#ifndef PatternEffectMinimal_H
+#define PatternEffectMinimal_H
 
-class PatternEffectTest5 : public Drawable {
+class PatternEffectMinimal : public Drawable {
 private:
 
 
 public:
-    PatternEffectTest5() {
-      name = (char *)"Effect Test 5";
+    PatternEffectMinimal() {
+      name = (char *)"Effect Minimal";
       id = "E";
     }
 

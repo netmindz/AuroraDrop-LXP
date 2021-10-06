@@ -7,20 +7,20 @@
 //#include "Vector.h"
 
 #include "PatternEffect_A_TestBlur2d.h"
-#include "PatternEffect_B_Test2.h"
-#include "PatternEffect_C_Test3.h"
+#include "PatternEffect_B_SpiralStream1.h"
+#include "PatternEffect_C_Stream1.h"
 #include "PatternEffect_D_Test4.h"
-#include "PatternEffect_E_Test5.h"
+#include "PatternEffect_E_Minimal.h"
 
 
 class Patterns_InitEffects : public Playlist {
   private:
 
-    PatternEffectTest2 effectTest2;
+    PatternEffectSpiralStream1 effectSpiralStream1;
     PatternEffectTestBlur2d effectTestBlur2d;
-    PatternEffectTest3 effectTest3;
+    PatternEffectStream1 effectStream1;
     PatternEffectTest4 effectTest4;
-    PatternEffectTest5 effectTest5;
+    PatternEffectMinimal effectMinimal;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -29,16 +29,16 @@ class Patterns_InitEffects : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 3;       // always use static on esp32 !!!!
+    const static int PATTERN_COUNT = 4;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
       &effectTestBlur2d,
-      //&effectTest2,
-      //&effectTest3,
+      &effectSpiralStream1,
+      &effectStream1,
       &effectTest4,
-      &effectTest5,
+      //&effectMinimal,
 
     };
 

@@ -54,7 +54,7 @@ class Patterns_Static : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 6;       // always use static on esp32 !!!!
+    const static int PATTERN_COUNT = 6;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 

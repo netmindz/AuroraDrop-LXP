@@ -3,10 +3,17 @@
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
+#include "PatternTest.h"
+
 #include "PatternAudio_A_8x8Squares.h"
 #include "PatternAudio_B_BigSpark.h"
-#include "PatternAudio_C_RotatingTorus.h"
+#include "PatternAudio_C_Torus.h"
 
+#include "PatternAudio_E_RotatingWave.h"
+
+#include "PatternAudio_M_DotsSingle.h"
+#include "PatternAudio_N_Spectrum1.h"
+#include "PatternAudio_O_Spectrum2.h"
 
 // test patterns to integrate
 #include "PatternAudioLines.h"
@@ -14,23 +21,23 @@
 #include "PatternAudioTriangles.h"
 #include "PatternTestSpectrum.h"
 #include "PatternTestCircles.h"
-#include "PatternAudioSpectrum1.h"
-#include "PatternAudioSpectrum2.h"
 #include "PatternAudioWaveSingle.h"
-#include "PatternAudioDotsSingle.h"
 #include "PatternAudioCirclesReal.h"
 #include "PatternAudioDiagonalSpectrum.h"
 #include "PatternAudioSpectrumCircle.h"
 
+#include "PatternAudio_XX_Aurora.h"
 #include "PatternCanvasTest.h"
+
 
 
 class Patterns_Audio : public Playlist {
   private:
+    PatternTest patternTest;
     PatternAudio8x8Squares audio8x8Squares;
     PatternAudioBigSpark audioBigSpark;
-    PatternAudioRotatingTorus audioRotatingTorus;
-
+    PatternAudioTorus audioTorus;
+    PatternAudioRotatingWave audioRotatingWave;
 
     // test
     PatternAudioLines audioLines;
@@ -45,6 +52,7 @@ class Patterns_Audio : public Playlist {
     PatternAudioCirclesReal audioCirclesReal;
     PatternAudioDiagonalSpectrum audioDiagonalSpectrum;
     PatternAudioSpectrumCircle audioSpectrumCircle;
+    PatternAudioAurora audioAurora;
     PatternCanvasTest canvasTest;
 
     int currentIndex = 0;
@@ -55,24 +63,31 @@ class Patterns_Audio : public Playlist {
     }
 
     // always use static on esp32 !!!!
-    const static int PATTERN_COUNT = 9;
+    const static int PATTERN_COUNT = 10;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
+      //&patternTest,
+
       &audio8x8Squares,
       &audioBigSpark,
-      &audioRotatingTorus,
+      &audioTorus,
+      &audioRotatingWave,
 
       // working initial proof of concept
-      &audioTriangles,                    // triangles
-      &audioSpectrum1,                    // 16 lines
       &audioDotsSingle,                   // dancing/rolling dots
+      &audioSpectrum1,                    // 16 lines
       &audioSpectrum2,      // to sort
+
       &audioDiagonalSpectrum,   // to tidy
+      &audioTriangles,                    // triangles
       &audioSpectrumCircle,     // spectrum lines from centre out, rotating around 360 degrees
 
+
+
       //&audioCirclesReal,    // to sort (slow)
+      //&audioAurora,
 
 
 

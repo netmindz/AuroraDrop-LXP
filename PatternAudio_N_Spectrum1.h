@@ -8,14 +8,15 @@ class PatternAudioSpectrum1 : public Drawable {
     bool flipVert = false;
     bool diagonalLines = true;
     bool diagonalOffset = 4;
-    uint8_t caleido = 0;
+    uint8_t caleido;
+    uint8_t caleidoscopeEffect;
 
   public:
     PatternAudioSpectrum1() 
     {
       name = (char *)"Audio Spectrum 1";
       id2 = 1;
-      id = (char *)"S";
+      id = (char *)"N";
     }
 
 
@@ -25,6 +26,7 @@ class PatternAudioSpectrum1 : public Drawable {
     void start(uint8_t _pattern){
       flipVert = random(0,2);           // 50% chance of bveing flipped
       caleido = random(0,3);            // 1 in 3 change of not getting caleidoscope
+      caleidoscopeEffect = random8(1, CALEIDOSCOPE_COUNT + 1);
       diagonalLines = random(0,10);     // 1 in 10 chance we'll get dialgonal lines
       diagonalOffset = diagonalLines ? 0 : 4;
     };
@@ -61,7 +63,8 @@ class PatternAudioSpectrum1 : public Drawable {
         }
         // only draw bars if there is non zero data
         if (data)
-          effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128));
+          //effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128));
+          effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128), 255);
       }
     }
     else 
@@ -84,8 +87,15 @@ class PatternAudioSpectrum1 : public Drawable {
         }
         // only draw bars if there is non zero data
         if (data)
-          effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128));
+          //effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128));
+          effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128), 255);
       }
+
+
+    if (caleido) 
+    {
+      effects.RandomCaleidoscope(caleidoscopeEffect);
+      /*
       switch (caleido) {
         case 1:
           effects.Caleidoscope1();
@@ -94,12 +104,10 @@ class PatternAudioSpectrum1 : public Drawable {
           effects.Caleidoscope2();
           break;
       }
+      */
+   
     }
-
-
-
-
-      
+  }
 
 
 

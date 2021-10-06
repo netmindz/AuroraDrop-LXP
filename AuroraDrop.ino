@@ -54,9 +54,9 @@
 
 
 /*--------------------- MATRIX PANEL CONFIG -------------------------*/
-#define MATRIX_HEIGHT 64
+#define MATRIX_HEIGHT 64                        // not tested with anything other than 64x64
 #define MATRIX_WIDTH 64
-#define PANELS_NUMBER 1                         // Number of chained panels, if just a single panel, obviously set to 1
+#define PANELS_NUMBER 1                         // number of chained panels, if just a single panel, obviously set to 1
 #define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
 
@@ -74,8 +74,8 @@ MatrixPanel_I2S_DMA *dma_display = nullptr;
 // (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
 //static uint8_t maxPatternAmbient = 0;       // not implemented yet! for plasma effects, backgrounds, etc.
 static uint8_t maxPatternInitEffect = 1;      // <------- 1 or 2 is reasonable
-static uint8_t maxPatternAudio = 2;           // <------- 2/3
-static uint8_t maxPatternStatic = 2;          // <------- 2/3
+static uint8_t maxPatternAudio = 2;           // <------- 2 or 3
+static uint8_t maxPatternStatic = 2;          // <------- 2 or 3
 static uint8_t maxPatternFinalEffect = 0;     // not used yet! you can try it, but can have a big impact on rendered output at the moment
 
 // diagnostic options, these can be set via web interface when enabled
@@ -89,18 +89,19 @@ bool option7DisableAudio = false;
 bool option8DisableStatic = false;
 bool option9DisableFinalEffects = false;
 
+#include "FFTData.h"
+FFTData fftData;
+
 #ifdef USE_WIFI
   #include "ServerDiagnostics.h"
 #endif
 
-#include "FFTData.h"
-FFTData fftData;
 
 #include "Effects.h"
 Effects effects;
 #include "Drawable.h"
 #include "Playlist.h"
-//#include "Geometry.h"
+#include "Geometry.h"  // Point
 
 #include "Vector.h"
 #include "Boid.h"
@@ -140,7 +141,7 @@ void setup()
   
  /************** SERIAL **************/
   Serial.begin(115200);
-  delay(1000);     // all comms to initilialise
+  delay(1000);     // allow comms to initilialise
   
  /************** DISPLAY **************/
   Serial.println("Starting Display...");
@@ -405,57 +406,47 @@ void loop()
 
   // apply final set of effects   ??? WE NEED BETTER POST EFFECTS RANDONISM ???
   if (!option9DisableFinalEffects) {
-  for (uint8_t i=0; i < maxPatternFinalEffect; i++)
-  {
-    // #-------- start next animation if maxduration reached --------#
-    if ( (millis() - patternsFinalEffects[i].ms_previous) > patternsFinalEffects[i].ms_animation_max_duration) 
+    for (uint8_t i=0; i < maxPatternFinalEffect; i++)
     {
-      if (!option4PauseCycling) {
-        patternsFinalEffects[i].stop();
-        patternsFinalEffects[i].moveRandom(1, i);
-        //patterns.move(1);
-        patternsFinalEffects[i].start(i);  
-        Serial.print("Changing final effect pattern X to:  ");
-        Serial.println(patternsFinalEffects[i].getCurrentPatternName());
-        patternsFinalEffects[i].ms_previous = millis();
+      // #-------- start next animation if maxduration reached --------#
+      if ( (millis() - patternsFinalEffects[i].ms_previous) > patternsFinalEffects[i].ms_animation_max_duration) 
+      {
+        if (!option4PauseCycling) {
+          patternsFinalEffects[i].stop();
+          patternsFinalEffects[i].moveRandom(1, i);
+          //patterns.move(1);
+          patternsFinalEffects[i].start(i);  
+          Serial.print("Changing final effect pattern X to:  ");
+          Serial.println(patternsFinalEffects[i].getCurrentPatternName());
+          patternsFinalEffects[i].ms_previous = millis();
+          patternsFinalEffects[i].fps_timer = millis();
+        }
+      }
+      // -------- draw the next frame if fps timer dictates so --------
+      if (1000 / patternsFinalEffects[i].pattern_fps + patternsFinalEffects[i].last_frame < millis())
+      {
+        patternsFinalEffects[i].last_frame = millis();
+        patternsFinalEffects[i].pattern_fps = patternsFinalEffects[i].drawFrame(i, maxPatternFinalEffect);
+        if (!patternsFinalEffects[i].pattern_fps)
+          patternsFinalEffects[i].pattern_fps = patternsFinalEffects[i].default_fps;
+        ++patternsFinalEffects[i].fps;
+        patternsFinalEffects[i].render_ms = millis() - patternsStatic[i].last_frame;
+      }
+
+      if (patternsFinalEffects[i].fps_timer + 1000 < millis()){
+        //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
         patternsFinalEffects[i].fps_timer = millis();
+        patternsFinalEffects[i].fps_last = patternsFinalEffects[i].fps;
+        actual_fps = patternsFinalEffects[i].fps;
+        patternsFinalEffects[i].fps = 0;
       }
     }
-    // -------- draw the next frame if fps timer dictates so --------
-    if (1000 / patternsFinalEffects[i].pattern_fps + patternsFinalEffects[i].last_frame < millis())
-    {
-      patternsFinalEffects[i].last_frame = millis();
-      patternsFinalEffects[i].pattern_fps = patternsFinalEffects[i].drawFrame(i, maxPatternFinalEffect);
-      if (!patternsFinalEffects[i].pattern_fps)
-        patternsFinalEffects[i].pattern_fps = patternsFinalEffects[i].default_fps;
-      ++patternsFinalEffects[i].fps;
-      patternsFinalEffects[i].render_ms = millis() - patternsStatic[i].last_frame;
-    }
-
-    if (patternsFinalEffects[i].fps_timer + 1000 < millis()){
-      //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-      patternsFinalEffects[i].fps_timer = millis();
-      patternsFinalEffects[i].fps_last = patternsFinalEffects[i].fps;
-      actual_fps = patternsFinalEffects[i].fps;
-      patternsFinalEffects[i].fps = 0;
-    }
-
-  }
   }
 
 
   // still tweaking bpm oscillators
   effects.updateBpmOscillators();
   // effects.MoveOscillators();     // old aurora
-
-
-  // BLINK BPM still testing bpm!
-  if (effects.beatSawOsci8[0] > 200) {
-    effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 4, 2, CRGB::Pink);
-    effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 3, 2, CRGB::Pink);
-    effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 4, 3, CRGB::Pink);
-    effects.drawBackgroundFastLEDPixelCRGB(MATRIX_WIDTH - 3, 3, CRGB::Pink);
-  }
 
   actual_render_ms = millis() - start_render_ms;
   // if optioned wait the full XXms before we render
@@ -465,6 +456,9 @@ void loop()
     }
   }
   total_render_ms = millis() - start_render_ms;
+
+  // seriously dim anything left rendering on the panel if there is no audio
+  //if(fftData.noAudio) effects.DimAll(50);
 
   // update the panel frame with the final effects rendered frame
   effects.ShowFrame();

@@ -7,6 +7,12 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+//STUFF NEEDED FOR UDP ************
+#include "AsyncUDP.h"
+AsyncUDP udp;
+
+
+
 bool wifiConnected = false;
 int wifiMessage = 0;          // displays IP message when wifi first connects
 
@@ -28,19 +34,22 @@ const char index_html[] PROGMEM = R"rawliteral(
   <link rel="icon" href="data:,">
   <style>
     html {font-family: Arial; display: inline-block; text-align: center;}
-    h2 {font-size: 3.0rem;}
+    h2 {font-size: 3.0rem; color:#ffc600; text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; margin-bottom: 0.1rem;}
+    h3 {font-size: 1.5rem; color:black; margin: 0.0rem;}
+    h4 {margin-bottom: 0.3rem;}
     p {font-size: 3.0rem;}
     body {max-width: 600px; margin:0px auto; padding-bottom: 25px;}
-    .switch {position: relative; display: inline-block; width: 120px; height: 68px} 
+    .switch {position: relative; display: inline-block; width: 80px; height: 48px} 
     .switch input {display: none}
     .slider {position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 6px}
-    .slider:before {position: absolute; content: ""; height: 52px; width: 52px; left: 8px; bottom: 8px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 3px}
+    .slider:before {position: absolute; content: ""; height: 32px; width: 32px; left: 8px; bottom: 8px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 3px}
     input:checked+.slider {background-color: #b30000}
-    input:checked+.slider:before {-webkit-transform: translateX(52px); -ms-transform: translateX(52px); transform: translateX(52px)}
+    input:checked+.slider:before {-webkit-transform: translateX(32px); -ms-transform: translateX(32px); transform: translateX(32px)}
   </style>
 </head>
 <body>
   <h2>AuroraDrop</h2>
+  <h3>A U D I O&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V I S U A L I S E R</h3>
   %SLIDERPLACEHOLDER%
   %BUTTONPLACEHOLDER%
 <script>function toggleCheckbox(element) {
@@ -68,7 +77,7 @@ String processor(const String& var){
   //Serial.println(var);
   if(var == "SLIDERPLACEHOLDER"){
     String buttons = "";
-    buttons += "<h4>Diagnostics</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"1\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
+    buttons += "<h4>Show Diagnostics</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"1\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
     buttons += "<h4>Lock Frame Rate</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
     buttons += "<h4>Show Render Time</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"3\" " + optionState(option3ShowRenderTime) + "><span class=\"slider\"></span></label>";
     buttons += "<h4>Pause Effect Cycling</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
@@ -93,6 +102,52 @@ void checkWifiStatus() {
       wifiConnected = true;
       wifiMessage = 100;        // when non zero, displays connected info for x renders
       Serial.println(WiFi.localIP());
+
+
+      // test connect to server
+      //*******************************************
+      // -------------------- udp setup and callbacks -------------------------
+      if (udp.listen(1234)) {
+        udp.onPacket([](AsyncUDPPacket packet) {
+          //uint8_t dsf[packet.length()];
+          //for (int i=0; i<packet.length(); i++)
+          //{
+          //  dsf[i] = packet.data()[0];
+          //}
+
+          fftData.test1++;
+          fftData.processUDPData(packet.data());
+
+                //Serial.print("UDP Packet Type: ");
+                //Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
+                //Serial.print(", From: ");
+                //Serial.print(packet.remoteIP());
+                //Serial.print(":");
+                //Serial.print(packet.remotePort());
+                //Serial.print(", To: ");
+                //Serial.print(packet.localIP());
+                //Serial.print(":");
+                //Serial.print(packet.localPort());
+                //Serial.print(", Length: ");
+                //Serial.print(packet.length());
+                //Serial.print(", Data: ");
+                //Serial.print("UDP: ");
+                //Serial.write(packet.data(), packet.length());
+                //Serial.println("");
+
+          ////and could send back as well
+          //WiFiUDP udpTX;
+          //IPAddress broadcastIP(255, 255, 255, 255);
+          //if (udpTX.beginPacket(broadcastIP , 1234) == 1) {
+          //  udpTX.print("hello world");
+          //  udpTX.endPacket();
+          //}
+      
+        });
+      }
+      //*******************************************
+
+
 
       // set route for root web page
       server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
