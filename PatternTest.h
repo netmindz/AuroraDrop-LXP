@@ -26,7 +26,15 @@ class PatternTest : public Drawable {
       effects.BresenhamLine(0, 71, MATRIX_WIDTH - 1, 71, 255, 255);
       effects.BresenhamLine(0, 83, MATRIX_WIDTH - 1, 83, 255, 255);
 
-      effects.CaleidoscopeA2();
+
+      for (byte i = 0; i < MATRIX_WIDTH; i++) 
+      {
+        //effects.BresenhamLine(i, serialData.specData[i] / 3, i, 0, dma_display->color565(128, 128, 128));
+        effects.BresenhamLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / 3), dma_display->color565(128, 128, 128));
+      }
+
+
+      //effects.CaleidoscopeA2();
 
 
       //dma_display->fillScreen(dma_display->color565(128, 0, 0));  

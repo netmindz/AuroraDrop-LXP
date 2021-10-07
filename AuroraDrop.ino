@@ -29,7 +29,7 @@
 
 // ------------ optional basic web server for testing ------------
 // -- uncomment below lines to enable basic web sever interface --
-#define USE_WIFI
+//#define USE_WIFI
 //const char* ssid = "your_ssid";
 //const char* password = "your_password";
 
