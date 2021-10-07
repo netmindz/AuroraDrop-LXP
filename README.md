@@ -1,4 +1,4 @@
-# AuroraDrop v0.0.5
+# AuroraDrop v0.0.6
 
 RGB Matrix Audio Visualiser for ESP32
 
@@ -21,6 +21,9 @@ and complimentary fixed and re-active animations, also borrowed from the Jason's
 https://youtu.be/6lSb6BLZaRQ
 
 ## Latest Updates
+
+0.0.6
+* Fixed bug with delay in serial comms.
 
 0.0.5
 * Experimental network streaming support (slow).

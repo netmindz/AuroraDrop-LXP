@@ -29,7 +29,7 @@
 
 // ------------ optional basic web server for testing ------------
 // -- uncomment below lines to enable basic web sever interface --
-//#define USE_WIFI
+#define USE_WIFI
 //const char* ssid = "your_ssid";
 //const char* password = "your_password";
 
@@ -121,6 +121,8 @@ static uint8_t PatternsAudioBackdropCount = 0;
 static uint8_t PatternsAudioCaleidoscopeCount = 0;
 static uint16_t PatternsAudioBluringCount = 0;
 uint32_t startMillis = millis();
+uint32_t Xlast_render_ms = millis();
+
 
 #include "Diagnostics.h"
 
@@ -239,6 +241,8 @@ void setup()
     patternsFinalEffects[i].fps_timer = millis();
   }
 
+  Xlast_render_ms = millis();
+
 }
 
 // #################################################################################################################################
@@ -263,8 +267,15 @@ void loop()
   // check if there is any new audio data and proccess it to useful bins and flags used by the patterns
   fftData.processSerialData();
 
-  // TODO: implement aurora demo menu system or own?
+  // TODO: implement aurora demo menu system?
   // menu.run(mainMenuItems, mainMenuItemCount);  
+
+
+  // check here if we are ready to render the next frame or not
+  if (option2LockFps && millis() < Xlast_render_ms + 50)    // 40=25fps, 50=20fps;
+    return;
+
+  Xlast_render_ms = millis();
 
   if (maxPatternInitEffect==0 || option6DisableInitialEffects) effects.DimAll(230);       // if we have no effects enabled, dim screen by small amount (e.g. during testing)
 
@@ -448,14 +459,25 @@ void loop()
   effects.updateBpmOscillators();
   // effects.MoveOscillators();     // old aurora
 
+
+
+
   actual_render_ms = millis() - start_render_ms;
   // if optioned wait the full XXms before we render
+
+  // WTF kind of way is this do this?
   if (option2LockFps) {
-    while(millis() < start_render_ms + 50) {   // 40=25fps, 50=20fps;
-      delay(1);
-    }
+
+
+    //while(millis() < start_render_ms + 50) {   // 40=25fps, 50=20fps;
+    //  delay(1);
+    //}
+
+
   }
   total_render_ms = millis() - start_render_ms;
+
+
 
   // seriously dim anything left rendering on the panel if there is no audio
   //if(fftData.noAudio) effects.DimAll(50);
