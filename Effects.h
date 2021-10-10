@@ -291,8 +291,12 @@ CRGBPalette16 AllRed_p = {
   }
 
   void loadPalette(int index) {
-    paletteIndex = index;
+    // override for testing
+    //setupYellowBluePalette();
+    //currentPaletteName = (char *)"YellowBlue";
+    //return;
 
+    paletteIndex = index;
     if (paletteIndex >= paletteCount)
       paletteIndex = 0;
     else if (paletteIndex < 0)
@@ -302,17 +306,11 @@ CRGBPalette16 AllRed_p = {
       case 0:
         targetPalette = RainbowColors_p;
         currentPaletteName = (char *)"Rainbow";
-
-
-        //targetPalette = AllRed_p;
-        //currentPaletteName = (char *)"AllRed";
-
-
         break;
-        //case 1:
-        //  targetPalette = RainbowStripeColors_p;
-        //  currentPaletteName = (char *)"RainbowStripe";
-        //  break;
+      //case 1:
+      //  targetPalette = RainbowStripeColors_p;
+      //  currentPaletteName = (char *)"RainbowStripe";
+      //  break;
       case 1:
         targetPalette = OceanColors_p;
         currentPaletteName = (char *)"Ocean";
@@ -330,8 +328,10 @@ CRGBPalette16 AllRed_p = {
         currentPaletteName = (char *)"Party";
         break;
       case 5:
-        setupGrayscalePalette();
-        currentPaletteName = (char *)"Grey";
+        setupYellowBluePalette();
+        currentPaletteName = (char *)"YellowBlue";
+        //setupGrayscalePalette();
+        //currentPaletteName = (char *)"Greyscale";
         break;
       case HeatColorsPaletteIndex:
         targetPalette = HeatColors_p;
@@ -366,8 +366,10 @@ CRGBPalette16 AllRed_p = {
       loadPalette(3);
     else if (paletteName == "Party")
       loadPalette(4);
-    else if (paletteName == "Grayscale")
+    else if (paletteName == "YellowBlue")
       loadPalette(5);
+    //else if (paletteName == "Grayscale")
+    //  loadPalette(5);
     else if (paletteName == "Heat")
       loadPalette(6);
     else if (paletteName == "Lava")
@@ -392,7 +394,7 @@ CRGBPalette16 AllRed_p = {
       "Cloud",
       "Forest",
       "Party",
-      "Grayscale",
+      "YellowBlue", //"Grayscale",
       "Heat",
       "Lava",
       "Ice",
@@ -412,7 +414,15 @@ CRGBPalette16 AllRed_p = {
     Serial.println("}");
   }
 
+  void setupYellowBluePalette() {
+    targetPalette = CRGBPalette16(CRGB::Purple, CRGB::Blue, CRGB::Purple, CRGB::Blue);
+    //targetPalette = {CRGB::Yellow, CRGB::Blue, CRGB::Yellow, CRGB::Blue, CRGB::Yellow, CRGB::Blue, CRGB::Yellow, CRGB::Blue};
+    //targetPalette = {CRGB::Purple, CRGB::MediumPurple, CRGB::Yellow, CRGB::Purple, CRGB::MediumPurple, CRGB::Yellow};
+  }
+
+
   void setupGrayscalePalette() {
+    // looks poor sometimes, don't use
     targetPalette = CRGBPalette16(CRGB::Black, CRGB::White);
   }
 
@@ -1042,6 +1052,34 @@ CRGBPalette16 AllRed_p = {
   }
 
 
+ void BresLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness, TBlendType blendType = LINEARBLEND)
+  {
+    CRGB color = ColorFromCurrentPalette(colorIndex, brightness);
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy, e2;
+    for (;;) {
+      if (blendType == LINEARBLEND) {
+        leds[XY16(x0, y0)] += color;
+      }
+      else
+      {
+        leds[XY16(x0, y0)] = color;
+      }
+      if (x0 == x1 && y0 == y1) break;
+      e2 = 2 * err;
+      if (e2 > dy) {
+        err += dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  }
+
+
   void BresenhamLineCanvas(CRGB *canvas, int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness)
   {
     BresenhamLineCanvas(canvas, x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
@@ -1346,6 +1384,25 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
+
+  Point RotatePoint(float cx,float cy,float angle,Point p)
+  {
+    float s = sin(angle);
+    float c = cos(angle);
+
+    // translate point back to origin:
+    p.x -= cx;
+    p.y -= cy;
+
+    // rotate point
+    float xnew = p.x * c - p.y * s;
+    float ynew = p.x * s + p.y * c;
+
+    // translate point back:
+    p.x = xnew + cx;
+    p.y = ynew + cy;
+    return p;
+  }
 
 
 

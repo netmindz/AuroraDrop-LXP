@@ -40,9 +40,7 @@ class PatternFlowField : public Drawable {
 
     byte hue = 0;
 
-    // #############
-    // ### START ###
-    // #############
+    // ----------------- START ---------------
     void start(uint8_t _pattern) {
 
       x = random16();
@@ -54,9 +52,7 @@ class PatternFlowField : public Drawable {
       }
     }
 
-    // ##################
-    // ### DRAW FRAME ###
-    // ##################
+    // -------------- DRAW FRAME -------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
 

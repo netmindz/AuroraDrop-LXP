@@ -20,38 +20,35 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PatternEffectTestBlur2d_H
-#define PatternEffectTestBlur2d_H
+#ifndef PatternIncrementalDrift_H
+#define PatternIncrementalDrift_H
 
-class PatternEffectTestBlur2d : public Drawable {
-private:
-
-
-public:
-    PatternEffectTestBlur2d() {
-      name = (char *)"Effect Test 2";
-      id = "A";
+class PatternIncrementalDrift : public Drawable {
+  public:
+    PatternIncrementalDrift() {
+      name = (char *)"Incremental Drift";
+      id = "X";
     }
 
-
-    // #############
-    // ### START ###
-    // #############
-    void start(uint8_t _pattern) {
-
-        
-    }
-
-    // ##################
-    // ### DRAW FRAME ###
-    // ##################
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
+      uint8_t dim = beatsin8(2, 230, 250);
+      
+      //effects.DimAll(dim);   // TONY TEST COMMENT
+      effects.DimAll(250);
+      
+      effects.ShowFrame();
 
-        effects.DimAll(250);
+      for (int i = 2; i <= MATRIX_WIDTH / 2; i++)
+      {
+        CRGB color = effects.ColorFromCurrentPalette((i - 2) * (240 / (MATRIX_WIDTH / 2)));
 
-        blur2d(effects.leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, 255);
+        uint8_t x = beatcos8((17 - i) * 2, MATRIX_CENTER_X - i, MATRIX_CENTER_X + i);
+        uint8_t y = beatsin8((17 - i) * 2, MATRIX_CENTER_Y - i, MATRIX_CENTER_Y + i);
 
-        return 0;
+        effects.drawBackgroundFastLEDPixelCRGB(x, y, color);
+      }
+
+      return 0;
     }
 };
 

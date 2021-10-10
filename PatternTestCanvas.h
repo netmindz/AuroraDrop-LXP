@@ -28,7 +28,7 @@ class PatternCanvasTest : public Drawable {
 
     PatternCanvasTest() {
       name = (char *)"Canvas Test";
-      id2 = 1;
+      id = "T";
     }
 
     // #------------- START -------------#

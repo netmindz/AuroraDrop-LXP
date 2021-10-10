@@ -10,22 +10,22 @@
 
 // these are work in progress
 #include "PatternStatic_A_Worms.h"
+#include "PatternStatic_M_SpiralLines.h"
+#include "PatternStatic_M_Flock.h"
+#include "PatternStatic_M_FlowField.h"
+#include "PatternStatic_M_Attract.h"
+#include "PatternStatic_M_Bounce.h"
 #include "PatternStatic_X_Atom.h"
 #include "PatternStatic_X_SimpleStars.h"
 
-// theses are all just proof of concept from aurora demo, still need work, randomizing etc.
+// theses are all just proof of concept from aurora demo,
 #include "PatternTest.h"
-#include "PatternSpiralLines.h"
-#include "PatternIncrementalDrift.h"
-#include "PatternFlock.h"
-#include "PatternFlowField.h"
-#include "PatternSpiro.h"
-#include "PatternAttract.h"
-#include "PatternElectricMandala.h"
-#include "PatternRadar.h"
-#include "PatternSpin.h"
+#include "PatternXIncrementalDrift.h"
+#include "PatternXSpiro.h"
+#include "PatternXElectricMandala.h"
+#include "PatternXRadar.h"
+#include "PatternXSpin.h"
 
-#include "PatternStaticBounce.h"
 
 
 class Patterns_Static : public Playlist {

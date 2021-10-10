@@ -8,12 +8,12 @@ class PatternTest : public Drawable {
   public:
     PatternTest() {
       name = (char *)"Test Pattern";
-      id2 = 1;
+      id = "T";
     }
 
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
-      effects.DimAll(0);
+      effects.DimAll(210);
 
       effects.BresenhamLine(0, 0, MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, 255, 255);
       effects.BresenhamLine(0, MATRIX_HEIGHT - 1, MATRIX_WIDTH - 1, 0, 255, 255);
@@ -26,12 +26,20 @@ class PatternTest : public Drawable {
       effects.BresenhamLine(0, 71, MATRIX_WIDTH - 1, 71, 255, 255);
       effects.BresenhamLine(0, 83, MATRIX_WIDTH - 1, 83, 255, 255);
 
-
-      for (byte i = 0; i < MATRIX_WIDTH; i++) 
+      byte audio1;
+      byte audio2;
+      //int startX = 0;
+      //int startY = 0;
+      for (byte i = 0; i < MATRIX_WIDTH - 1; i++) 
       {
-        //effects.BresenhamLine(i, serialData.specData[i] / 3, i, 0, dma_display->color565(128, 128, 128));
-        effects.BresenhamLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / 3), dma_display->color565(128, 128, 128));
+        audio1 = fftData.specData[i] / 3;
+        audio2 = fftData.specData[i+1] / 3;
+        effects.BresenhamLine(i, audio1, i+1, audio2, dma_display->color565(128, 128, 128));
+        //startX = i;
+        //startY = audio;
+        //effects.BresenhamLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / 3), dma_display->color565(128, 128, 128));
       }
+        //effects.BresenhamLine(startX, startY, MATRIX_WIDTH - 1, 0, dma_display->color565(128, 128, 128));
 
 
       //effects.CaleidoscopeA2();

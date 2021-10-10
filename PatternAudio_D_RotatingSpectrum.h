@@ -1,71 +1,80 @@
-#ifndef PatternAudioRotatingWave_H
-#define PatternAudioRotatingWave_H
+/*
+ * Aurora: https://github.com/pixelmatix/aurora
+ * Copyright (c) 2014 Jason Coon
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 
-class PatternAudioRotatingWave : public Drawable {
-private:
+#ifndef PatternAudioRotatingSpectrum_H
+#define PatternAudioRotatingSpectrum_H
 
-  bool hueCycle1 = false;
-  byte hue1 = 0;
-  uint32_t hue_ms1;
-  uint8_t offset1 = 0;
-  uint8_t counter1 = 0;
-  uint8_t mirror1 = 0;
-  uint8_t stagger1 = 1;
+class PatternAudioRotatingSpectrum : public Drawable {
+  private:
 
-  bool useCurrentPalette;
-  uint8_t colorSpread;
-  uint8_t vertical;
-  bool backdrop;
-  bool caleidoscope;
-  uint8_t caleidoscopeEffect;
-  uint8_t audioScale;
-
-
-  bool hueCycle2 = false;
-  byte hue2 = 0;
-  uint32_t hue_ms2;
-  uint8_t offset2 = 0;
-  uint8_t counter2 = 0;
-  uint8_t mirror2 = 0;
-  uint8_t stagger2 = 1;
-
-
-
-Point rotate_point(float cx,float cy,float angle,Point p)
-{
-  float s = sin(angle);
-  float c = cos(angle);
-
-  // translate point back to origin:
-  p.x -= cx;
-  p.y -= cy;
-
-  // rotate point
-  float xnew = p.x * c - p.y * s;
-  float ynew = p.x * s + p.y * c;
-
-  // translate point back:
-  p.x = xnew + cx;
-  p.y = ynew + cy;
-  return p;
-}
+    uint8_t dimVal;
+    uint8_t dimStart;
 
 
+    // randomise theses
+    uint8_t dimEnd;
+    bool hueCycle1 = false;
+    byte hue1 = 0;
+    uint32_t hue_ms1;
+    uint8_t offset1 = 0;
+    uint8_t counter1 = 0;
+    uint8_t mirror1 = 0;
+    uint8_t stagger1 = 1;
+
+    bool useCurrentPalette;
+    uint8_t colorSpread;
+    uint8_t vertical;
+    bool backdrop;
+    bool caleidoscope;
+    uint8_t caleidoscopeEffect;
+    uint8_t audioScale;
+
+
+    bool hueCycle2 = false;
+    byte hue2 = 0;
+    uint32_t hue_ms2;
+    uint8_t offset2 = 0;
+    uint8_t counter2 = 0;
+    uint8_t mirror2 = 0;
+    uint8_t stagger2 = 1;
 
 public:
-  PatternAudioRotatingWave() {
+  PatternAudioRotatingSpectrum() {
     name = (char *)"Rotating Wave";
-    id = "E";
+    id = "D";
   }
 
 
   uint8_t zzzz = 0;
 
-  // #############
-  // ### START ###
-  // #############
+  // ------------------ start -------------------
   void start(uint8_t _pattern) {
 
+    dimStart = 255;
+    dimVal = dimStart;
+
+    // randomise stuff
+    dimEnd = random8(128, 255);    
+    
     hue1 = random8(0,255);
     hue_ms1 = millis();
     hueCycle1 = true; // random8(0,2);
@@ -90,11 +99,12 @@ public:
     backdrop = random8(0,2);
     caleidoscope = random8(0, 5);                             // 80% chance of caleidoscope
     caleidoscopeEffect = random8(1, CALEIDOSCOPE_COUNT + 1);
-    audioScale = random8(3, 7);
+    audioScale = random8(3, 6);
     //useCurrentPalette = true;
     //colorSpread = 4;
     //caleidoscope = true;
 
+    useCurrentPalette = true;   // fix this to use fire or ocean palette and not fixed colour
 
         
     effects.NoiseVariablesSetup();
@@ -120,8 +130,10 @@ public:
   unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
 
-    // we really need a little extra dimming
-    effects.DimAll(180);
+      // if we are going to dim all, then do it gradually
+      effects.DimAll(dimVal);
+      if (dimVal > dimEnd) dimVal--;
+      //effects.DimAll(180);
 
 
       // draw to half width canvas
@@ -224,6 +236,8 @@ public:
     }
 */
 
+if (!fftData.noAudio) {
+
     for (byte i = 0; i < 96; i++) 
     {
       data = fftData.specData[i] / audioScale;   // random 3,4,5 or 6
@@ -240,8 +254,8 @@ public:
       Point p2(x2,y2);
       //float angle2 = 1;
 
-      Point rp1 = rotate_point(31,31,angle,p1);
-      Point rp2 = rotate_point(31,31,angle,p2);
+      Point rp1 = effects.RotatePoint(31,31,angle,p1);
+      Point rp2 = effects.RotatePoint(31,31,angle,p2);
 
       if (data)
       {
@@ -270,10 +284,6 @@ public:
     }
 
 
-
-
-
-
     //effects.ApplyCanvas(effects.canvasH, 16, 0, 1);
     //effects.ApplyCanvasMirror(effects.canvasH, 16, 16, 1);
 
@@ -283,6 +293,9 @@ public:
     {
       effects.ApplyCanvasMirror(effects.canvasH, 0, 0, 2.0);
     }
+
+
+  }
 
 
     angle = angle + 0.01;

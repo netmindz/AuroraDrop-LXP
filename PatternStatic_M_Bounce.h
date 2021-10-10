@@ -34,6 +34,7 @@ public:
       id = "B";
     }
 
+    // ------------------------ START ------------------------
     void start(uint8_t _pattern) {
         unsigned int colorWidth = 256 / count;
         for (int i = 0; i < count; i++) {
@@ -47,6 +48,7 @@ public:
         }
     }
 
+    // -------------------------- DRAW FRAME -------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
         // dim all pixels on the display
 

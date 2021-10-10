@@ -49,9 +49,7 @@ class PatternFlock : public Drawable {
     byte hue = 0;
     bool predatorPresent = true;
 
-    // #############
-    // ### START ###
-    // #############
+    // ------------------------ START ------------------------
     void start(uint8_t _pattern) {
       for (int i = 0; i < boidCount; i++) {
         staticBoids[_pattern][i] = Boid(15, 15);
@@ -70,9 +68,7 @@ class PatternFlock : public Drawable {
       }
     }
 
-    // ##################
-    // ### DRAW FRAME ###
-    // ##################
+    // -------------------------- DRAW FRAME -------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
       effects.DimAll(250);  // WAS 230
       

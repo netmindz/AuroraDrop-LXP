@@ -74,13 +74,22 @@ void UpdateDiagnosticsData() {
     dma_display->print(total_render_ms);
     dma_display->print("ms");
 
-    dma_display->setCursor(2,46);
-    dma_display->print(actual_fps);
-    dma_display->print("fps");
+    // actual fps
+    //dma_display->setCursor(2,46);
+    //dma_display->print(actual_fps);
+    //dma_display->print("fps");
+
     // testing udp packet xfer rate
     //dma_display->setCursor(2,46);
     //dma_display->print(fftData.test1);
     //dma_display->print("pk");
+
+    //testing serial packets per second
+    dma_display->setCursor(2,46);
+    dma_display->print(fftData.serial_pps);
+    dma_display->print("pps");
+
+    
     
 
     dma_display->setCursor(2,56);

@@ -1,9 +1,6 @@
 /*
- * Portions of this code are adapted from "Funky Clouds" by Stefan Petrick:
- * https://gist.github.com/anonymous/876f908333cd95315c35
- *
- * Copyright (c) 2014 Stefan Petrick
- * http://www.stefan-petrick.de/wordpress_beta
+ * Aurora: https://github.com/pixelmatix/aurora
+ * Copyright (c) 2014 Jason Coon
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in

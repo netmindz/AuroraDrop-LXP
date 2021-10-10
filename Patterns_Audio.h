@@ -5,51 +5,56 @@
 
 #include "PatternTest.h"
 
-#include "PatternAudio_A_8x8Squares.h"
-#include "PatternAudio_B_BigSpark.h"
-#include "PatternAudio_C_Torus.h"
+#include "PatternAudio_A_RotatingWave.h"
+#include "PatternAudio_B_CircularWave.h"
+#include "PatternAudio_C_DotsSingle.h"
+#include "PatternAudio_D_RotatingSpectrum.h"
 
-#include "PatternAudio_E_RotatingWave.h"
-
-#include "PatternAudio_M_DotsSingle.h"
-#include "PatternAudio_N_Spectrum1.h"
+#include "PatternAudio_N_SpectrumPeakBars.h"
 #include "PatternAudio_O_Spectrum2.h"
 
-// test patterns to integrate
-#include "PatternAudioLines.h"
-#include "PatternAudioCircles.h"
-#include "PatternAudioTriangles.h"
-#include "PatternTestSpectrum.h"
-#include "PatternTestCircles.h"
-#include "PatternAudioWaveSingle.h"
-#include "PatternAudioCirclesReal.h"
-#include "PatternAudioDiagonalSpectrum.h"
-#include "PatternAudioSpectrumCircle.h"
-
+#include "PatternAudio_XR_Torus.h"
+#include "PatternAudio_XS_8x8Squares.h"
+#include "PatternAudio_XT_BigSpark.h"
 #include "PatternAudio_XX_Aurora.h"
-#include "PatternCanvasTest.h"
+
+
+
+
+// test patterns to integrate
+#include "PatternAudio_Z_Lines.h"
+#include "PatternAudio_Z_Circles.h"
+#include "PatternAudio_Z_Triangles.h"
+#include "PatternAudio_Z_WaveSingle.h"
+#include "PatternAudio_P_DiagonalSpectrum.h"
+#include "PatternAudio_Z_SpectrumCircle.h"
+
+
+#include "PatternTestCanvas.h"
+#include "PatternTestSpectrum.h"
 
 
 
 class Patterns_Audio : public Playlist {
   private:
     PatternTest patternTest;
+    PatternTestSpectrum patternTestSpectrum;
     PatternAudio8x8Squares audio8x8Squares;
     PatternAudioBigSpark audioBigSpark;
     PatternAudioTorus audioTorus;
+    PatternAudioRotatingSpectrum audioRotatingSpectrum;
     PatternAudioRotatingWave audioRotatingWave;
+    PatternAudioCircularWave audioCircularWave;
 
     // test
     PatternAudioLines audioLines;
     PatternAudioCircles audioCircles;
     PatternAudioTriangles audioTriangles;
     PatternTestSpectrum testSpectrum;
-    PatternTestCircles testCircles;
-    PatternAudioSpectrum1 audioSpectrum1;
+    PatternAudioSpectrumPeakBars audioSpectrumPeakBars;
     PatternAudioSpectrum2 audioSpectrum2;
     PatternAudioWaveSingle audioWaveSingle;
     PatternAudioDotsSingle audioDotsSingle;
-    PatternAudioCirclesReal audioCirclesReal;
     PatternAudioDiagonalSpectrum audioDiagonalSpectrum;
     PatternAudioSpectrumCircle audioSpectrumCircle;
     PatternAudioAurora audioAurora;
@@ -62,22 +67,25 @@ class Patterns_Audio : public Playlist {
       return currentIndex;
     }
 
-    // always use static on esp32 !!!!
-    const static int PATTERN_COUNT = 10;
+    const static int PATTERN_COUNT = 12;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
       //&patternTest,
+      //&patternTestSpectrum,
+      
+      &audioRotatingWave,
+      &audioCircularWave,
+      &audioDotsSingle,                   // dancing/rolling dots
+      &audioRotatingSpectrum,
 
       &audio8x8Squares,
       &audioBigSpark,
       &audioTorus,
-      &audioRotatingWave,
 
       // working initial proof of concept
-      &audioDotsSingle,                   // dancing/rolling dots
-      &audioSpectrum1,                    // 16 lines
+      &audioSpectrumPeakBars,                    // 16 lines
       &audioSpectrum2,      // to sort
 
       &audioDiagonalSpectrum,   // to tidy
@@ -86,18 +94,14 @@ class Patterns_Audio : public Playlist {
 
 
 
-      //&audioCirclesReal,    // to sort (slow)
       //&audioAurora,
 
-
-
       //&canvasTest,
-      //&audioCircles,      // needs work
+      //&audioCircles,      // messing
       //&audioWaveSingle,   // doing
       //&audioLines,
       //&testCircles,
       //&testSpectrum,
-      
 
     };
 

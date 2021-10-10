@@ -5,43 +5,30 @@
 class PatternTestSpectrum : public Drawable {
   private:
 
-  //int xxx = 0;
-  uint32_t ddd = 0;
-
   public:
     PatternTestSpectrum() 
     {
       name = (char *)"Test Spectrum Pattern";
-      id2 = 1;
+      id = "T";
     }
 
 
-    // #############
-    // ### START ###
-    // #############
+    // ------------- START ### ------------
     void start(uint8_t _pattern){
 
     };
 
-
-
-    // ##################
-    // ### DRAW FRAME ###
-    // ##################
+    // ------------ DRAW FRAME --------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
-    effects.DimAll(250); 
+      effects.DimAll(240); 
 
+      for (byte i = 0; i < MATRIX_WIDTH; i++) 
+      {
+        effects.BresLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / 6), i*4, 255, NOBLEND);
+        effects.BresLine(i, 0, i, fftData.specData[i] / 6, i*4, 255, LINEARBLEND);
+      }
 
-
-
-    for (byte i = 0; i < MATRIX_WIDTH; i++) 
-    {
-      //effects.BresenhamLine(i, serialData.specData[i] / 3, i, 0, dma_display->color565(128, 128, 128));
-      effects.BresenhamLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / 3), dma_display->color565(128, 128, 128));
-    }
-
-    //////effects.ShowFrame();
 
     return 0;
   }

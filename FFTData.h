@@ -15,6 +15,10 @@ class FFTData{
   uint8_t preambleCount = 0;
   byte preambleBytes[7];
 
+  uint32_t serial_pps_ms = millis();
+  uint8_t serial_pps_count = 0;
+  uint8_t serial_pps = 0;
+
   bool messageFound = false;
   uint8_t messageSize = 0;     // max 255 bytes in message
   uint8_t messageCount = 0;    // byte counter for message current being read
@@ -140,6 +144,19 @@ class FFTData{
 
   void processSerialData()
   {
+
+    // momitor packets received per second
+    if (millis() > serial_pps_ms + 1000)
+    {
+      serial_pps = serial_pps_count;
+      serial_pps_count = 0;
+      serial_pps_ms = millis();
+    }
+
+    // flag no audio if no data
+    if (millis() > dataReceivedTime + 1000) noAudio = true;
+
+
     int i = 1;
     while (Serial.available() > 0) 
     {
@@ -195,7 +212,7 @@ class FFTData{
       {
         //Serial.print("MESSAGE FOUND: ");
         //Serial.println(messageType);
-
+        serial_pps_count++;
         dataReceivedTime = millis();
         // process the message depending on its type
         String sTemp;
@@ -286,7 +303,8 @@ class FFTData{
   {
     // audio spectrum data, 96 bytes long
 
-    
+            dataReceivedTime = millis();
+
             //PRINTS("Audio Spectrum Data\n");
             if (iSilence < 255) iSilence++;
             // we expect to find 96 bytes of data

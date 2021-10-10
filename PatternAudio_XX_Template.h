@@ -20,39 +20,36 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PatternEffectTestBlur2d_H
-#define PatternEffectTestBlur2d_H
+#ifndef PatternAudioTemplate_H
+#define PatternAudioTemplate_H
 
-class PatternEffectTestBlur2d : public Drawable {
+class PatternAudioTemplate : public Drawable {
 private:
 
 
-public:
-    PatternEffectTestBlur2d() {
-      name = (char *)"Effect Test 2";
-      id = "A";
+  public:
+    PatternAudioTemplate() {
+      name = (char *)"Template";
+      id = "T";
     }
 
 
-    // #############
-    // ### START ###
-    // #############
+    // ------------------ start -------------------
     void start(uint8_t _pattern) {
+      
 
-        
     }
 
-    // ##################
-    // ### DRAW FRAME ###
-    // ##################
+
+    // --------------------- draw frame -------------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
-        effects.DimAll(250);
 
-        blur2d(effects.leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, 255);
 
-        return 0;
+      return 0;
     }
+
+
 };
 
 #endif

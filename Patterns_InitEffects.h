@@ -9,7 +9,7 @@
 #include "PatternEffect_A_TestBlur2d.h"
 #include "PatternEffect_B_SpiralStream1.h"
 #include "PatternEffect_C_Stream1.h"
-#include "PatternEffect_D_Test4.h"
+#include "PatternEffect_D_Move.h"
 #include "PatternEffect_E_Minimal.h"
 
 
@@ -19,7 +19,7 @@ class Patterns_InitEffects : public Playlist {
     PatternEffectSpiralStream1 effectSpiralStream1;
     PatternEffectTestBlur2d effectTestBlur2d;
     PatternEffectStream1 effectStream1;
-    PatternEffectTest4 effectTest4;
+    PatternEffectMove effectMove;
     PatternEffectMinimal effectMinimal;
 
     int currentIndex = 0;
@@ -37,7 +37,7 @@ class Patterns_InitEffects : public Playlist {
       &effectTestBlur2d,
       &effectSpiralStream1,
       &effectStream1,
-      &effectTest4,
+      &effectMove,
       //&effectMinimal,
 
     };

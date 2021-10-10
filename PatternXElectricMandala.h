@@ -42,7 +42,7 @@ class PatternElectricMandala : public Drawable {
   public:
     PatternElectricMandala() {
       name = (char *)"ElectricMandala";
-      id2 = 1;
+      id = "X";
     }
 
     void start(uint8_t _pattern) {
