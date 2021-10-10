@@ -97,11 +97,11 @@ FFTData fftData;
 #endif
 
 
+#include "Geometry.h"  // Point
 #include "Effects.h"
 Effects effects;
 #include "Drawable.h"
 #include "Playlist.h"
-#include "Geometry.h"  // Point
 
 #include "Vector.h"
 #include "Boid.h"
@@ -126,7 +126,7 @@ uint32_t Xlast_render_ms = millis();
 
 #include "Diagnostics.h"
 
-//long restartCount = 0;    // for rebooting ESP ?
+//long restartCount = 0;    // for rebooting
 
 // #################################################################################################################################
 //  SETUP
