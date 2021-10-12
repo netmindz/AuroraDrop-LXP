@@ -31,6 +31,7 @@ https://youtu.be/6lSb6BLZaRQ
 
 0.0.8
 * View/download visualisation renders from web interface.
+* FFT datagram now 128 bytes long (update your companion applicaction)
 
 0.0.7
 * Tweaks to test patterns.
