@@ -2,14 +2,12 @@ class FFTData{
   public:
 
   #define MAX_SERIAL_MSG_LENGTH 255       // re-think !!!
-  #define BINS 96     // re-think !!!, 192/2 = 96, 192/3 = 64
+  #define BINS 128  // was 96    // re-think !!!, 192/2 = 96, 192/3 = 64
 
-  uint8_t test1;
-
+ uint8_t test1;
 
 //  const uint8_t SERIAL_MSG_AUDIO_SPECTRUM = 65;  // A
-  const uint32_t DROP_OFF_TIME = 10;
-
+  const uint32_t DROP_OFF_TIME = 10;    // not implemented yet
 
   bool preambleFound = false;
   uint8_t preambleCount = 0;
@@ -24,28 +22,22 @@ class FFTData{
   uint8_t messageCount = 0;    // byte counter for message current being read
   uint8_t messageType = 0;
 
-
-
   byte inData[MAX_SERIAL_MSG_LENGTH];
-//  byte spec8Data[BARS];             // 0-8 = silence to peak
-//  byte spec8DataPeak[BARS];         // 0-8 = silence to peak
-//  byte spec255Data[BARS];           // 0-127 = silence to peak level, 128-255 == over peak 
-  uint8_t iSilence = 255;
-  uint32_t dropOffTimer = millis();
+  uint8_t iSilence = 255;                 // to implement instead of noAudio boolean, user counter insteasd for short delay?
+  uint32_t dropOffTimer = millis();       // to implement peak drop off 
 
-  uint16_t bpm = 64;    // for testing
-
+  uint16_t bpm = 64;    // for testing currently, not fully implemented yet by most test patterns
 
   /* ---------------------------------------------------------------------------------------------------------
 
-    TODO: do we want more bytes for better resolution? is 96 enough? want stereo? 
+    TODO: do we want more bytes for better resolution? is 128 enough? want stereo? 
 
-    We currently receive 96 bytes of data representing the audio level info for undefined? frequency ranges,
+    We currently receive 128 bytes of data representing the audio level info for undefined? frequency ranges,
     starting with low bass at byte 0 to high trebele at byte 95. 
     This data is then processed and various useful and sometimes more manageable bins/flags are updated for
     use by pattern animations.
 
-    TODO: do we need to allocate memory dynamicaly for ESP32? 96 bytes currently?
+    TODO: do we need to allocate memory dynamicaly for ESP32? 128 bytes currently?
 
     byte *specData;
     specData = (byte *)malloc(BARS);
@@ -55,11 +47,12 @@ class FFTData{
 
 
     Arrays:
-    'specData' array has 96 'bins' which contains the raw data direct from the serial comms message & has best resolution
-    'specDataPeak' array has 96 'bins' which contains the highest peak value, which will drop off until zero
+    'specData' array has 128 'bins' which contains the raw data direct from the serial comms message & has best resolution
+    'specDataPeak' array has 128 'bins' which contains the highest peak value, which will drop off until zero
     'specData8' has 8 'bins' which contain the averaged values from raw data ranges 0-11, 12-23, 24-35, 36-47, 48-59, 60-71, 72-83, 84-95
     'specData16' has 16 'bins' which contain the averaged values from 0-5, 6-11 12-17, etc
     'specData32' has 32 'bins' which contain the averaged values from 0-2, 3-5, 6-8, etc
+    'specData64' has 64 'bins' which contain the averaged values from 0-1, 2-3, 4-5, etc
     ditto for peak arrays
 
     Flags:
@@ -90,8 +83,8 @@ class FFTData{
     byte specDataAverageVolume;
     byte specDataMaxVolume;
     byte specDataMinVolume;
-    byte specDataMaxBin;            // (0-95) which of the 96 raw bins has highest volume
-    byte specDataMinBin;            // (0-95) which of the 96 raw bins has lowest volume
+    byte specDataMaxBin;            // (0-127) which of the 128 raw bins has highest volume
+    byte specDataMinBin;            // (0-127) which of the 128 raw bins has lowest volume
     byte specData8MaxBin[8];        // (0-11) which of the 12 sub bins within each of the 8 bins has highest volume
     byte specData8MinBin[8];        // (0-11) which of the 12 sub bins within each of the 8 bins has lowest volume
     byte specData16MaxBin[16];      // (0-5) which of the 6 sub bins within each of the 16 bins has highest volume
@@ -112,7 +105,7 @@ class FFTData{
   byte **specDataTodo = nullptr;
   
   // new audio data arrays
-  // all data (currently 96 bins, all mono)
+  // all data (currently 128 bins, all mono)
   byte specData[BINS];                // 0-127 = silence to peak level, 128-255 == over peak 
   byte specDataPeak[BINS];            // 0-127 = silence to peak level, 128-255 == over peak 
 
@@ -127,7 +120,11 @@ class FFTData{
   // 32 averaged bins
   byte specData32[32];
   byte specData32Peak[32];
-  
+
+  // 64 averaged bins
+  byte specData64[64];
+  byte specData64Peak[64];
+
   uint32_t dataReceivedTime = 0;
 
   bool noConnection = true;
@@ -136,7 +133,7 @@ class FFTData{
 
 
   FFTData() {
-    // TODO: do we need to do this, as arrays are currently only 96 bytes?
+    // TODO: do we need to do this, as arrays are currently only 128 bytes? should we do it anyway?
     // we should do dynamic allocation for large audio data, otherwise esp32 toolchain can't link static arrays of such a big size
     specDataTodo = (byte **)malloc(BINS * sizeof(byte *));
   };
@@ -161,6 +158,7 @@ class FFTData{
     while (Serial.available() > 0) 
     {
 
+      // TODO: re-write this better including CRC?
       // the preamble connsists of five + two (seven) bytes: 69, 96 ,69 ,69 ,0, xx, yy 
       // where xx denotes the message type, and yy the length (number of bytes) in the message
       if (!preambleFound) 
@@ -225,10 +223,10 @@ class FFTData{
 
 
           case SERIAL_MSG_AUDIO_SPECTRUM:
-            // audio spectrum data, 96 bytes long
+            // audio spectrum data, 128 bytes long
             //PRINTS("Audio Spectrum Data\n");
             if (iSilence < 255) iSilence++;
-            // we expect to find 96 bytes of data
+            // we expect to find 128 bytes of data
             noAudio = true;
             specDataMinVolume = specData[0];
             specDataMaxVolume = 0;
@@ -252,6 +250,7 @@ class FFTData{
 
             // put data into smaller bin groups for lower resolution workings
             long total = 0;
+
             // group of 8 bins
             for (uint8_t i = 0; i < (BINS); i=i+12) 
             {
@@ -279,6 +278,14 @@ class FFTData{
               specData32[i/3] = total / 3;
             }
 
+            // group of 64 bins
+            for (uint8_t i=0; i<BINS; i=i+2) 
+            {
+              total = 0;
+              for (uint8_t j = 0; j < 2; j++) 
+                total = total + (long)specData[i+j];
+              specData64[i/2] = total / 2;
+            }
 
 
             //Serial.println(spec8Data[4]);
@@ -301,13 +308,13 @@ class FFTData{
 
   void processUDPData(uint8_t data[]) 
   {
-    // audio spectrum data, 96 bytes long
+    // audio spectrum data, 128 bytes long
 
             dataReceivedTime = millis();
 
             //PRINTS("Audio Spectrum Data\n");
             if (iSilence < 255) iSilence++;
-            // we expect to find 96 bytes of data
+            // we expect to find 128 bytes of data
             noAudio = true;
             specDataMinVolume = specData[0];
             specDataMaxVolume = 0;

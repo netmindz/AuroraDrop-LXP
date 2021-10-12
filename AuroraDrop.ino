@@ -29,12 +29,15 @@
 
 // ------------ optional basic web server for testing ------------
 // -- uncomment below lines to enable basic web sever interface --
-//#define USE_WIFI
+#define USE_WIFI
 //const char* ssid = "your_ssid";
 //const char* password = "your_password";
+const char* ssid = "FauldsWyndCCTV";
+const char* password = "123456789a";
 
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include <FastLED.h>
+#include <SPIFFS.h>
 
 /*--------------------- MATRIX GPIO CONFIG  -------------------------*/
 #define R1_PIN 25
@@ -47,7 +50,7 @@
 #define B_PIN 19 // Changed from library default
 #define C_PIN 5
 #define D_PIN 17
-#define E_PIN 18 // 18 (or 32, whatever?)
+#define E_PIN 32 // 18 (or 32, whatever?)
 #define LAT_PIN 4
 #define OE_PIN 15
 #define CLK_PIN 16
@@ -92,11 +95,6 @@ bool option9DisableFinalEffects = false;
 #include "FFTData.h"
 FFTData fftData;
 
-#ifdef USE_WIFI
-  #include "ServerDiagnostics.h"
-#endif
-
-
 #include "Geometry.h"  // Point
 #include "Effects.h"
 Effects effects;
@@ -106,6 +104,11 @@ Effects effects;
 #include "Vector.h"
 #include "Boid.h"
 #include "Attractor.h"
+
+#ifdef USE_WIFI
+  #include "ServerDiagnostics.h"
+#endif
+
 
 #include "Patterns_InitEffects.h"
 #include "Patterns_Audio.h"
@@ -124,6 +127,7 @@ uint32_t startMillis = millis();
 uint32_t Xlast_render_ms = millis();
 
 
+
 #include "Diagnostics.h"
 
 //long restartCount = 0;    // for rebooting
@@ -133,6 +137,7 @@ uint32_t Xlast_render_ms = millis();
 // #################################################################################################################################
 void setup()
 {
+
   HUB75_I2S_CFG mxconfig;
   mxconfig.mx_height = MATRIX_HEIGHT;               // we have 64 pix height panels, as tested
   mxconfig.mx_width = MATRIX_WIDTH;                 // we have 64 pix height panels, as tested
@@ -141,11 +146,11 @@ void setup()
   mxconfig.clkphase = false;                        // change this if you have issues with ghosting.
   mxconfig.driver = HUB75_I2S_CFG::FM6126A;         // in case that we don't use panels based on FM6126A chip, we can change that
   
- /************** SERIAL **************/
+ // serial
   Serial.begin(115200);
   delay(1000);     // allow comms to initilialise
-  
- /************** DISPLAY **************/
+
+ // display
   Serial.println("Starting Display...");
   dma_display = new MatrixPanel_I2S_DMA(mxconfig);
   dma_display->begin();
@@ -161,8 +166,18 @@ void setup()
   dma_display->clearScreen();  
   Serial.println("Starting AuroraDrop Demo...");
 
+  // mount filesystem
+  if(!SPIFFS.begin(true))
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    dma_display->setTextColor(255);
+    dma_display->setCursor(2,2);
+    dma_display->print("SPIFFS Error"); 
+    delay(1000);
+  }
+
+  // Connect to Wi-Fi
   #ifdef USE_WIFI
-    // Connect to Wi-Fi
     Serial.print("Connecting to WiFi SSID - ");
     Serial.print(ssid);
     Serial.println("...");
@@ -178,7 +193,7 @@ void setup()
     option3ShowRenderTime = false;
   #endif
 
-  // setup the effects and NOISE generator
+  // setup the effects and noise generator
   effects.Setup();
   
   // TODO: redo this

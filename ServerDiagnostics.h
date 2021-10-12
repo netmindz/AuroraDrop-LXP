@@ -7,11 +7,9 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-//STUFF NEEDED FOR UDP ************
+// needed for udp 
 #include "AsyncUDP.h"
 AsyncUDP udp;
-
-
 
 bool wifiConnected = false;
 int wifiMessage = 0;          // displays IP message when wifi first connects
@@ -45,6 +43,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     .slider:before {position: absolute; content: ""; height: 32px; width: 32px; left: 8px; bottom: 8px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 3px}
     input:checked+.slider {background-color: #b30000}
     input:checked+.slider:before {-webkit-transform: translateX(32px); -ms-transform: translateX(32px); transform: translateX(32px)}
+	}
   </style>
 </head>
 <body>
@@ -52,6 +51,8 @@ const char index_html[] PROGMEM = R"rawliteral(
   <h3>A U D I O&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V I S U A L I S E R</h3>
   %SLIDERPLACEHOLDER%
   %BUTTONPLACEHOLDER%
+  <br /><br />
+  <a href="/bitmap">Bitmap</a>
 <script>function toggleCheckbox(element) {
   var xhr = new XMLHttpRequest();
   if(element.checked){ xhr.open("GET", "/update?option="+element.id+"&state=1", true); }
@@ -59,6 +60,47 @@ const char index_html[] PROGMEM = R"rawliteral(
   xhr.send();
 }
 </script>
+</body>
+</html>
+)rawliteral";
+
+const char bitmap_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html>
+<head>
+  <title>AuroraDrop Render</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <style>
+    html {font-family: Arial; display: inline-block; text-align: center;}
+    h2 {font-size: 3.0rem; color:#ffc600; text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; margin-bottom: 0.1rem;}
+    h3 {font-size: 1.5rem; color:black; margin: 0.0rem;}
+    h4 {margin-bottom: 0.3rem;}
+    p {font-size: 3.0rem;}
+    body {max-width: 600px; margin:0px auto; padding-bottom: 25px;}
+    div {font-family: Arial; display: inline-block; text-align: center;}
+    .bmp {position: absolute; border: 1px solid #000; height: 256px; width: 256px;}
+    .grid {position: relative; background-image: 
+			linear-gradient( to right, rgba( 0, 0, 0, 0.9 ) 1px, transparent 1px ),
+			linear-gradient( to bottom, rgba( 0, 0, 0, 0.9 ) 1px, transparent 1px );
+		  background-size: 4px 4px;
+		  border: 1px solid #000;
+		  height: 256px;
+		  width: 256px;
+  </style>
+</head>
+<body>
+  <h2>AuroraDrop</h2>
+  <h3>A U D I O&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V I S U A L I S E R</h3>
+  <br />
+  %BITMAPPLACEHOLDER%
+  <div class="bmp">
+    <img src="/test.bmp" width="256" height="256"/>
+  </div>
+  <div class="grid">
+    &nbsp;<br />
+  </div>
+  <br /><br />
+  <a href="/bitmap">Refresh</a>
 </body>
 </html>
 )rawliteral";
@@ -96,6 +138,36 @@ String processor(const String& var){
   }
   return String();
 }
+
+
+const String test = "";
+
+
+// replaces placeholder with bitmaps from spiffs
+String bitmapProcessor(const String& var){
+  
+  //effects.OldGenerateBase64EncodedBitmap();
+  effects.GenerateBitmap();
+
+  if(var == "BITMAPPLACEHOLDER"){
+    String buttons = "";
+    //buttons += "<p><img width='256' height='256' src='data:image/png;base64," + effects.base64EncodedBmp + "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+
+    buttons += "<p>Dynamic: <img width='256' height='256' src='data:image/bmp;base64,";
+    //buttons +=  effects.base64EncodedBmp;
+    //for (int i=0;i<800;i++) {   // 16458
+    //  buttons += (char)bmpData[i];
+    //}
+    buttons +=  "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+
+    //WORKING ->>  buttons += "<p><img src='data:image/png;base64," + effects.base64EncodedBmp + "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+    return String();
+    //return buttons;
+  }
+  return String();
+}
+
+
 
 void checkWifiStatus() {
     if (WiFi.status() == WL_CONNECTED && !wifiConnected) {
@@ -152,6 +224,16 @@ void checkWifiStatus() {
       // set route for root web page
       server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send_P(200, "text/html", index_html, processor);
+      });
+
+      // set route for rendered bitmap web page
+      server.on("/bitmap", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send_P(200, "text/html", bitmap_html, bitmapProcessor);
+      });
+
+      // set route for only test bitmap image
+      server.on("/test.bmp", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(SPIFFS, "/test.bmp", "image/bmp");
       });
 
       // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
