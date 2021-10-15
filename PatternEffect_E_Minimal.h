@@ -31,6 +31,7 @@ public:
     PatternEffectMinimal() {
       name = (char *)"Effect Minimal";
       id = "E";
+      enabled = false;
     }
 
 

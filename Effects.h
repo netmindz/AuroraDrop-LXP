@@ -71,8 +71,21 @@ uint16_t XY16( uint16_t x, uint16_t y)
 {
     if( x >= MATRIX_WIDTH) return 0;
     if( y >= MATRIX_HEIGHT) return 0;
-
-    return (y * MATRIX_WIDTH) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
+    #ifdef USE_LEDSTRIP
+      if (SERPENTINE) {
+        if(x & 0x1) { // is X odd
+          return x * MATRIX_HEIGHT + (MATRIX_HEIGHT -1 - y) ;
+        }
+        else { // x is even
+          return x * MATRIX_HEIGHT + y;
+        } 
+      }
+      else {
+        return (y * MATRIX_WIDTH) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
+      }
+    #else
+      return (y * MATRIX_WIDTH) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
+    #endif
 }
 
 uint8_t beatcos8(accum88 beats_per_minute, uint8_t lowest = 0, uint8_t highest = 255, uint32_t timebase = 0, uint8_t phase_offset = 0)
@@ -119,20 +132,21 @@ public:
   CRGB *leds;
   //CRGB leds[NUM_LEDS];
   //CRGB leds2[NUM_LEDS]; // Faptastic: getting rid of this and any dependant effects or algos. to save memory 24*64*32 bytes of ram (50k).
+
   // AuroraDrop: adding new for canvases
-  CRGB *canvasF;    // full size
+  //CRGB *canvasF;    // full size
   CRGB *canvasH;    // half width canvas no.1
   CRGB *canvasH2;    // half width canvas no.2
-  CRGB *canvasQ;    // quarter
+  //CRGB *canvasQ;    // quarter
 
 
   Effects(){
     // we do dynamic allocation for leds buffer, otherwise esp32 toolchain can't link static arrays of such a big size for 256+ matrixes
     leds = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
-    canvasF = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
+    //canvasF = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
     canvasH = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
     canvasH2 = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
-    canvasQ = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 16);
+    //canvasQ = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 16);
 
 
     // allocate mem for noise effect
@@ -147,6 +161,10 @@ public:
   }
   ~Effects(){
     free(leds);
+    //free(canvasF);
+    free(canvasH);
+    free(canvasH2);
+    //free(canvasQ);
     for (int i = 0; i < MATRIX_WIDTH; ++i) {
       free(noise[i]);
     }
@@ -187,13 +205,19 @@ public:
     // leds = (CRGB*) backgroundLayer.backBuffer();
     // LEDS.countFPS();
 
-	  for (int y=0; y<MATRIX_HEIGHT; ++y){
-  	  for (int x=0; x<MATRIX_WIDTH; ++x){
-		    //Serial.printf("Flushing x, y coord %d, %d\n", x, y);
-    		uint16_t _pixel = XY16(x,y);
-    		dma_display->drawPixelRGB888( x, y, leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
-	    } // end loop to copy fast led to the dma matrix
-	  }
+    #ifdef USE_HUB75
+  	  for (int y=0; y<MATRIX_HEIGHT; ++y){
+    	  for (int x=0; x<MATRIX_WIDTH; ++x){
+		      //Serial.printf("Flushing x, y coord %d, %d\n", x, y);
+    	  	uint16_t _pixel = XY16(x,y);
+    		  dma_display->drawPixelRGB888( x, y, leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+	      } // end loop to copy fast led to the dma matrix
+	    }
+    #endif
+
+    #ifdef USE_LEDSTRIP
+      FastLED.show();
+    #endif
   }
 
   // scale the brightness of the screenbuffer down
@@ -976,18 +1000,18 @@ CRGBPalette16 AllRed_p = {
     beatSineOsci8[4] = beatsin16(fftData.bpm / 16, 0, 255);
     beatSineOsci8[5] = beatsin16(fftData.bpm / 32, 0, 255);
     // scaled for matrix width (e.g. 0-63)
-    beatSineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_WIDTH-1);
-    beatSineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_WIDTH-1);
-    beatSineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_WIDTH-1);
-    beatSineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_WIDTH-1);
-    beatSineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_WIDTH-1);
-    beatSineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_WIDTH-1);
-    beatCosineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_WIDTH-1, 0 , 16384);
-    beatCosineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_WIDTH-1, 0 , 16384);
-    beatCosineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_WIDTH-1, 0 , 16384);
-    beatCosineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_WIDTH-1, 0 , 16384);
-    beatCosineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_WIDTH-1, 0 , 16384);
-    beatCosineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_WIDTH-1, 0 , 16384);
+    beatSineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_HEIGHT-1);
+    beatSineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_HEIGHT-1);
+    beatSineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_HEIGHT-1);
+    beatSineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_HEIGHT-1);
+    beatSineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_HEIGHT-1);
+    beatSineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_HEIGHT-1);
+    beatCosineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_HEIGHT-1, 0 , 16384);
+    beatCosineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_HEIGHT-1, 0 , 16384);
+    beatCosineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_HEIGHT-1, 0 , 16384);
+    beatCosineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_HEIGHT-1, 0 , 16384);
+    beatCosineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_HEIGHT-1, 0 , 16384);
+    beatCosineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_HEIGHT-1, 0 , 16384);
     // oscillators for saw tooth wave forms, scaled 0-255
     beatSawOsci8[0] = beat8(fftData.bpm);
     beatSawOsci8[1] = beat8(fftData.bpm / 2);
@@ -996,12 +1020,12 @@ CRGBPalette16 AllRed_p = {
     beatSawOsci8[4] = beat8(fftData.bpm / 16);
     beatSawOsci8[5] = beat8(fftData.bpm / 32);
     // scaled for matrix width
-    beatSawOsciWidth[0] = map8(beatSawOsci8[0], 0, MATRIX_WIDTH - 1);
-    beatSawOsciWidth[1] = map8(beatSawOsci8[1], 0, MATRIX_WIDTH - 1);
-    beatSawOsciWidth[2] = map8(beatSawOsci8[2], 0, MATRIX_WIDTH - 1);
-    beatSawOsciWidth[3] = map8(beatSawOsci8[3], 0, MATRIX_WIDTH - 1);
-    beatSawOsciWidth[4] = map8(beatSawOsci8[4], 0, MATRIX_WIDTH - 1);
-    beatSawOsciWidth[5] = map8(beatSawOsci8[5], 0, MATRIX_WIDTH - 1);
+    beatSawOsciWidth[0] = map8(beatSawOsci8[0], 0, MATRIX_HEIGHT - 1);
+    beatSawOsciWidth[1] = map8(beatSawOsci8[1], 0, MATRIX_HEIGHT - 1);
+    beatSawOsciWidth[2] = map8(beatSawOsci8[2], 0, MATRIX_HEIGHT - 1);
+    beatSawOsciWidth[3] = map8(beatSawOsci8[3], 0, MATRIX_HEIGHT - 1);
+    beatSawOsciWidth[4] = map8(beatSawOsci8[4], 0, MATRIX_HEIGHT - 1);
+    beatSawOsciWidth[5] = map8(beatSawOsci8[5], 0, MATRIX_HEIGHT - 1);
     // oscillators for square wave forms, scaled 0-255
     beatSquareOsci8[0] = squarewave8(beat8(fftData.bpm), 128);
     beatSquareOsci8[1] = squarewave8(beat8(fftData.bpm / 2), 128);
@@ -1020,7 +1044,7 @@ CRGBPalette16 AllRed_p = {
     if( x >= MATRIX_WIDTH / 2) return 0;
     if( y >= MATRIX_HEIGHT / 2) return 0;
     return (y * (MATRIX_WIDTH / 2)) + x;
-    //return (y * (MATRIX_WIDTH / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
+    //return (y * (MATRIX_WIDTH_TOTAL / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
   }
 
 
@@ -1030,24 +1054,26 @@ CRGBPalette16 AllRed_p = {
   {
     switch (id) {
       // 0=full canvas, 1/2=half widths, 3=quarter, empty/255 = clear all
-      case 0:
-        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
-        break;
+      //case 0:
+      //  memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
+      //  break;
       case 1:
         memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
         break;
       case 2:
         memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
         break;
-      case 3:
-        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
-        break;
+      //case 3:
+      //  memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+      //  break;
       case 255:
-        memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
+      //  memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
         memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
         memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+      //  memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
         break;
+      default:
+        Serial.println("No Canvas?");
     }
   }
 
@@ -1119,7 +1145,7 @@ CRGBPalette16 AllRed_p = {
     else {
       for (int x=0; x < MATRIX_WIDTH / 2; x++) {
         for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
-          //if ((x * scale) + x_offset < MATRIX_WIDTH / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
+          //if ((x * scale) + x_offset < MATRIX_WIDTH_TOTAL / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
           
           // bug here? without this line pixel is always set to white, is clear function working properly?
           //if (x == 31 && x == 31) canvas[CANVAS_HALF(x, y)] = 0;
@@ -1150,7 +1176,7 @@ CRGBPalette16 AllRed_p = {
     else {
       for (int x=0; x < MATRIX_WIDTH / 2; x++) {
         for (int y=0; y < MATRIX_HEIGHT / 2; y++) {
-          //if ((x * scale) + x_offset < MATRIX_WIDTH / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
+          //if ((x * scale) + x_offset < MATRIX_WIDTH_TOTAL / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
           
           // bug here? without this line pixel is always set to white, is clear function working properly?
           //if (x == 31 && x == 31) canvas[CANVAS_HALF(x, y)] = 0;
@@ -1322,6 +1348,8 @@ CRGBPalette16 AllRed_p = {
 
   void RandomCaleidoscope(uint8_t id = 0) 
   {
+    if (option10DisableCaleidoEffects) 
+      return;
 
     //CaleidoscopeB2();
     //return;
@@ -1419,12 +1447,12 @@ CRGBPalette16 AllRed_p = {
     unsigned char *img = NULL;
     int r,g,b;
     int x,y;
-    int w = MATRIX_WIDTH;
+    int w = MATRIX_WIDTH ;
     int h = MATRIX_HEIGHT;
     int filesize = 54 + 3 * w * h;
 
     img = (unsigned char *)malloc(3*w*h);
-    memset(img,255,3*w*h);
+    memset(img,0,3*w*h);
 
     // encode data from panel to img
     for(int i=0; i<w; i++)

@@ -40,6 +40,7 @@ class PatternFlock : public Drawable {
     PatternFlock() {
       name = (char *)"Flock";
       id = "L";
+      enabled = true;
     }
 
     static const int boidCount = 10;

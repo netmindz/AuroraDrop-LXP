@@ -38,8 +38,9 @@ private:
 
 public:
     PatternEffectSpiralStream1() {
-      name = (char *)"Effect Spiral Stream 1";
+      name = (char *)"Spiral Streaming";
       id = "B";
+      enabled = true;
     }
 
 

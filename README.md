@@ -29,13 +29,20 @@ https://youtu.be/6lSb6BLZaRQ
 
 ## Latest Updates
 
+0.0.9
+* Experimental support for LED strip matrix (tested with 16x16).
+* Enable and disable individual effects from web interface.
+* Option to use rendered output as web server favicon.
+* Tweaks to test patterns.
+* General tidy.
+
 0.0.8
 * View/download visualisation renders from web interface.
-* FFT datagram now 128 bytes long (update your companion applicaction)
+* FFT datagram now 128 bytes long. (update your companion applicaction)
 
 0.0.7
 * Tweaks to test patterns.
-* General Tidy
+* General tidy.
 
 0.0.6
 * Fixed bug with delay in serial comms.

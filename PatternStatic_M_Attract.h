@@ -31,6 +31,7 @@ public:
     PatternAttract() {
       name = (char *)"Attract";
       id = "A";
+      enabled = true;
     }
 
     // #############

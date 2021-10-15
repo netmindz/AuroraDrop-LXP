@@ -86,7 +86,7 @@ class PatternAudioSpectrumPeakBars : public Drawable {
         // only draw bars if there is non zero data
         if (data)
           //effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128));
-          effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128), 255);
+          effects.BresenhamLine(x1, y1, x2, y2, 16, 255);
       }
     }
     else 
@@ -110,7 +110,7 @@ class PatternAudioSpectrumPeakBars : public Drawable {
         // only draw bars if there is non zero data
         if (data)
           //effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128));
-          effects.BresenhamLine(x1, y1, x2, y2, dma_display->color565(128, 128, 128), 255);
+          effects.BresenhamLine(x1, y1, x2, y2, 16, 255);
       }
 
 

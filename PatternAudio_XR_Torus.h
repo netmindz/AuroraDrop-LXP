@@ -48,6 +48,7 @@ class PatternAudioTorus : public Drawable {
     PatternAudioTorus() {
       name = (char *)"Audio C - Rotating Torus (WIP)";
       id = (char *)"R";
+      enabled = false;
     }
 
     // #------------- START -------------#

@@ -27,57 +27,75 @@
 *
 */
 
+#define DEBUG 1   // enable/disable debugging output over serial / not working yet
+
 // ------------ optional basic web server for testing ------------
 // -- uncomment below lines to enable basic web sever interface --
 #define USE_WIFI
-//const char* ssid = "your_ssid";
-//const char* password = "your_password";
+const char* ssid = "your_ssid";
+const char* password = "your_password";
 
-#include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
+// uncomment whichever is relevent, or both as long as panel sizes match
+#define USE_HUB75
+//#define USE_LEDSTRIP
+
 #include <FastLED.h>
 #include <SPIFFS.h>
 
-/*--------------------- MATRIX GPIO CONFIG  -------------------------*/
-#define R1_PIN 25
-#define G1_PIN 26
-#define B1_PIN 27
-#define R2_PIN 14
-#define G2_PIN 12
-#define B2_PIN 13
-#define A_PIN 23
-#define B_PIN 19 // Changed from library default
-#define C_PIN 5
-#define D_PIN 17
-#define E_PIN 18 // 18 (or 32, whatever?)
-#define LAT_PIN 4
-#define OE_PIN 15
-#define CLK_PIN 16
+#ifdef USE_HUB75
+  #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
+  /*--------------------- HUB75 MATRIX GPIO CONFIG  ---------------------*/
+  #define R1_PIN 25
+  #define G1_PIN 26
+  #define B1_PIN 27
+  #define R2_PIN 14
+  #define G2_PIN 12
+  #define B2_PIN 13
+  #define A_PIN 23
+  #define B_PIN 19
+  #define C_PIN 5
+  #define D_PIN 17
+  #define E_PIN 18
+  #define LAT_PIN 4
+  #define OE_PIN 15
+  #define CLK_PIN 16
+  MatrixPanel_I2S_DMA *dma_display = nullptr;
+#endif
 
 
-/*--------------------- MATRIX PANEL CONFIG -------------------------*/
-#define MATRIX_HEIGHT 64                        // not tested with anything other than 64x64
-#define MATRIX_WIDTH 64
-#define PANELS_NUMBER 1                         // number of chained panels, if just a single panel, obviously set to 1
+#ifdef USE_LEDSTRIP
+  /*--------------------- LED STRIP GPIO ETC. CONFIG --------------------*/
+  #define LEDSTRIP_RGB_PIN          32 // PWM capable
+  #define LEDSTRIP_TYPE             WS2812B
+  #define LEDSTRIP_COLOR_ORDER      GRB
+  #define LEDSTRIP_BRIGHTNESS       255
+  #define SERPENTINE                true
+#endif
+
+/*----------------------- MATRIX PANEL CONFIG -------------------------*/
+#define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel, 128x64 breaks memory!
+#define PANEL_HEIGHT 64                                     // matirx made from WS2812B led strips will work up to 32x32 (any larger is too slow)
+#define PANELS_NUMBER 1                                     // number of chained HUB75_E panels, working with just a single panel at the moment, so obviously set to 1
+#define MATRIX_WIDTH (PANEL_WIDTH * PANELS_NUMBER)          // not tested with anything other than square 64x64, 32x32 and 16x16
+#define MATRIX_HEIGHT (PANEL_HEIGHT)
 #define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
-
-MatrixPanel_I2S_DMA *dma_display = nullptr;
 
 #define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit messaging...
 
 // fixed maximums here for memory allocation, these must be >= variables used below
 //#define MAX_PATTERNS_AMBIENT_BACKGROUND 1     // not used yet? useful? plasma effects?
-#define MAX_PATTERNS_EFFECT 4                   // bluring/fading/sweeping effects
-#define MAX_PATTERNS_AUDIO 4                    // audio re-active effects
-#define MAX_PATTERNS_STATIC 4                   // standard non-audio animations inc. boids etc.
+#define MAX_PLAYLISTS_EFFECT 4                   // bluring/fading/sweeping effects
+#define MAX_PLAYLISTS_AUDIO 4                    // audio re-active effects
+#define MAX_PLAYLISTS_STATIC 4                   // standard non-audio animations inc. boids etc.
 
 
 // (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
 //static uint8_t maxPatternAmbient = 0;       // not implemented yet! for plasma effects, backgrounds, etc.
-static uint8_t maxPatternInitEffect = 1;      // <------- 1 or 2 is reasonable
-static uint8_t maxPatternAudio = 2;           // <------- 2 or 3
-static uint8_t maxPatternStatic = 2;          // <------- 2 or 3
-static uint8_t maxPatternFinalEffect = 0;     // not used yet! you can try it, but can have a big impact on rendered output at the moment
+static uint8_t maxPlaylistsInitialEffect = 1;      // <------- 1 or 2 is reasonable
+static uint8_t maxPlaylistsAudio = 3;           // <------- 2 or 3
+static uint8_t maxPlaylistsStatic = 2;          // <------- 2 or 3
+static uint8_t maxPlaylistsFinalEffect = 0;     // not used yet! you can try it, but can have a big impact on rendered output at the moment
 
 // diagnostic options, these can be set via web interface when enabled
 bool option1Diagnostics = false;
@@ -89,6 +107,7 @@ bool option6DisableInitialEffects = false;
 bool option7DisableAudio = false;
 bool option8DisableStatic = false;
 bool option9DisableFinalEffects = false;
+bool option10DisableCaleidoEffects = false;
 
 #include "FFTData.h"
 FFTData fftData;
@@ -103,28 +122,27 @@ Effects effects;
 #include "Boid.h"
 #include "Attractor.h"
 
-#ifdef USE_WIFI
-  #include "ServerDiagnostics.h"
-#endif
+#include "Playlist_InitialEffects.h"
+#include "Playlist_Audio.h"
+#include "Playlist_Static.h"
 
+Playlist_InitialEffects playlistInitialEffects[MAX_PLAYLISTS_EFFECT];
+Playlist_Audio playlistAudio[MAX_PLAYLISTS_AUDIO];
+Platlist_Static playlistStatic[MAX_PLAYLISTS_STATIC];
+Playlist_InitialEffects playlistFinalEffects[MAX_PLAYLISTS_EFFECT];
 
-#include "Patterns_InitEffects.h"
-#include "Patterns_Audio.h"
-#include "Patterns_Static.h"
-
-Patterns_InitEffects patternsInitEffects[MAX_PATTERNS_EFFECT];
-Patterns_Audio patternsAudio[MAX_PATTERNS_AUDIO];
-Patterns_Static patternsStatic[MAX_PATTERNS_STATIC];
-Patterns_InitEffects patternsFinalEffects[MAX_PATTERNS_EFFECT];
-
+// TODO: sort? useful or not
 static uint8_t PatternsAudioMainEffectCount = 0;
 static uint8_t PatternsAudioBackdropCount = 0;
 static uint8_t PatternsAudioCaleidoscopeCount = 0;
 static uint16_t PatternsAudioBluringCount = 0;
+
 uint32_t startMillis = millis();
 uint32_t Xlast_render_ms = millis();
 
-
+#ifdef USE_WIFI
+  #include "ServerDiagnostics.h"
+#endif
 
 #include "Diagnostics.h"
 
@@ -136,42 +154,67 @@ uint32_t Xlast_render_ms = millis();
 void setup()
 {
 
-  HUB75_I2S_CFG mxconfig;
-  mxconfig.mx_height = MATRIX_HEIGHT;               // we have 64 pix height panels, as tested
-  mxconfig.mx_width = MATRIX_WIDTH;                 // we have 64 pix height panels, as tested
-  mxconfig.chain_length = PANELS_NUMBER;            // we have x panels chained
-  mxconfig.gpio.e = E_PIN;                          // we MUST assign pin e to some free pin on a board to drive 64 pix height panels with 1/32 scan
-  mxconfig.clkphase = false;                        // change this if you have issues with ghosting.
-  mxconfig.driver = HUB75_I2S_CFG::FM6126A;         // in case that we don't use panels based on FM6126A chip, we can change that
-  
- // serial
+  // serial
   Serial.begin(115200);
   delay(1000);     // allow comms to initilialise
 
- // display
-  Serial.println("Starting Display...");
-  dma_display = new MatrixPanel_I2S_DMA(mxconfig);
-  dma_display->begin();
-  dma_display->setBrightness8(150); //0-255
-  dma_display->fillScreenRGB888(255,0,0);
-  delay(150);
-  //dma_display->fillScreenRGB888(0,255,0);
-  //delay(150);
-  //dma_display->fillScreenRGB888(0,0,255);
-  //delay(150);
-  dma_display->fillScreenRGB888(128,128,128);
-  delay(150);
-  dma_display->clearScreen();  
-  Serial.println("Starting AuroraDrop Demo...");
+  #ifdef USE_HUB75
+    HUB75_I2S_CFG mxconfig;
+    mxconfig.mx_height = PANEL_HEIGHT;                // we have 64 pix height panels, as tested
+    mxconfig.mx_width = PANEL_WIDTH;                  // we have 64 pix height panels, as tested
+    mxconfig.chain_length = PANELS_NUMBER;            // we have x panels chained
+    mxconfig.gpio.e = E_PIN;                          // we MUST assign pin e to some free pin on a board to drive 64 pix height panels with 1/32 scan
+    mxconfig.clkphase = false;                        // change this if you have issues with ghosting.
+    mxconfig.driver = HUB75_I2S_CFG::FM6126A;         // in case that we don't use panels based on FM6126A chip, we can change that
+
+    // test display
+    Serial.println("Starting HUB75 Display...");
+    dma_display = new MatrixPanel_I2S_DMA(mxconfig);
+    dma_display->begin();
+    dma_display->setBrightness8(150); //0-255   // 150 is good for me
+    dma_display->fillScreenRGB888(255,0,0);
+    delay(150);
+    dma_display->fillScreenRGB888(0,255,0);
+    delay(150);
+    dma_display->fillScreenRGB888(0,0,255);
+    delay(150);
+    dma_display->fillScreenRGB888(128,128,128);
+    delay(150);
+    dma_display->clearScreen();  
+  #endif
+
+  #ifdef USE_LEDSTRIP
+    // test display, WS2812B led matrix/strip
+    Serial.println("Starting LED Strip...");
+    FastLED.addLeds<LEDSTRIP_TYPE, LEDSTRIP_RGB_PIN, LEDSTRIP_COLOR_ORDER>(effects.leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+    FastLED.setBrightness(LEDSTRIP_BRIGHTNESS);
+    delay(250);
+    fill_solid(effects.leds, NUM_LEDS, CRGB::Red);
+    FastLED.show();
+    delay(250);
+    fill_solid(effects.leds, NUM_LEDS, CRGB::Green);
+    FastLED.show();
+    delay(250);
+    fill_solid(effects.leds, NUM_LEDS, CRGB::Blue);
+    FastLED.show();
+    delay(250);
+    fill_solid(effects.leds, NUM_LEDS, CRGB::White);
+    FastLED.show();
+    delay(250);
+    fill_solid(effects.leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+  #endif
 
   // mount filesystem
   if(!SPIFFS.begin(true))
   {
     Serial.println("An Error has occurred while mounting SPIFFS");
-    dma_display->setTextColor(255);
-    dma_display->setCursor(2,2);
-    dma_display->print("SPIFFS Error"); 
-    delay(1000);
+    #ifdef USE_HUB75
+      dma_display->setTextColor(255);
+      dma_display->setCursor(2,2);
+      dma_display->print("SPIFFS Error"); 
+      delay(1000);
+    #endif
   }
 
   // Connect to Wi-Fi
@@ -179,17 +222,21 @@ void setup()
     Serial.print("Connecting to WiFi SSID - ");
     Serial.print(ssid);
     Serial.println("...");
-    dma_display->setTextColor(65535);
-    dma_display->setCursor(2,2);
-    dma_display->print("Connecting to WiFi.."); 
-    dma_display->setCursor(2,32);
-    dma_display->print(ssid); 
+    #ifdef USE_HUB75
+      dma_display->setTextColor(65535);
+      dma_display->setCursor(2,2);
+      dma_display->print("Connecting to WiFi.."); 
+      dma_display->setCursor(2,32);
+      dma_display->print(ssid);
+    #endif 
     WiFi.begin(ssid, password);
-    delay(500);
+    delay(1000);
   #else
     option1Diagnostics = false;
     option3ShowRenderTime = false;
   #endif
+
+  Serial.println("Starting AuroraDrop Demo...");
 
   // setup the effects and noise generator
   effects.Setup();
@@ -199,59 +246,59 @@ void setup()
   listPatterns();
 
   // initialise all the initial effects patterns
-  for (uint8_t i=0; i < maxPatternInitEffect; i++)
+  for (uint8_t i=0; i < maxPlaylistsInitialEffect; i++)
   {
-    patternsInitEffects[i].default_fps = 90;
-    patternsInitEffects[i].pattern_fps = 90;
-    patternsInitEffects[i].ms_animation_max_duration = 5000;
-    patternsInitEffects[i].moveRandom(1, i); // start from a random pattern
+    playlistInitialEffects[i].default_fps = 90;
+    playlistInitialEffects[i].pattern_fps = 90;
+    playlistInitialEffects[i].ms_animation_max_duration = 5000;
+    playlistInitialEffects[i].moveRandom(1, i); // start from a random pattern
     Serial.print("Starting with intitial effects pattern: ");
-    Serial.println(patternsInitEffects[i].getCurrentPatternName());
-    patternsInitEffects[i].start(i);
-    patternsInitEffects[i].ms_previous = millis();
-    patternsInitEffects[i].fps_timer = millis();
+    Serial.println(playlistInitialEffects[i].getCurrentPatternName());
+    playlistInitialEffects[i].start(i);
+    playlistInitialEffects[i].ms_previous = millis();
+    playlistInitialEffects[i].fps_timer = millis();
   }
 
   // initialise all the audio effects patterns
-  for (uint8_t i=0; i < maxPatternAudio; i++)
+  for (uint8_t i=0; i < maxPlaylistsAudio; i++)
   {
-    patternsAudio[i].default_fps = 90;
-    patternsAudio[i].pattern_fps = 90;
-    patternsAudio[i].ms_animation_max_duration = 5000;
-    patternsAudio[i].moveRandom(1, i); // start from a random pattern
+    playlistAudio[i].default_fps = 90;
+    playlistAudio[i].pattern_fps = 90;
+    playlistAudio[i].ms_animation_max_duration = 5000;
+    playlistAudio[i].moveRandom(1, i); // start from a random pattern
     Serial.print("Starting with static effects pattern: ");
-    Serial.println(patternsAudio[i].getCurrentPatternName());
-    patternsAudio[i].start(i);
-    patternsAudio[i].ms_previous = millis();
-    patternsAudio[i].fps_timer = millis();
+    Serial.println(playlistAudio[i].getCurrentPatternName());
+    playlistAudio[i].start(i);
+    playlistAudio[i].ms_previous = millis();
+    playlistAudio[i].fps_timer = millis();
   }
 
   // initialise all the static/non-audio effects patterns
-  for (uint8_t i=0; i < maxPatternStatic; i++)
+  for (uint8_t i=0; i < maxPlaylistsStatic; i++)
   {
-    patternsStatic[i].default_fps = 90;
-    patternsStatic[i].pattern_fps = 90;
-    patternsStatic[i].ms_animation_max_duration = 60000;
-    patternsStatic[i].moveRandom(1, i); // start from a random pattern
+    playlistStatic[i].default_fps = 90;
+    playlistStatic[i].pattern_fps = 90;
+    playlistStatic[i].ms_animation_max_duration = 60000;
+    playlistStatic[i].moveRandom(1, i); // start from a random pattern
     Serial.print("Starting with static effects pattern: ");
-    Serial.println(patternsStatic[i].getCurrentPatternName());
-    patternsStatic[i].start(i);
-    patternsStatic[i].ms_previous = millis();
-    patternsStatic[i].fps_timer = millis();
+    Serial.println(playlistStatic[i].getCurrentPatternName());
+    playlistStatic[i].start(i);
+    playlistStatic[i].ms_previous = millis();
+    playlistStatic[i].fps_timer = millis();
   }
 
   // initialise all the final effects patterns
-  for (uint8_t i=0; i < maxPatternFinalEffect; i++)
+  for (uint8_t i=0; i < maxPlaylistsFinalEffect; i++)
   {
-    patternsFinalEffects[i].default_fps = 90;
-    patternsFinalEffects[i].pattern_fps = 90;
-    patternsFinalEffects[i].ms_animation_max_duration = 5000;
-    patternsFinalEffects[i].moveRandom(1, i); // start from a random pattern
+    playlistFinalEffects[i].default_fps = 90;
+    playlistFinalEffects[i].pattern_fps = 90;
+    playlistFinalEffects[i].ms_animation_max_duration = 5000;
+    playlistFinalEffects[i].moveRandom(1, i); // start from a random pattern
     Serial.print("Starting with intitial effects pattern: ");
-    Serial.println(patternsFinalEffects[i].getCurrentPatternName());
-    patternsFinalEffects[i].start(i);
-    patternsFinalEffects[i].ms_previous = millis();
-    patternsFinalEffects[i].fps_timer = millis();
+    Serial.println(playlistFinalEffects[i].getCurrentPatternName());
+    playlistFinalEffects[i].start(i);
+    playlistFinalEffects[i].ms_previous = millis();
+    playlistFinalEffects[i].fps_timer = millis();
   }
 
   Xlast_render_ms = millis();
@@ -290,7 +337,7 @@ void loop()
 
   Xlast_render_ms = millis();
 
-  if (maxPatternInitEffect==0 || option6DisableInitialEffects) effects.DimAll(230);       // if we have no effects enabled, dim screen by small amount (e.g. during testing)
+  if (maxPlaylistsInitialEffect==0 || option6DisableInitialEffects) effects.DimAll(230);       // if we have no effects enabled, dim screen by small amount (e.g. during testing)
 
   // clear counters/flags for psuedo randomness workings inside pattern setup and drawing
   PatternsAudioMainEffectCount = 0;
@@ -302,39 +349,42 @@ void loop()
   // -------------- loop through, and apply each of the initial effects patterns ----------------
 
   if (!option6DisableInitialEffects) {
-  for (uint8_t i=0; i < maxPatternInitEffect; i++)
+  for (uint8_t i=0; i < maxPlaylistsInitialEffect; i++)
   {
     // -------- start next animation if max duration reached --------
-    if ( (millis() - patternsInitEffects[i].ms_previous) > patternsInitEffects[i].ms_animation_max_duration) 
+    if ( (millis() - playlistInitialEffects[i].ms_previous) > playlistInitialEffects[i].ms_animation_max_duration) 
     {
       if (!option4PauseCycling) {
-        patternsInitEffects[i].stop();      
-        patternsInitEffects[i].moveRandom(1, i);
+        playlistInitialEffects[i].stop();      
+        do {
+          playlistInitialEffects[i].moveRandom(1, i);
+        }
+        while (!playlistInitialEffects[i].getCurrentItemEnabled());
         // patterns.move(1);
-        patternsInitEffects[i].start(i);  
+        playlistInitialEffects[i].start(i);  
         Serial.print("Changing initial effects pattern X  to:  ");
-        Serial.println(patternsInitEffects[i].getCurrentPatternName());
-        patternsInitEffects[i].ms_previous = millis();
-        patternsInitEffects[i].fps_timer = millis();
+        Serial.println(playlistInitialEffects[i].getCurrentPatternName());
+        playlistInitialEffects[i].ms_previous = millis();
+        playlistInitialEffects[i].fps_timer = millis();
       }
     }
     // -------- draw the next frame if fps timer dictates so --------
-    if ( 1000 / patternsInitEffects[i].pattern_fps + patternsInitEffects[i].last_frame < millis())
+    if ( 1000 / playlistInitialEffects[i].pattern_fps + playlistInitialEffects[i].last_frame < millis())
     {
-      patternsInitEffects[i].last_frame = millis();
-      patternsInitEffects[i].pattern_fps = patternsInitEffects[i].drawFrame(i, maxPatternInitEffect);
-      if (!patternsInitEffects[i].pattern_fps)
-        patternsInitEffects[i].pattern_fps = patternsInitEffects[i].default_fps;
-      ++patternsInitEffects[i].fps;
-      patternsInitEffects[i].render_ms = millis() - patternsInitEffects[i].last_frame;
+      playlistInitialEffects[i].last_frame = millis();
+      playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].drawFrame(i, maxPlaylistsInitialEffect);
+      if (!playlistInitialEffects[i].pattern_fps)
+        playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].default_fps;
+      ++playlistInitialEffects[i].fps;
+      playlistInitialEffects[i].render_ms = millis() - playlistInitialEffects[i].last_frame;
     }
     // ----- every 1000ms update fps and timer
-    if (patternsInitEffects[i].fps_timer + 1000 < millis()){
+    if (playlistInitialEffects[i].fps_timer + 1000 < millis()){
       //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-      patternsInitEffects[i].fps_timer = millis();
-      patternsInitEffects[i].fps_last = patternsInitEffects[i].fps;
-      actual_fps = patternsInitEffects[i].fps;
-      patternsInitEffects[i].fps = 0;
+      playlistInitialEffects[i].fps_timer = millis();
+      playlistInitialEffects[i].fps_last = playlistInitialEffects[i].fps;
+      actual_fps = playlistInitialEffects[i].fps;
+      playlistInitialEffects[i].fps = 0;
     }
   }
   }
@@ -342,20 +392,23 @@ void loop()
 
   // -------------- loop through, and apply each of the audio re-active patterns ----------------
   if (!option7DisableAudio) {
-  for (uint8_t i=0; i < maxPatternAudio; i++)
+  for (uint8_t i=0; i < maxPlaylistsAudio; i++)
   {
     // -------- start next animation if max duration reached --------
-    if ( (millis() - patternsAudio[i].ms_previous) > patternsAudio[i].ms_animation_max_duration) 
+    if ( (millis() - playlistAudio[i].ms_previous) > playlistAudio[i].ms_animation_max_duration) 
     {
       if (!option4PauseCycling) {
-        patternsAudio[i].stop();      
-        patternsAudio[i].moveRandom(1, i);
+        playlistAudio[i].stop();      
+        do {
+          playlistAudio[i].moveRandom(1, i);
+        }
+        while (!playlistAudio[i].getCurrentItemEnabled());
         //patterns.move(1);
-        patternsAudio[i].start(i);  
+        playlistAudio[i].start(i);  
         Serial.print("Changing audio pattern X to:  ");
-        Serial.println(patternsAudio[i].getCurrentPatternName());
-        patternsAudio[i].ms_previous = millis();
-        patternsAudio[i].fps_timer = millis();
+        Serial.println(playlistAudio[i].getCurrentPatternName());
+        playlistAudio[i].ms_previous = millis();
+        playlistAudio[i].fps_timer = millis();
         // select a random palette when ANY of the audio patterns start/re-start, this can look funky when/if they start changing out out sync
         // TODO: consider randomly locking palette change to only when the first pattern of the group re-starts (or maybe also when an initial effect restarts)
         // possible bug? if we change the palette when the palette is currently transitioning to another, the palette changes abruptly?
@@ -363,25 +416,25 @@ void loop()
       }
     }
     // -------- draw the next frame if fps timer dictates so --------
-    if ( 1000 / patternsAudio[i].pattern_fps + patternsAudio[i].last_frame < millis())
+    if ( 1000 / playlistAudio[i].pattern_fps + playlistAudio[i].last_frame < millis())
     {
-      patternsAudio[i].last_frame = millis();
-      patternsAudio[i].pattern_fps = patternsAudio[i].drawFrame(i, maxPatternAudio);
-      if (!patternsAudio[i].pattern_fps)
-        patternsAudio[i].pattern_fps = patternsAudio[i].default_fps;
-      ++patternsAudio[i].fps;
-      patternsAudio[i].render_ms = millis() - patternsAudio[i].last_frame;
+      playlistAudio[i].last_frame = millis();
+      playlistAudio[i].pattern_fps = playlistAudio[i].drawFrame(i, maxPlaylistsAudio);
+      if (!playlistAudio[i].pattern_fps)
+        playlistAudio[i].pattern_fps = playlistAudio[i].default_fps;
+      ++playlistAudio[i].fps;
+      playlistAudio[i].render_ms = millis() - playlistAudio[i].last_frame;
     }
     // ----- every 1000ms update fps and timer
-    if (patternsAudio[i].fps_timer + 1000 < millis()){
+    if (playlistAudio[i].fps_timer + 1000 < millis()){
       //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
 
 
       // fillScreen(dma_display->color565(128, 0, 0));
-      patternsAudio[i].fps_timer = millis();
-      patternsAudio[i].fps_last = patternsAudio[i].fps;
-      actual_fps = patternsAudio[i].fps;
-      patternsAudio[i].fps = 0;
+      playlistAudio[i].fps_timer = millis();
+      playlistAudio[i].fps_last = playlistAudio[i].fps;
+      actual_fps = playlistAudio[i].fps;
+      playlistAudio[i].fps = 0;
     }
   }
   }
@@ -390,39 +443,42 @@ void loop()
 
   // ---------- loop through, and apply each of the audio static (mostly) patterns, e.g. boids --------
   if (!option8DisableStatic) {
-  for (uint8_t i=0; i < maxPatternStatic; i++)
+  for (uint8_t i=0; i < maxPlaylistsStatic; i++)
   {
     // -------- start next animation if max duration reached --------
-    if ( (millis() - patternsStatic[i].ms_previous) > patternsStatic[i].ms_animation_max_duration) 
+    if ( (millis() - playlistStatic[i].ms_previous) > playlistStatic[i].ms_animation_max_duration) 
     {
       if (!option4PauseCycling) {
-        patternsStatic[i].stop();      
-        patternsStatic[i].moveRandom(1, i);
+        playlistStatic[i].stop();      
+        do {
+          playlistStatic[i].moveRandom(1, i);
+        }
+        while (!playlistStatic[i].getCurrentItemEnabled());
         //patterns.move(1);
-        patternsStatic[i].start(i);  
+        playlistStatic[i].start(i);  
         Serial.print("Changing statix pattern X to:  ");
-        Serial.println(patternsStatic[i].getCurrentPatternName());
-        patternsStatic[i].ms_previous = millis();
-        patternsStatic[i].fps_timer = millis();
+        Serial.println(playlistStatic[i].getCurrentPatternName());
+        playlistStatic[i].ms_previous = millis();
+        playlistStatic[i].fps_timer = millis();
       }
     }
     // -------- draw the next frame if fps timer dictates so --------
-    if (1000 / patternsStatic[i].pattern_fps + patternsStatic[i].last_frame < millis())
+    if (1000 / playlistStatic[i].pattern_fps + playlistStatic[i].last_frame < millis())
     {
-      patternsStatic[i].last_frame = millis();
-      patternsStatic[i].pattern_fps = patternsStatic[i].drawFrame(i, maxPatternStatic);
-      if (!patternsStatic[i].pattern_fps)
-        patternsStatic[i].pattern_fps = patternsStatic[i].default_fps;
-      ++patternsStatic[i].fps;
-      patternsStatic[i].render_ms = millis() - patternsStatic[i].last_frame;
+      playlistStatic[i].last_frame = millis();
+      playlistStatic[i].pattern_fps = playlistStatic[i].drawFrame(i, maxPlaylistsStatic);
+      if (!playlistStatic[i].pattern_fps)
+        playlistStatic[i].pattern_fps = playlistStatic[i].default_fps;
+      ++playlistStatic[i].fps;
+      playlistStatic[i].render_ms = millis() - playlistStatic[i].last_frame;
     }
     // ----- every 1000ms update fps and timer
-    if (patternsStatic[i].fps_timer + 1000 < millis()){
+    if (playlistStatic[i].fps_timer + 1000 < millis()){
       //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-      patternsStatic[i].fps_timer = millis();
-      patternsStatic[i].fps_last = patternsStatic[i].fps;
-      actual_fps = patternsStatic[i].fps;
-      patternsStatic[i].fps = 0;
+      playlistStatic[i].fps_timer = millis();
+      playlistStatic[i].fps_last = playlistStatic[i].fps;
+      actual_fps = playlistStatic[i].fps;
+      playlistStatic[i].fps = 0;
     }
   }
   }
@@ -430,39 +486,42 @@ void loop()
 
   // apply final set of effects   ??? WE NEED BETTER POST EFFECTS RANDONISM ???
   if (!option9DisableFinalEffects) {
-    for (uint8_t i=0; i < maxPatternFinalEffect; i++)
+    for (uint8_t i=0; i < maxPlaylistsFinalEffect; i++)
     {
       // #-------- start next animation if maxduration reached --------#
-      if ( (millis() - patternsFinalEffects[i].ms_previous) > patternsFinalEffects[i].ms_animation_max_duration) 
+      if ( (millis() - playlistFinalEffects[i].ms_previous) > playlistFinalEffects[i].ms_animation_max_duration) 
       {
         if (!option4PauseCycling) {
-          patternsFinalEffects[i].stop();
-          patternsFinalEffects[i].moveRandom(1, i);
+          playlistFinalEffects[i].stop();
+          do {
+            playlistFinalEffects[i].moveRandom(1, i);
+          }
+          while (!playlistFinalEffects[i].getCurrentItemEnabled());
           //patterns.move(1);
-          patternsFinalEffects[i].start(i);  
+          playlistFinalEffects[i].start(i);  
           Serial.print("Changing final effect pattern X to:  ");
-          Serial.println(patternsFinalEffects[i].getCurrentPatternName());
-          patternsFinalEffects[i].ms_previous = millis();
-          patternsFinalEffects[i].fps_timer = millis();
+          Serial.println(playlistFinalEffects[i].getCurrentPatternName());
+          playlistFinalEffects[i].ms_previous = millis();
+          playlistFinalEffects[i].fps_timer = millis();
         }
       }
       // -------- draw the next frame if fps timer dictates so --------
-      if (1000 / patternsFinalEffects[i].pattern_fps + patternsFinalEffects[i].last_frame < millis())
+      if (1000 / playlistFinalEffects[i].pattern_fps + playlistFinalEffects[i].last_frame < millis())
       {
-        patternsFinalEffects[i].last_frame = millis();
-        patternsFinalEffects[i].pattern_fps = patternsFinalEffects[i].drawFrame(i, maxPatternFinalEffect);
-        if (!patternsFinalEffects[i].pattern_fps)
-          patternsFinalEffects[i].pattern_fps = patternsFinalEffects[i].default_fps;
-        ++patternsFinalEffects[i].fps;
-        patternsFinalEffects[i].render_ms = millis() - patternsStatic[i].last_frame;
+        playlistFinalEffects[i].last_frame = millis();
+        playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].drawFrame(i, maxPlaylistsFinalEffect);
+        if (!playlistFinalEffects[i].pattern_fps)
+          playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].default_fps;
+        ++playlistFinalEffects[i].fps;
+        playlistFinalEffects[i].render_ms = millis() - playlistStatic[i].last_frame;
       }
 
-      if (patternsFinalEffects[i].fps_timer + 1000 < millis()){
+      if (playlistFinalEffects[i].fps_timer + 1000 < millis()){
         //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-        patternsFinalEffects[i].fps_timer = millis();
-        patternsFinalEffects[i].fps_last = patternsFinalEffects[i].fps;
-        actual_fps = patternsFinalEffects[i].fps;
-        patternsFinalEffects[i].fps = 0;
+        playlistFinalEffects[i].fps_timer = millis();
+        playlistFinalEffects[i].fps_last = playlistFinalEffects[i].fps;
+        actual_fps = playlistFinalEffects[i].fps;
+        playlistFinalEffects[i].fps = 0;
       }
     }
   }
@@ -495,8 +554,18 @@ void loop()
   // seriously dim anything left rendering on the panel if there is no audio
   //if(fftData.noAudio) effects.DimAll(50);
 
-  // update the panel frame with the final effects rendered frame
-  effects.ShowFrame();
+  #ifdef USE_HUB75
+    // update the panel frame with the final effects rendered frame
+    effects.ShowFrame();
+  #endif
+
+  // ledstrip
+  #ifdef USE_LEDSTRIP
+    // you don't need to do both
+    #ifndef USE_HUB75
+      FastLED.show();
+    #endif
+  #endif
 
   // ----------------------- end ---------------------------
 
@@ -504,7 +573,7 @@ void loop()
 
 void listPatterns() {
   // TODO:  working functionality
-  if (maxPatternAudio > 0) {
-    patternsAudio[0].listPatterns();
+  if (maxPlaylistsAudio > 0) {
+    playlistAudio[0].listPatterns();
   }
 }

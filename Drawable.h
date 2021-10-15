@@ -41,7 +41,15 @@ public:
 
     char* id;
     uint8_t id2;
+    bool enabled = false;
 
+    virtual bool isEnabled() {
+        return enabled;
+    }
+
+    virtual void setEnabled(bool _value) {
+        enabled = _value;
+    }
 
 
     virtual bool isRunnable() {
@@ -55,7 +63,9 @@ public:
     // a single frame should be drawn as fast as possible, without any delay or blocking
     // return how many millisecond delay is requested before the next call to drawFrame()
     virtual unsigned int drawFrame(uint8_t _instance, uint8_t _total) {
-		dma_display->fillScreen(0);
+
+		//dma_display->fillScreen(0);   // removed to support LEDSTRIP
+
         //backgroundLayer.fillScreen({ 0, 0, 0 });
         return 0;
     };

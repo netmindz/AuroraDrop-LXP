@@ -110,7 +110,7 @@ class PatternAudioWaveSingle : public Drawable {
 
       // TODO: only draw bars if there is non zero data
       if (!fftData.noAudio)
-        effects.BresenhamLine(x0, y0, x1, y1, dma_display->color565(128, 128, 128));
+        effects.BresenhamLine(x0, y0, x1, y1, 16);
 
       // invert direction next loop
       //invert = !invert;
@@ -120,7 +120,7 @@ class PatternAudioWaveSingle : public Drawable {
     // TODO: only draw bars if there is non zero data
     // final clean-up line
     if (!fftData.noAudio)
-      effects.BresenhamLine(x1, y1, MATRIX_WIDTH, MATRIX_CENTER_Y, dma_display->color565(128, 128, 128));
+      effects.BresenhamLine(x1, y1, MATRIX_WIDTH, MATRIX_CENTER_Y, 16);
 
 
 

@@ -29,8 +29,9 @@ private:
 
 public:
     PatternEffectTestBlur2d() {
-      name = (char *)"Effect Test 2";
+      name = (char *)"2D Blurring";
       id = "A";
+      enabled = true;
     }
 
 

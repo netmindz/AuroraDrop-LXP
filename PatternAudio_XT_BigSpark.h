@@ -56,8 +56,8 @@ class PatternAudioBigSpark : public Drawable {
 
     PatternAudioBigSpark() {
       name = (char *)"Big Spark (WIP)";
-      id2 = 9;
       id = (char *)"T";;
+      enabled = false;
     }
 
     // #------------- START -------------#

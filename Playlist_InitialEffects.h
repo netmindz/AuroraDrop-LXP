@@ -1,5 +1,5 @@
-#ifndef Patterns_InitEffects_H
-#define Patterns_InitEffects_H
+#ifndef Platlist_InitialEffects_H
+#define Platlist_InitialEffects_H
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -13,7 +13,7 @@
 #include "PatternEffect_E_Minimal.h"
 
 
-class Patterns_InitEffects : public Playlist {
+class Playlist_InitialEffects : public Playlist {
   private:
 
     PatternEffectSpiralStream1 effectSpiralStream1;
@@ -29,7 +29,7 @@ class Patterns_InitEffects : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 4;
+    const static int PATTERN_COUNT = 5;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -38,31 +38,53 @@ class Patterns_InitEffects : public Playlist {
       &effectSpiralStream1,
       &effectStream1,
       &effectMove,
-      //&effectMinimal,
+      &effectMinimal,
 
     };
 
   public:
-    Patterns_InitEffects() {
+    Playlist_InitialEffects() {
       // add the items to the shuffledItems array
       for (int a = 0; a < PATTERN_COUNT; a++) {
         shuffledItems[a] = items[a];
       }
-
       shuffleItems();
-
       this->currentItem = items[0];
-
-      for (int i=0; i < maxPatternInitEffect; i++) 
+      for (int i=0; i < maxPlaylistsInitialEffect; i++) 
       {
       this->currentItem->start(i); 
       }
-
-
-
     }
 
     //char* Drawable::name = (char *)"Patterns";
+
+    // Auroradrop: 
+    // Auroradrop: 
+    char* getItemName(int _id) {
+      return items[_id]->name;      
+    }
+
+    int getPatternCount() {
+      return PATTERN_COUNT;
+    }
+
+    bool getItemEnabled(int _id) {
+      return items[_id]->isEnabled();      
+    }
+
+    void setItemEnabled(int _id, int value) {
+        //items[_id]->enabled == (bool)value;
+        items[_id]->setEnabled((bool)value);
+        Serial.print("pattern id "); Serial.print(id); Serial.print(" changed to "); Serial.println(value);
+    }
+
+    bool getCurrentItemEnabled() {
+      return this->currentItem->isEnabled();      
+    }
+
+    // Auroradrop: 
+    // Auroradrop: 
+
 
     void stop() {
       if (currentItem)
@@ -180,10 +202,8 @@ class Patterns_InitEffects : public Playlist {
           return true;
         }
       }
-
       return false;
     }
-
 
     bool setPattern(int index, uint8_t _pattern) {
       if (index >= PATTERN_COUNT || index < 0)

@@ -106,6 +106,7 @@ class PatternAudioCircularWave : public Drawable {
     PatternAudioCircularWave() {
       name = (char *)"Circular Wave";
       id = "B";
+      enabled = true;
     }
 
     // ------------------ start -------------------

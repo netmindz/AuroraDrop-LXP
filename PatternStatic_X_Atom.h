@@ -41,6 +41,7 @@ class PatternStaticAtom : public Drawable {
     PatternStaticAtom() {
       name = (char *)"Audio C - Tunnel (WIP)";
       id = (char *)"X";
+      enabled = false;
     }
 
     // #------------- START -------------#

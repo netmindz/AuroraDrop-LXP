@@ -27,6 +27,7 @@ class PatternFlowField : public Drawable {
     PatternFlowField() {
       name = (char *)"FlowField";
       id = "F";
+      enabled = true;
     }
 
     uint16_t x;

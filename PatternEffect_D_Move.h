@@ -31,8 +31,9 @@ private:
 
 public:
     PatternEffectMove() {
-      name = (char *)"Effect Test 4";
+      name = (char *)"Directional Move";
       id = "D";
+      enabled = true;
     }
 
 

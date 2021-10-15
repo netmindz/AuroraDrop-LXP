@@ -49,6 +49,7 @@ class PatternAudioRotatingWave : public Drawable {
     PatternAudioRotatingWave() {
       name = (char *)"Rotating Wave";
       id = "A";
+      enabled = true;
     }
 
 

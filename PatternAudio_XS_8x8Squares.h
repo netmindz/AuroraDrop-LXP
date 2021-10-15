@@ -63,12 +63,11 @@ class PatternAudio8x8Squares : public Drawable {
     PatternAudio8x8Squares() {
       name = (char *)"8x8 Squares (WIP)";
       id = (char *)"S";
+      enabled = false;
     }
 
     // #------------- START -------------#
     void start(uint8_t _order) {
-
-      id2 = 8;
 
       // randomize the effects to use
       generalRand1 = random(0, 2);                      // for stream effect directions

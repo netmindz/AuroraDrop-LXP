@@ -28,19 +28,24 @@ private:
     PVector gravity = PVector(0, 0.0125);
     //PVector gravity = PVector(0, 0.125);
 
+    float startVelocityScale;
+
 public:
     PatternStaticBounce() {
       name = (char *)"Bounce";
       id = "B";
+      enabled = true;
     }
 
     // ------------------------ START ------------------------
     void start(uint8_t _pattern) {
+        startVelocityScale = (float)random(10,20) / 1000.0;
+
         unsigned int colorWidth = 256 / count;
         for (int i = 0; i < count; i++) {
             Boid boid = Boid(i, 0);
             boid.velocity.x = 0;
-            boid.velocity.y = i * -0.01;
+            boid.velocity.y = i * -startVelocityScale;  // was -0.01, now random betwee -0.01 and -0.02
             boid.colorIndex = colorWidth * i;
             boid.maxforce = 10;
             boid.maxspeed = 10;

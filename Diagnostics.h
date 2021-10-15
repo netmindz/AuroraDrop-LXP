@@ -15,6 +15,8 @@ uint32_t actual_fps = 0;
 
 void UpdateDiagnosticsData() {
 
+#ifdef USE_HUB75
+
   // ------------------------ INFO --------------------------
 
   // ---------------- show total render time ----------------
@@ -96,34 +98,34 @@ void UpdateDiagnosticsData() {
     dma_display->print(fftData.bpm);
     dma_display->print("bpm");
 
-  for (uint8_t i=0; i < maxPatternInitEffect; i++) {
+  for (uint8_t i=0; i < maxPlaylistsInitialEffect; i++) {
       dma_display->setTextColor(WHITE);
       dma_display->setCursor(2,2+(i*10));
-      dma_display->print(patternsInitEffects[i].getCurrentPatternId());      //dma_display->print(patternsAudio[i].id3);                 // why not?
+      dma_display->print(playlistInitialEffects[i].getCurrentPatternId());      //dma_display->print(patternsAudio[i].id3);                 // why not?
       dma_display->setTextColor(BLUE);
-      if (patternsInitEffects[i].render_ms > 10) dma_display->setTextColor(YELLOW);
-      if (patternsInitEffects[i].render_ms > 15) dma_display->setTextColor(MAGENTA);
-      dma_display->print(patternsInitEffects[i].render_ms);
+      if (playlistInitialEffects[i].render_ms > 10) dma_display->setTextColor(YELLOW);
+      if (playlistInitialEffects[i].render_ms > 15) dma_display->setTextColor(MAGENTA);
+      dma_display->print(playlistInitialEffects[i].render_ms);
       //dma_display->print(patternsInitEffects[i].fps_last);
   }
-  for (uint8_t i=0; i < maxPatternAudio; i++) {
+  for (uint8_t i=0; i < maxPlaylistsAudio; i++) {
       dma_display->setTextColor(WHITE);
       dma_display->setCursor(22,2+(i*10));
-      dma_display->print(patternsAudio[i].getCurrentPatternId());      //dma_display->print(patternsAudio[i].id3);                 // why not?
+      dma_display->print(playlistAudio[i].getCurrentPatternId());      //dma_display->print(patternsAudio[i].id3);                 // why not?
       dma_display->setTextColor(BLUE);
-      if (patternsAudio[i].render_ms > 10) dma_display->setTextColor(YELLOW);
-      if (patternsAudio[i].render_ms > 15) dma_display->setTextColor(MAGENTA);
-      dma_display->print(patternsAudio[i].render_ms);
+      if (playlistAudio[i].render_ms > 10) dma_display->setTextColor(YELLOW);
+      if (playlistAudio[i].render_ms > 15) dma_display->setTextColor(MAGENTA);
+      dma_display->print(playlistAudio[i].render_ms);
       //dma_display->print(patternsAudio[i].fps_last);
   }
-  for (uint8_t i=0; i < maxPatternStatic; i++) {
+  for (uint8_t i=0; i < maxPlaylistsStatic; i++) {
       dma_display->setTextColor(WHITE);
       dma_display->setCursor(42,2+(i*10));
-      dma_display->print(patternsStatic[i].getCurrentPatternId());      //dma_display->print(patternsAudio[i].id3);                 // why not?
+      dma_display->print(playlistStatic[i].getCurrentPatternId());      //dma_display->print(patternsAudio[i].id3);                 // why not?
       dma_display->setTextColor(BLUE);
-      if (patternsStatic[i].render_ms > 10) dma_display->setTextColor(YELLOW);
-      if (patternsStatic[i].render_ms > 15) dma_display->setTextColor(MAGENTA);
-      dma_display->print(patternsStatic[i].render_ms);
+      if (playlistStatic[i].render_ms > 10) dma_display->setTextColor(YELLOW);
+      if (playlistStatic[i].render_ms > 15) dma_display->setTextColor(MAGENTA);
+      dma_display->print(playlistStatic[i].render_ms);
       //dma_display->print(patternsStatic[i].fps_last);
   }
 
@@ -175,5 +177,22 @@ void UpdateDiagnosticsData() {
 
 
   }
+
+#endif
+
+#ifdef USE_LEDSTRIP
+
+  // if WiFi has just connected, show IP address
+  #ifdef USE_WIFI 
+    if (wifiMessage > 0) {
+      wifiMessage--;
+
+      // TODO: write ip to matrix
+
+    }
+  #endif
+
+#endif
+
 
 }

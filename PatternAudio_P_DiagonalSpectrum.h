@@ -109,12 +109,12 @@ class PatternAudioDiagonalSpectrum : public Drawable {
             x1 = tx1 - height;
             y1 = ty1 + height;
             //effects.leds[XY(x1, y1)] += effects.ColorFromCurrentPalette(color1, brightness);
-            effects.BresenhamLine(x0, y0, x1, y1, dma_display->color565(128, 128, 128), 255);
+            effects.BresenhamLine(x0, y0, x1, y1, 16, 255);
             x0 = tx1 + (height / 2);
             y0 = ty1 - (height / 2);
             x1 = tx1 - (height / 2);
             y1 = ty1 + (height / 2);
-            effects.BresenhamLine(x0, y0, x1, y1, dma_display->color565(128, 128, 128), 255);
+            effects.BresenhamLine(x0, y0, x1, y1, 16, 255);
           }
         }
       } 
@@ -128,7 +128,7 @@ class PatternAudioDiagonalSpectrum : public Drawable {
             y0 = ty1 - height;
             x1 = tx1 + height;
             y1 = ty1 + height;
-            effects.BresenhamLine(x0, y0, x1, y1, dma_display->color565(128, 128, 128), 255);
+            effects.BresenhamLine(x0, y0, x1, y1, 16, 255);
             //x0 = tx1 - (height / 2);
             //y0 = ty1 + (height / 2);
             //x1 = tx1 - (height / 2);

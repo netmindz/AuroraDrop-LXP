@@ -33,8 +33,9 @@ private:
 
 public:
   PatternEffectStream1() {
-    name = (char *)"Effect Stream 1";
+    name = (char *)"Directional Stream";
     id = "C";
+    enabled = true;
   }
 
   // ---------------- START ----------------

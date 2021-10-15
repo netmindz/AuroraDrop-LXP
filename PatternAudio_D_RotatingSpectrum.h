@@ -59,8 +59,9 @@ class PatternAudioRotatingSpectrum : public Drawable {
 
 public:
   PatternAudioRotatingSpectrum() {
-    name = (char *)"Rotating Wave";
+    name = (char *)"Rotating Spectrum";
     id = "D";
+    enabled = true;
   }
 
 

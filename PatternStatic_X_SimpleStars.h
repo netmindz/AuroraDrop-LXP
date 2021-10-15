@@ -34,6 +34,7 @@ class PatternStaticSimpleStars : public Drawable {
     PatternStaticSimpleStars() {
       name = (char *)"Static X - Simple Stars";
       id = (char *)"X";
+      enabled = false;
     }
 
     uint16_t x;

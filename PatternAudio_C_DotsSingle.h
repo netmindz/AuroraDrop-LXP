@@ -58,6 +58,7 @@ class PatternAudioDotsSingle : public Drawable {
     {
       name = (char *)"Audio Dots Single";
       id = (char *)"C";
+      enabled = true;
     }
 
 
@@ -121,8 +122,10 @@ class PatternAudioDotsSingle : public Drawable {
         }
         else
         {
-          color1 = dma_display->color565(128, i, 128);
-          color2 = dma_display->color565(255, 255, 255);
+          color1 = 32768 | ((i & 0xFC) << 3) | 16;
+          color2 = 65535;
+          //color1 = dma_display->color565(128, i, 128);
+          //color2 = dma_display->color565(255, 255, 255);
         }
 
         if (vertical) {
