@@ -13,8 +13,9 @@ AuroraDrop creates and runs multiple random patterns based on audio input from y
 AuroraDrop currently works with HUB75 matrix panels, and now, at an experimental level, on standard LED strip based panels (though not quite as fast).
 
 Details for wiring your ESP32 to a HUB75 panel can be found on mrfaptastic's ESP32-HUB75-MatrixPanel-I2S-DMA project page.
-https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
+https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
 
+## Some Pics and an Old Video
 
 ![example_matrix_animation1](https://user-images.githubusercontent.com/4552572/134411163-7eed342a-f806-48df-8284-c8c2a170b4af.gif)
 ![example_matrix_diagnostics1](https://user-images.githubusercontent.com/4552572/134822397-68405460-cfea-4bf5-96b5-e20ee566a729.png)
