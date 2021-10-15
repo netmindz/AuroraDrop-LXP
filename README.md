@@ -9,7 +9,8 @@ Welcome. Work is in progress, updates may appear now and then.
 ## Introduction
 
 AuroraDrop creates and runs multiple random patterns based on audio input from your PC, and renders them in a sequenced, multi-parallelized, unpredictable flow. Thrown in are a few random effects, some image manipulations and complimentary fixed and re-active animations, also borrowed from the Jason's Auroa demo.
-AuroDrop currently works with HUB75 matrix panels, and now, at an experimental level, on standard LED strip based panels (though not quite as fast).
+
+AuroraDrop currently works with HUB75 matrix panels, and now, at an experimental level, on standard LED strip based panels (though not quite as fast).
 
 Details for wiring your ESP32 to a HUB75 panel can be found on mrfaptastic's ESP32-HUB75-MatrixPanel-I2S-DMA project page.
 https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
