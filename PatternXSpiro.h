@@ -44,7 +44,8 @@ class PatternSpiro : public Drawable {
   public:
     PatternSpiro() {
       name = (char *)"Spiro";
-      id = "v";
+      id = "V";
+      enabled = false;
     }
 
 

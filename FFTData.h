@@ -241,7 +241,9 @@ class FFTData{
 
               // new array, audio data 0-255 where 127 is peak, > 127 over peak
               specData[i] = inData[i];              // version, a value from 0 to 255, where 0 = silence
-
+              // peak
+              if (specDataPeak[i] > 0) specDataPeak[i]--;
+              if (inData[i] > specDataPeak[i]) specDataPeak[i] = inData[i];
 
             }
 

@@ -38,15 +38,16 @@ const char index_html[] PROGMEM = R"rawliteral(
     html {font-family: Arial; display: inline-block; text-align: center;}
     h2 {font-size: 3.0rem; color:#ffc600; text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; margin-bottom: 0.1rem;}
     h3 {font-size: 1.5rem; color:black; margin: 0.0rem;}
-    h4 {margin-bottom: 0.3rem;}
+    h4 {font-size: 1.0rem; color:black; margin-bottom: 1.2rem; margin-top: 1.5rem;}
+    h5 {font-size: 0.8rem; margin-bottom: 0.2rem; margin-top: 0.4rem;}
     p {font-size: 3.0rem;}
     body {max-width: 600px; margin:0px auto; padding-bottom: 25px;}
-    .switch {position: relative; display: inline-block; width: 80px; height: 48px} 
+    .switch {position: relative; display: inline-block; width: 60px; height: 36px} 
     .switch input {display: none}
     .slider {position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 6px}
-    .slider:before {position: absolute; content: ""; height: 32px; width: 32px; left: 8px; bottom: 8px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 3px}
+    .slider:before {position: absolute; content: ""; height: 24px; width: 24px; left: 6px; bottom: 6px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 3px}
     input:checked+.slider {background-color: #b30000}
-    input:checked+.slider:before {-webkit-transform: translateX(32px); -ms-transform: translateX(32px); transform: translateX(32px)}
+    input:checked+.slider:before {-webkit-transform: translateX(24px); -ms-transform: translateX(24px); transform: translateX(24px)}
     .row {display: flex;}
     .column {flex: 25;}
 	}
@@ -56,30 +57,31 @@ const char index_html[] PROGMEM = R"rawliteral(
   <h2>AuroraDrop</h2>
   <h3>A U D I O&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V I S U A L I S E R</h3>
   <br />
-  <a href="/">Home</a> - <a href="/bitmap">Bitmap</a>
+  <a href="/">Home</a> - <a href="/bitmap">Render</a>
   <br />
   <div class="row">
-
     <div class="column">
+      <h4>General</h4>
 %SLIDERPLACEHOLDER%
     </div>
 
     <div class="column">
+      <h4>Inital Effects</h4>
 %EFFECTS_PLACEHOLDER%
     </div>
 
     <div class="column">
+      <h4>Audio Effects</h4>
 %AUDIO_PLACEHOLDER%
     </div>
 
     <div class="column">
+      <h4>Static Effects</h4>
 %STATIC_PLACEHOLDER%
 <br />
 %BUTTONPLACEHOLDER%
     </div>
   </div> 
-
-
 <script>
 function toggleOptionCheckbox(element) {
   var xhr = new XMLHttpRequest();
@@ -120,7 +122,7 @@ const char bitmap_html[] PROGMEM = R"rawliteral(
     html {font-family: Arial; display: inline-block; text-align: center;}
     h2 {font-size: 3.0rem; color:#ffc600; text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black; margin-bottom: 0.1rem;}
     h3 {font-size: 1.5rem; color:black; margin: 0.0rem;}
-    h4 {margin-bottom: 0.3rem;}
+    h5 {margin-bottom: 0.2rem;}
     p {font-size: 3.0rem;}
     body {max-width: 600px; margin:0px auto; padding-bottom: 25px;}
     div {font-family: Arial; display: inline-block; text-align: center;}
@@ -138,7 +140,7 @@ const char bitmap_html[] PROGMEM = R"rawliteral(
   <h2>AuroraDrop</h2>
   <h3>A U D I O&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;V I S U A L I S E R</h3>
   <br />
-  <a href="/">Home</a> - <a href="/bitmap">Bitmap</a>
+  <a href="/">Home</a> - <a href="/bitmap">Render</a>
   <br />
   <br />
   %BITMAPPLACEHOLDER%
@@ -169,22 +171,22 @@ String processor(const String& var){
   //Serial.println(var);
   if(var == "SLIDERPLACEHOLDER"){
     String buttons = "";
-    buttons += "<h4>Show Diagnostics</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"1\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Lock Frame Rate</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Show Render Time</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"3\" " + optionState(option3ShowRenderTime) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Pause Effect Cycling</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Pause Palette Cycling (Future)</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Change Effects (Future)</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5ChangeEffects) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Disable Initial Effects</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"6\" " + optionState(option6DisableInitialEffects) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Disable Audio Patterns</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"7\" " + optionState(option7DisableAudio) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Disable Static Patterns</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"8\" " + optionState(option8DisableStatic) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Disable Final Effects</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"9\" " + optionState(option9DisableFinalEffects) + "><span class=\"slider\"></span></label>";
-    buttons += "<h4>Disable Caleido Effects</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option10DisableCaleidoEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Show Diagnostics</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"1\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Lock Frame Rate</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Show Render Time</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"3\" " + optionState(option3ShowRenderTime) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Pause Effect Cycling</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Pause Palette Cycling (Future)</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Change Effects (Future)</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5ChangeEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Disable Initial Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"6\" " + optionState(option6DisableInitialEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Disable Audio Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"7\" " + optionState(option7DisableAudio) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Disable Static Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"8\" " + optionState(option8DisableStatic) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Disable Final Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"9\" " + optionState(option9DisableFinalEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Disable Caleido Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option10DisableCaleidoEffects) + "><span class=\"slider\"></span></label>";
     return buttons;
   }
   if (var == "BUTTONPLACEHOLDER"){
     String buttons2 = "";
-    buttons2 += "<h4>TEST</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
+    buttons2 += "<h5>TEST</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
     return buttons2;
   }
 
@@ -196,7 +198,7 @@ String processor(const String& var){
         char* yy = playlistInitialEffects[0].getItemName(i);
         bool isEnabled = playlistInitialEffects[0].getItemEnabled(i);
         String mystring(yy);
-        buttons4 += "<h4>" + mystring + "</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleEffectCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+        buttons4 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleEffectCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
       }
     }
     return buttons4;
@@ -210,7 +212,7 @@ String processor(const String& var){
         char* yy = playlistAudio[0].getItemName(i);
         bool isEnabled = playlistAudio[0].getItemEnabled(i);
         String mystring(yy);
-        buttons3 += "<h4>" + mystring + "</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleAudioCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+        buttons3 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleAudioCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
       }
     }
     return buttons3;
@@ -224,7 +226,7 @@ String processor(const String& var){
         char* yy = playlistStatic[0].getItemName(i);
         bool isEnabled = playlistStatic[0].getItemEnabled(i);
         String mystring(yy);
-        buttons += "<h4>" + mystring + "</h4><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleStaticCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleStaticCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
       }
     }
     return buttons;

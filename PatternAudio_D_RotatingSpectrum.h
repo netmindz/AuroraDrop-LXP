@@ -292,7 +292,7 @@ if (!fftData.noAudio) {
     //effects.ApplyCanvas(effects.canvasH, 0, 0, 2.0);
     if (backdrop) 
     {
-      effects.ApplyCanvasMirror(effects.canvasH, 0, 0, 2.0);
+      effects.ApplyCanvasHMirror(effects.canvasH, 0, 0, 2.0);
     }
 
 

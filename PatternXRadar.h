@@ -8,7 +8,8 @@ class PatternRadar : public Drawable {
   public:
     PatternRadar() {
       name = (char *)"Radar";
-      id2 = 1;
+      id = "R";
+      enabled = false;
     }
 
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {

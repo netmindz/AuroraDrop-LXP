@@ -25,7 +25,7 @@
 class PatternFlowField : public Drawable {
   public:
     PatternFlowField() {
-      name = (char *)"FlowField";
+      name = (char *)"Flow Field";
       id = "F";
       enabled = true;
     }

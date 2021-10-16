@@ -11,6 +11,9 @@
 #include "PatternEffect_C_Stream1.h"
 #include "PatternEffect_D_Move.h"
 #include "PatternEffect_E_Minimal.h"
+#include "PatternEffect_X_ElectricMandala.h"
+#include "PatternEffect_XX_Plasma.h"
+#include "PatternEffect_XX_SimplexNoise.h"
 
 
 class Playlist_InitialEffects : public Playlist {
@@ -21,6 +24,9 @@ class Playlist_InitialEffects : public Playlist {
     PatternEffectStream1 effectStream1;
     PatternEffectMove effectMove;
     PatternEffectMinimal effectMinimal;
+    PatternEffectElectricMandala effectElectricMandella;
+    PatternEffectPlasma effectPlasma;
+    PatternEffectSimplexNoise effectSimplexNoise;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -29,7 +35,7 @@ class Playlist_InitialEffects : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 5;
+    const static int PATTERN_COUNT = 8;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -38,8 +44,10 @@ class Playlist_InitialEffects : public Playlist {
       &effectSpiralStream1,
       &effectStream1,
       &effectMove,
+      &effectElectricMandella,   // plasma effect
+      &effectPlasma,
+      &effectSimplexNoise,
       &effectMinimal,
-
     };
 
   public:

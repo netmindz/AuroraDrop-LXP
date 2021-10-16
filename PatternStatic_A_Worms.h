@@ -42,7 +42,7 @@ class PatternStaticWorms : public Drawable {
 
   public:
     PatternStaticWorms() {
-      name = (char *)"Static X - Worms";
+      name = (char *)"Worms";
       id = (char *)"W";
       enabled = true;
 

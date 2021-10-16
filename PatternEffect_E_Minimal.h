@@ -29,7 +29,7 @@ private:
 
 public:
     PatternEffectMinimal() {
-      name = (char *)"Effect Minimal";
+      name = (char *)"Effect Test";
       id = "E";
       enabled = false;
     }

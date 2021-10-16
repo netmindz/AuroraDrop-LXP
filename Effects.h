@@ -137,7 +137,7 @@ public:
   //CRGB *canvasF;    // full size
   CRGB *canvasH;    // half width canvas no.1
   CRGB *canvasH2;    // half width canvas no.2
-  //CRGB *canvasQ;    // quarter
+  CRGB *canvasQ;    // quarter
 
 
   Effects(){
@@ -146,7 +146,7 @@ public:
     //canvasF = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
     canvasH = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
     canvasH2 = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
-    //canvasQ = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 16);
+    canvasQ = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 16);
 
 
     // allocate mem for noise effect
@@ -164,7 +164,7 @@ public:
     //free(canvasF);
     free(canvasH);
     free(canvasH2);
-    //free(canvasQ);
+    free(canvasQ);
     for (int i = 0; i < MATRIX_WIDTH; ++i) {
       free(noise[i]);
     }
@@ -185,8 +185,8 @@ public:
   }
 
   // write one pixel with the specified color from the current palette to coordinates
-  void Pixel(int x, int y, uint8_t colorIndex) {
-    leds[XY(x, y)] = ColorFromCurrentPalette(colorIndex);
+  void Pixel(int x, int y, uint8_t colorIndex, uint8_t brightness = 255) {
+    leds[XY(x, y)] = ColorFromCurrentPalette(colorIndex, brightness);
     //dma_display->drawPixelRGB888(x, y, temp.r, temp.g, temp.b); // now draw it?
   }
   
@@ -228,6 +228,12 @@ public:
       leds[i].nscale8(value);
     }
   }  
+
+    // scale the brightness of the screenbuffer down
+  void DimPixel(CRGB *canvas, int led, byte value)
+  {
+    canvas[led].nscale8(value);
+  } 
 
   void ClearFrame()
   {
@@ -1046,6 +1052,14 @@ CRGBPalette16 AllRed_p = {
     return (y * (MATRIX_WIDTH / 2)) + x;
     //return (y * (MATRIX_WIDTH_TOTAL / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
   }
+  uint16_t XYCQ( uint16_t x, uint16_t y) 
+  {
+    // ensure given half scaled matrix positions are within limits
+    if( x >= MATRIX_WIDTH / 4) return 0;
+    if( y >= MATRIX_HEIGHT / 4) return 0;
+    return (y * (MATRIX_WIDTH / 4)) + x;
+    //return (y * (MATRIX_WIDTH_TOTAL / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
+  }
 
 
 
@@ -1063,14 +1077,14 @@ CRGBPalette16 AllRed_p = {
       case 2:
         memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
         break;
-      //case 3:
+      case 3:
       //  memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
       //  break;
       case 255:
       //  memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
         memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
         memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-      //  memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
         break;
       default:
         Serial.println("No Canvas?");
@@ -1133,7 +1147,7 @@ CRGBPalette16 AllRed_p = {
   }
 
   // AuroraDrop: apply the canvas to the frame/screen
-  void ApplyCanvas(CRGB *canvas, int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
+  void ApplyCanvasH(CRGB *canvas, int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
     // use integer maths if we're not scaling, allow signed x/y for better scaling up options
     if (scale == 0.0 || scale == 1.0) {
       for (int x=0; x < MATRIX_WIDTH / 2; x++) {
@@ -1164,7 +1178,40 @@ CRGBPalette16 AllRed_p = {
     }
   }
 
-  void ApplyCanvasMirror(CRGB *canvas, int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
+  // AuroraDrop: apply the canvas to the frame/screen
+  void ApplyCanvasQ(CRGB *canvas, int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
+    // use integer maths if we're not scaling, allow signed x/y for better scaling up options
+    if (scale == 0.0 || scale == 1.0) {
+      for (int x=0; x < MATRIX_WIDTH / 4; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 4; y++) {
+          leds[XY16(x + x_offset, y + y_offset)] += canvas[XYCQ(x, y)];
+        }
+      }
+    }
+    else {
+      for (int x=0; x < MATRIX_WIDTH / 4; x++) {
+        for (int y=0; y < MATRIX_HEIGHT / 4; y++) {
+          //if ((x * scale) + x_offset < MATRIX_WIDTH_TOTAL / 2 && (y * scale) + y_offset < MATRIX_HEIGHT / 2)
+          
+          // bug here? without this line pixel is always set to white, is clear function working properly?
+          //if (x == 31 && x == 31) canvas[CANVAS_HALF(x, y)] = 0;
+
+          leds[XY16((x * scale) + x_offset, (y * scale) + y_offset)] += canvas[XYCH(x, y)];
+        }
+      }
+
+    }
+    // 2d blur if we are scaling up
+    if (blur > 0) {
+
+      blur2d(leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, blur);   //  255=heavy blurring
+
+      // effects.blur2d(canvas)
+    }
+  }
+
+
+  void ApplyCanvasHMirror(CRGB *canvas, int16_t x_offset, int16_t y_offset, float scale = 1.0, uint8_t blur = 0) {
     // use integer maths if we're not scaling, allow signed x/y for better scaling up options
     if (scale == 0.0 || scale == 1.0) {
       for (int x=0; x < MATRIX_WIDTH / 2; x++) {
@@ -1197,8 +1244,16 @@ CRGBPalette16 AllRed_p = {
 
 
 
-
-
+  // rotates the bottom right 16x16 quadrant 3 times onto a 32x32 (+90 degrees rotation for each one)
+  void Caleidoscope1_BottomRight() {
+    for (int x = MATRIX_CENTER_X; x < MATRIX_WIDTH; x++) {
+      for (int y = MATRIX_CENTER_Y; y < MATRIX_HEIGHT; y++) {
+        leds[XY16(x - MATRIX_CENTER_X, y - MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+        leds[XY16(x - MATRIX_CENTER_X, y)] = leds[XY16(x, y)];
+        leds[XY16(x, y - MATRIX_CENTER_Y)] = leds[XY16(x, y)];
+      }
+    }
+  }
 
 
   // AuroraDrop: same but try to do middle too

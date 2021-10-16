@@ -9,9 +9,13 @@
 #include "PatternAudio_B_CircularWave.h"
 #include "PatternAudio_C_DotsSingle.h"
 #include "PatternAudio_D_RotatingSpectrum.h"
+#include "PatternAudio_E_ClassicSpectrum128.h"
+#include "PatternAudio_F_Cubes.h"
 
 #include "PatternAudio_N_SpectrumPeakBars.h"
 #include "PatternAudio_O_Spectrum2.h"
+
+#include "PatternAudio_R_AuroraDrop.h"
 
 #include "PatternAudio_XR_Torus.h"
 #include "PatternAudio_XS_8x8Squares.h"
@@ -42,6 +46,8 @@ class Playlist_Audio : public Playlist {
     PatternAudioCircularWave audioCircularWave;
     PatternAudioDotsSingle audioDotsSingle;
     PatternAudioRotatingSpectrum audioRotatingSpectrum;
+    PatternAudioClassicSpectrum128 audioClassicSpectrum128;
+    //PatternAudioCubes audioCubes;
 
     PatternAudio8x8Squares audio8x8Squares;
     PatternAudioBigSpark audioBigSpark;
@@ -54,14 +60,16 @@ class Playlist_Audio : public Playlist {
     PatternAudioTriangles audioTriangles;
     PatternAudioSpectrumCircle audioSpectrumCircle;
 
-    //PatternAudioAurora audioAurora;
-    //PatternAudioWaveSingle audioWaveSingle;
-    //PatternCanvasTest canvasTest;
-    //PatternAudioCircles audioCircles;
-    //PatternAudioLines audioLines;
+    PatternAudioAurora audioAurora;
+    PatternAudioWaveSingle audioWaveSingle;
+    PatternCanvasTest canvasTest;
+    PatternAudioCircles audioCircles;
+    PatternAudioLines audioLines;
 
     PatternTest patternTest;
     PatternTestSpectrum patternTestSpectrum;
+
+    PatternAudioAuroraDrop patternAuroraDrop;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -70,16 +78,19 @@ class Playlist_Audio : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 14;
+    const static int PATTERN_COUNT = 16;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
+
       
       &audioRotatingWave,
       &audioCircularWave,
       &audioDotsSingle,                   // dancing/rolling dots
       &audioRotatingSpectrum,
+      &audioClassicSpectrum128,
+      //&audioCubes,
 
       &audio8x8Squares,
       &audioBigSpark,
@@ -88,10 +99,13 @@ class Playlist_Audio : public Playlist {
       // working initial proof of concept
       &audioSpectrumPeakBars,                    // 16 lines
       &audioSpectrum2,      // to sort
-
       &audioDiagonalSpectrum,   // to tidy
       &audioTriangles,                    // triangles
       &audioSpectrumCircle,     // spectrum lines from centre out, rotating around 360 degrees
+      &patternAuroraDrop,
+
+      &patternTest,
+      &patternTestSpectrum,
 
       //&audioAurora,
       //&audioWaveSingle,   // doing
@@ -101,8 +115,6 @@ class Playlist_Audio : public Playlist {
       //&testCircles,
       //&testSpectrum,
 
-      &patternTest,
-      &patternTestSpectrum,
     };
 
   public:

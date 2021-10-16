@@ -55,7 +55,7 @@ class PatternAudioBigSpark : public Drawable {
 
 
     PatternAudioBigSpark() {
-      name = (char *)"Big Spark (WIP)";
+      name = (char *)"Big Spark";
       id = (char *)"T";;
       enabled = false;
     }
@@ -184,21 +184,21 @@ class PatternAudioBigSpark : public Drawable {
         }
 
         // two sprite moving up and down
-        effects.ApplyCanvas(effects.canvasH, 0, MATRIX_HEIGHT - (effects.beatSineOsciWidth[3] + 16), 1);
-        effects.ApplyCanvas(effects.canvasH, 32, effects.beatSineOsciWidth[3] - 16, 1);
+        effects.ApplyCanvasH(effects.canvasH, 0, MATRIX_HEIGHT - (effects.beatSineOsciWidth[3] + 16), 1);
+        effects.ApplyCanvasH(effects.canvasH, 32, effects.beatSineOsciWidth[3] - 16, 1);
 
         // two orbiting sprites
-        effects.ApplyCanvas(effects.canvasH, effects.beatSineOsciWidth[3] - 8, effects.beatCosineOsciWidth[3] - 8, 0.5);
-        effects.ApplyCanvas(effects.canvasH, MATRIX_WIDTH - (effects.beatSineOsciWidth[3] + 8), MATRIX_HEIGHT - (effects.beatCosineOsciWidth[3] + 8), 0.5);
+        effects.ApplyCanvasH(effects.canvasH, effects.beatSineOsciWidth[3] - 8, effects.beatCosineOsciWidth[3] - 8, 0.5);
+        effects.ApplyCanvasH(effects.canvasH, MATRIX_WIDTH - (effects.beatSineOsciWidth[3] + 8), MATRIX_HEIGHT - (effects.beatCosineOsciWidth[3] + 8), 0.5);
 
         // another two orbiting other way
-        effects.ApplyCanvas(effects.canvasH, effects.beatSineOsciWidth[3] - 8, MATRIX_HEIGHT - (effects.beatCosineOsciWidth[3] + 8), 0.5);
-        effects.ApplyCanvas(effects.canvasH, MATRIX_WIDTH - (effects.beatSineOsciWidth[3] + 8), effects.beatCosineOsciWidth[3] - 8, 0.5);
+        effects.ApplyCanvasH(effects.canvasH, effects.beatSineOsciWidth[3] - 8, MATRIX_HEIGHT - (effects.beatCosineOsciWidth[3] + 8), 0.5);
+        effects.ApplyCanvasH(effects.canvasH, MATRIX_WIDTH - (effects.beatSineOsciWidth[3] + 8), effects.beatCosineOsciWidth[3] - 8, 0.5);
 
 
 
         if (backdrop) {
-          effects.ApplyCanvas(effects.canvasH, -32, -32, 4.0, 128);   // 128 = medium blur
+          effects.ApplyCanvasH(effects.canvasH, -32, -32, 4.0, 128);   // 128 = medium blur
         }
       }
       

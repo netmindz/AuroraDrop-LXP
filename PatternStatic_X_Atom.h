@@ -265,27 +265,27 @@ class PatternStaticAtom : public Drawable {
 
         if (backdrop==1) {
           for (int i = 0; i < canvasScale; i++) {
-            effects.ApplyCanvas(effects.canvasH, i*canvasWidth, 0, 1);
-            effects.ApplyCanvas(effects.canvasH, i*canvasWidth, 16, 1);
-            effects.ApplyCanvas(effects.canvasH, i*canvasWidth, 32, 1);
-            effects.ApplyCanvas(effects.canvasH, i*canvasWidth, 48, 1);
+            effects.ApplyCanvasH(effects.canvasH, i*canvasWidth, 0, 1);
+            effects.ApplyCanvasH(effects.canvasH, i*canvasWidth, 16, 1);
+            effects.ApplyCanvasH(effects.canvasH, i*canvasWidth, 32, 1);
+            effects.ApplyCanvasH(effects.canvasH, i*canvasWidth, 48, 1);
           }
           //effects.ApplyCanvas(0, 0, 4.0);
           effects.DimAll(180);
         }
 
         if (backdrop==2) {
-          effects.ApplyCanvas(effects.canvasH, 16, 16, 2.0, 128);     // 64 = light blur
+          effects.ApplyCanvasH(effects.canvasH, 16, 16, 2.0, 128);     // 64 = light blur
         }
 
         // overscaled half width canvas centered on frame/screen
         if (backdrop==3) {
-          effects.ApplyCanvas(effects.canvasH, 0, 0, 4.0, 64);     // 64 = light blur
+          effects.ApplyCanvasH(effects.canvasH, 0, 0, 4.0, 64);     // 64 = light blur
         }
 
         if (backdrop==4) {   
-          effects.ApplyCanvas(effects.canvasH, 16, 16, 2.0, 128);     // 64 = light blur
-          effects.ApplyCanvas(effects.canvasH, 0, 0, 4.0, 64);     // 64 = light blur
+          effects.ApplyCanvasH(effects.canvasH, 16, 16, 2.0, 128);     // 64 = light blur
+          effects.ApplyCanvasH(effects.canvasH, 0, 0, 4.0, 64);     // 64 = light blur
         }
 
         // apply test effects

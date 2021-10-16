@@ -1,4 +1,4 @@
-# AuroraDrop v0.0.9
+# AuroraDrop v0.0.10
 
 RGB Matrix Audio Visualiser for ESP32
 
@@ -39,6 +39,10 @@ https://youtu.be/6lSb6BLZaRQ
 
 
 ## Latest Updates
+
+0.0.10
+* Added some more effects from the AuroraDemo.
+* Fixed some bugs.
 
 0.0.9
 * Experimental support for LED strip matrix (tested with 16x16).

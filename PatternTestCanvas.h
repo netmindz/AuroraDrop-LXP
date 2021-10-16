@@ -179,7 +179,7 @@ class PatternCanvasTest : public Drawable {
 
       effects.MoveOscillators();
 
-      effects.ApplyCanvas(effects.canvasH, -32, -32, 4.0);
+      effects.ApplyCanvasH(effects.canvasH, -32, -32, 4.0);
 
 
       // # --------------------------------------------------- #

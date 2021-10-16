@@ -46,7 +46,7 @@ class PatternAudioTorus : public Drawable {
   public:
 
     PatternAudioTorus() {
-      name = (char *)"Audio C - Rotating Torus (WIP)";
+      name = (char *)"Torus";
       id = (char *)"R";
       enabled = false;
     }
@@ -131,7 +131,7 @@ class PatternAudioTorus : public Drawable {
 
         if (i > 0) effects.BresenhamLineCanvas(effects.canvasH, lastx/2, lasty/2, x2/2, y2/2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, audio));
 
-        effects.ApplyCanvas(effects.canvasH, (x1/2)-8, (y1/2)-8, 1.5);
+        effects.ApplyCanvasH(effects.canvasH, (x1/2)-8, (y1/2)-8, 1.5);
 
         lastx = x2;
         lasty = y2;

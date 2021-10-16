@@ -17,14 +17,16 @@
 #include "PatternStatic_M_Bounce.h"
 #include "PatternStatic_X_Atom.h"
 #include "PatternStatic_X_SimpleStars.h"
+#include "PatternStatic_XX_Cubes.h"
 
 // theses are all just proof of concept from aurora demo,
 #include "PatternTest.h"
 #include "PatternXIncrementalDrift.h"
 #include "PatternXSpiro.h"
-#include "PatternXElectricMandala.h"
-#include "PatternXRadar.h"
 #include "PatternXSpin.h"
+#include "PatternXRadar.h"
+#include "PatternXMunch.h"
+#include "PatternXWave.h"
 
 
 
@@ -32,6 +34,7 @@ class Platlist_Static : public Playlist {
   private:
 
     PatternStaticWorms staticWorms;
+    PatternStaticCubes staticCubes;
     PatternStaticSimpleStars staticSimpleStars;
     PatternStaticAtom staticAtom;
 
@@ -42,10 +45,11 @@ class Platlist_Static : public Playlist {
     PatternFlowField flowField;
     PatternSpiro spiro;
     PatternAttract attract;
-    PatternElectricMandala electricMandella;
-    PatternRadar radar;
     PatternSpin spin;
     PatternStaticBounce staticBounce;
+    PatternRadar radar;
+    PatternMunch munch;
+    PatternWave wave;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -54,33 +58,31 @@ class Platlist_Static : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 6;
+    const static int PATTERN_COUNT = 12;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
 
       &staticWorms,
-
       &spiralLines,                  // spiraling lines
       &flock,
       &attract,
       &flowField,
       &staticBounce,
-      
+      &staticCubes,
+
+      &munch,
+      &radar,
+      &wave,
+      &incrementalDrift,
+      &spiro,
+
       //&staticSimpleStars,       // don't work
       //&staticAtom,              // don't work
-
-
       //&spin,                  // BAD freezes randomly
 
-
-      //&radar,
-
       //&patternTest,
-      //&incrementalDrift,
-      //&spiro,
-      //&electricMandella,   // plasma effect
 
     };
 
