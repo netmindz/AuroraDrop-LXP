@@ -35,6 +35,7 @@
 const char* ssid = "your_ssid";
 const char* password = "your_password";
 
+
 // uncomment whichever is relevent, or both as long as panel sizes match
 #define USE_HUB75
 //#define USE_LEDSTRIP
@@ -93,7 +94,7 @@ const char* password = "your_password";
 // (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
 //static uint8_t maxPatternAmbient = 0;       // not implemented yet! for plasma effects, backgrounds, etc.
 static uint8_t maxPlaylistsInitialEffect = 1;      // <------- 1 or 2 is reasonable
-static uint8_t maxPlaylistsAudio = 3;           // <------- 2 or 3
+static uint8_t maxPlaylistsAudio = 2;           // <------- 2 or 3
 static uint8_t maxPlaylistsStatic = 2;          // <------- 2 or 3
 static uint8_t maxPlaylistsFinalEffect = 0;     // not used yet! you can try it, but can have a big impact on rendered output at the moment
 
@@ -251,7 +252,10 @@ void setup()
     playlistInitialEffects[i].default_fps = 90;
     playlistInitialEffects[i].pattern_fps = 90;
     playlistInitialEffects[i].ms_animation_max_duration = 5000;
-    playlistInitialEffects[i].moveRandom(1, i); // start from a random pattern
+    do {
+      playlistInitialEffects[i].moveRandom(1, i);
+    }
+    while (!playlistInitialEffects[i].getCurrentItemEnabled());
     Serial.print("Starting with intitial effects pattern: ");
     Serial.println(playlistInitialEffects[i].getCurrentPatternName());
     playlistInitialEffects[i].start(i);
@@ -264,8 +268,11 @@ void setup()
   {
     playlistAudio[i].default_fps = 90;
     playlistAudio[i].pattern_fps = 90;
-    playlistAudio[i].ms_animation_max_duration = 5000;
-    playlistAudio[i].moveRandom(1, i); // start from a random pattern
+    playlistAudio[i].ms_animation_max_duration = 5000;          // 5000ms is good, but should be bpm related
+    do {
+      playlistAudio[i].moveRandom(1, i);
+    }
+    while (!playlistAudio[i].getCurrentItemEnabled());
     Serial.print("Starting with static effects pattern: ");
     Serial.println(playlistAudio[i].getCurrentPatternName());
     playlistAudio[i].start(i);
@@ -278,8 +285,11 @@ void setup()
   {
     playlistStatic[i].default_fps = 90;
     playlistStatic[i].pattern_fps = 90;
-    playlistStatic[i].ms_animation_max_duration = 60000;
-    playlistStatic[i].moveRandom(1, i); // start from a random pattern
+    playlistStatic[i].ms_animation_max_duration = 10000;  // 60000, 1munute is good
+    do {
+      playlistStatic[i].moveRandom(1, i);
+    }
+    while (!playlistStatic[i].getCurrentItemEnabled());
     Serial.print("Starting with static effects pattern: ");
     Serial.println(playlistStatic[i].getCurrentPatternName());
     playlistStatic[i].start(i);
@@ -293,7 +303,10 @@ void setup()
     playlistFinalEffects[i].default_fps = 90;
     playlistFinalEffects[i].pattern_fps = 90;
     playlistFinalEffects[i].ms_animation_max_duration = 5000;
-    playlistFinalEffects[i].moveRandom(1, i); // start from a random pattern
+    do {
+      playlistFinalEffects[i].moveRandom(1, i);
+    }
+    while (!playlistFinalEffects[i].getCurrentItemEnabled());
     Serial.print("Starting with intitial effects pattern: ");
     Serial.println(playlistFinalEffects[i].getCurrentPatternName());
     playlistFinalEffects[i].start(i);
