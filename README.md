@@ -35,7 +35,8 @@ https://youtu.be/6lSb6BLZaRQ
 
 ![web_bitmap1](https://user-images.githubusercontent.com/4552572/137007058-e84c9805-5442-4d5b-83c0-64f012611f9f.png)
 
-![web_bitmap2](https://user-images.githubusercontent.com/4552572/137533486-ac56c60f-621e-4593-bc6a-60bcb83e4533.png)
+![web_bitmap3](https://user-images.githubusercontent.com/4552572/137807502-aee10806-0850-44fd-ae82-9f524399069c.png)
+
 
 
 ## Latest Updates
