@@ -47,14 +47,22 @@ void UpdateDiagnosticsData() {
     dma_display->print("ms");
   }
 
-  // if WiFi has just connected, show IP address
+  // if WiFi has just connected, show IP address and version notice
   #ifdef USE_WIFI 
     if (wifiMessage > 0) {
       wifiMessage--;
       dma_display->setTextSize(1);
       dma_display->setTextColor(WHITE, BLUE);
+      dma_display->setCursor(0,8);
+      dma_display->print(WiFi.localIP());
+    }
+    if (newVersionAvailable > 0) {
+      newVersionAvailable--;
+      dma_display->setTextColor(WHITE, RED);
       dma_display->setCursor(0,30);
-      dma_display->print(WiFi.localIP()); 
+      dma_display->print("Update"); 
+      dma_display->setCursor(0,40);
+      dma_display->print("Available!"); 
     }
   #endif
 

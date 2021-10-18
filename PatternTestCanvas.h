@@ -171,7 +171,7 @@ class PatternCanvasTest : public Drawable {
         x = (int)(centreX + radius * cos(angle));
         y = (int)(centreY + radius * sin(angle));
         if (audioData > 0)
-          effects.BresenhamLineCanvas(effects.canvasH, centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
+          effects.BresLineCanvasH(effects.canvasH, centreX, centreY, x, y, effects.ColorFromCurrentPalette(i*2.65,255));
       }
 
       //effects.ApplyCanvasH(32, effects.p[2] / 2, 1);

@@ -1,4 +1,4 @@
-# AuroraDrop v0.0.10
+# AuroraDrop v0.0.11
 
 RGB Matrix Audio Visualiser for ESP32
 
@@ -40,8 +40,14 @@ https://youtu.be/6lSb6BLZaRQ
 
 ## Latest Updates
 
+0.0.11
+* Added option to select the number of concurrent patterns running.
+* Option to check for new git updates.
+* Fixed some bugs.
+* Added some new bugs and patterns.
+
 0.0.10
-* Added some more effects from the AuroraDemo.
+* Added some more patterns from the AuroraDemo.
 * Fixed some bugs.
 
 0.0.9
@@ -109,6 +115,14 @@ Optional WiFi libraries needed:-
 *   https://github.com/me-no-dev/AsyncTCP/archive/master.zip
 
 *   These will need to be manually installed in your arduino libraries folder as they are not available via the arduino library manager.
+
+
+### Library Dependancies
+
+  *  ESP32-RGB64x32MatrixPanel-I2S-DMA - the library this project is designed to be used with. This is what interacts with the matrix panel. You can install this from the Arduino Library manager by searching for "ESP32 64x32 LED MATRIX"
+  *  Adafruit GFX - is a dependacy of the matrix library. This can also be installed from the library manager by searching for "Adafruit GFX"
+  *  FastLED - Again you can use the library manager and search for "FastLED"
+  *  Arduino FFT - This can also be installed from the library manager by searching for "arduinoFFT"
 
 
 ### Based on

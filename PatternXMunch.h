@@ -34,7 +34,7 @@ class PatternMunch : public Drawable {
         
       count += dir;
         
-      if (count <= 0 || count >= MATRIX_CENTER_X) {  // was MATRIX_WIDTH (a bit loud)
+      if (count <= 0 || count >= MATRIX_WIDTH) {  // was MATRIX_WIDTH (a bit loud)
         dir = -dir;
       }
         

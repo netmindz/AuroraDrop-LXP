@@ -32,9 +32,9 @@
 class PatternAudioCubes : public Drawable {
   private:
 
-    const static uint8_t cubeCount = 4;
+    const static uint8_t cubeCount = 2;  // 4 is good
 
-    class AudioCubeObject {
+    class CubeObject {
       public:  
         float focal = 30; // Focal of the camera
         int cubeWidth = 56; // Cube size, originaly 28
@@ -163,25 +163,33 @@ class PatternAudioCubes : public Drawable {
     PatternAudioCubes() {
       name = (char *)"Cubes";
       id = "C";
-      enabled = false;
+      enabled = true;
+
+      //cube = (CubeObject*)malloc(cubeCount * sizeof(CubeObject));
+      //CubeObject** cube = new CubeObject*[cubeCount];
+
     }
 
-    AudioCubeObject audioCube[cubeCount];
+    CubeObject cube[cubeCount];
+    //CubeObject *cube;
 
 
     // ------------------ start -------------------
     void start(uint8_t _pattern) {
 
+
     for (int c=0; c<cubeCount; c++) {
       //cube[c].make(cubeWidth);   
-      audioCube[c].make(random8(22,60));  
+      cube[c].make(random8(60,80));    // cube[c].make(random8(22,60)); 
 
       // randomise stuff
       //AngxSpeed = 0.05; 
       //AngySpeed = 0.05; 
-      audioCube[c].Angx = random8(10,21);
-      audioCube[c].Angy = random8(10,21);
-      audioCube[c].hue = random8();
+      cube[c].Angx = random8(10,21);
+      cube[c].Angy = random8(10,21);
+      cube[c].hue = random8();
+
+      //canvasH = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB) / 4);
     }
 
 
@@ -191,6 +199,9 @@ class PatternAudioCubes : public Drawable {
     // --------------------- draw frame -------------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
+// leave blurring to effects
+
+
         uint8_t blurAmount = beatsin8(2, 10, 255);
 
 #if FASTLED_VERSION >= 3001000
@@ -199,58 +210,78 @@ class PatternAudioCubes : public Drawable {
       effects.DimAll(blurAmount); effects.ShowFrame();
 #endif
 
+
+
     for (int c=0; c<cubeCount; c++) {
-      audioCube[c].zCamera = beatsin8(2, 100, 140);
-      audioCube[c].AngxSpeed = beatsin8(3, 1, 10) / 100.0f;
-      audioCube[c].AngySpeed = beatcos8(5, 1, 10) / 100.0f;
+
+      cube[c].zCamera = beatsin8(2, 100, 140);
+      cube[c].AngxSpeed = beatsin8(3, 1, 10) / 100.0f;
+      cube[c].AngySpeed = beatcos8(5, 1, 10) / 100.0f;
+
+      // AuroraDrop
+      byte audio = fftData.specData8[c];
+      if (audio > 127) audio = 127;
+      cube[c].zCamera = 255 - audio;
+
 
       // Update values
-      audioCube[c].Angx += audioCube[c].AngxSpeed;
-      audioCube[c].Angy += audioCube[c].AngySpeed;
-      if (audioCube[c].Angx >= TWO_PI)
-        audioCube[c].Angx -= TWO_PI;
-      if (audioCube[c].Angy >= TWO_PI)
-        audioCube[c].Angy -= TWO_PI;
+      cube[c].Angx += cube[c].AngxSpeed;
+      cube[c].Angy += cube[c].AngySpeed;
+      if (cube[c].Angx >= TWO_PI)
+        cube[c].Angx -= TWO_PI;
+      if (cube[c].Angy >= TWO_PI)
+        cube[c].Angy -= TWO_PI;
 
-      audioCube[c].rotate(audioCube[c].Angx, audioCube[c].Angy);
+      cube[c].rotate(cube[c].Angx, cube[c].Angy);
 
       // Draw cube
       int i;
 
-      CRGB color = effects.ColorFromCurrentPalette(audioCube[c].hue, 128);
+      CRGB color = effects.ColorFromCurrentPalette(cube[c].hue, 128);
 
       uint8_t backgroundBrightness = 128;
       uint8_t foregroundBrightness = 255;
+
+      effects.ClearCanvas(1);
 
       // Backface
       EdgePoint *e;
       for (i = 0; i < 12; i++)
       {
-        e = audioCube[c].edge + i;
+        e = cube[c].edge + i;
         if (!e->visible) {
-          effects.BresLine(audioCube[c].screen[e->x].x, audioCube[c].screen[e->x].y, audioCube[c].screen[e->y].x, audioCube[c].screen[e->y].y, audioCube[c].hue, backgroundBrightness);
+          effects.BresLine(cube[c].screen[e->x].x, cube[c].screen[e->x].y, cube[c].screen[e->y].x, cube[c].screen[e->y].y, cube[c].hue, backgroundBrightness);
+          effects.BresLineCanvasH(effects.canvasH, cube[c].screen[e->x].x/2, cube[c].screen[e->x].y/2, cube[c].screen[e->y].x/2, cube[c].screen[e->y].y/2, cube[c].hue, backgroundBrightness / 2);
           //effects. matrix.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
         }
       }
 
-      color = effects.ColorFromCurrentPalette(audioCube[c].hue, 255);
+      color = effects.ColorFromCurrentPalette(cube[c].hue, 255);
 
       // Frontface
       for (i = 0; i < 12; i++)
       {
-        e = audioCube[c].edge + i;
+        e = cube[c].edge + i;
         if (e->visible)
         {
-          effects.BresLine(audioCube[c].screen[e->x].x, audioCube[c].screen[e->x].y, audioCube[c].screen[e->y].x, audioCube[c].screen[e->y].y, audioCube[c].hue, foregroundBrightness);
+          effects.BresLine(cube[c].screen[e->x].x, cube[c].screen[e->x].y, cube[c].screen[e->y].x, cube[c].screen[e->y].y, cube[c].hue, foregroundBrightness);
+          effects.BresLineCanvasH(effects.canvasH, cube[c].screen[e->x].x/2, cube[c].screen[e->x].y/2, cube[c].screen[e->y].x/2, cube[c].screen[e->y].y/2, cube[c].hue, foregroundBrightness / 2);
           //matrix.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
         }
       }
 
+
+      effects.ApplyCanvasH(effects.canvasH, 0, 0);
+      effects.ApplyCanvasH(effects.canvasH, MATRIX_CENTER_X, 0);        // mirror/flip these?
+      effects.ApplyCanvasH(effects.canvasH, 0, MATRIX_CENTER_Y);
+      effects.ApplyCanvasH(effects.canvasH, MATRIX_CENTER_X, MATRIX_CENTER_Y);
+
+
       // step on
-      audioCube[c].step++;
-      if (audioCube[c].step == 8) {
-        audioCube[c].step = 0;
-        audioCube[c].hue++;
+      cube[c].step++;
+      if (cube[c].step == 8) {
+        cube[c].step = 0;
+        cube[c].hue++;
       }
 
 

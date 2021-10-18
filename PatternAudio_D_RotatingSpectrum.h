@@ -263,21 +263,21 @@ if (!fftData.noAudio) {
         if (useCurrentPalette) 
         {
           effects.BresenhamLine(rp1.x, rp1.y, rp2.x, rp2.y, i * colorSpread, 255);
-          effects.BresenhamLineCanvas(effects.canvasH, rp1.x - 16, rp1.y - 16, rp2.x - 16, rp2.y - 16, (i * colorSpread) + 128, 128);
+          effects.BresLineCanvasH(effects.canvasH, rp1.x - 16, rp1.y - 16, rp2.x - 16, rp2.y - 16, (i * colorSpread) + 128, 128);
           if (vertical) 
           {
             effects.BresenhamLine(rp1.y, rp1.x, rp2.y, rp2.x, i * colorSpread, 255);
-            effects.BresenhamLineCanvas(effects.canvasH, rp1.y - 16, rp1.x - 16, rp2.y - 16, rp2.x - 16, (i * colorSpread) + 128, 128);
+            effects.BresLineCanvasH(effects.canvasH, rp1.y - 16, rp1.x - 16, rp2.y - 16, rp2.x - 16, (i * colorSpread) + 128, 128);
           }
         }
         else
         {
           effects.BresenhamLine(rp1.x, rp1.y, rp2.x, rp2.y, 16, 255);
-          effects.BresenhamLineCanvas(effects.canvasH, rp1.x - 16, rp1.y - 16, rp2.x - 16, rp2.y - 16, 16, 128);
+          effects.BresLineCanvasH(effects.canvasH, rp1.x - 16, rp1.y - 16, rp2.x - 16, rp2.y - 16, 16, 128);
           if (vertical) 
           {
             effects.BresenhamLine(rp1.y, rp1.x, rp2.y, rp2.x, 16, 255);
-            effects.BresenhamLineCanvas(effects.canvasH, rp1.y - 16, rp1.x - 16, rp2.y - 16, rp2.x - 16, 16 + 128, 128);
+            effects.BresLineCanvasH(effects.canvasH, rp1.y - 16, rp1.x - 16, rp2.y - 16, rp2.x - 16, 16 + 128, 128);
           }
         }
       }

@@ -27,7 +27,8 @@
 *
 */
 
-#define DEBUG 1   // enable/disable debugging output over serial / not working yet
+#define DEBUG 1         // enable/disable debugging output over serial / not working yet
+#define VERNO "11"      // if defined, checks the git repository for updates on startup, comment out if not needed
 
 // ------------ optional basic web server for testing ------------
 // -- uncomment below lines to enable basic web sever interface --
@@ -35,10 +36,12 @@
 const char* ssid = "your_ssid";
 const char* password = "your_password";
 
-
 // uncomment whichever is relevent, or both as long as panel sizes match
 #define USE_HUB75
 //#define USE_LEDSTRIP
+
+// experimental:- uncomment if a connected INMP441 microphone will be used
+//#define USE_MICROPHONE
 
 #include <FastLED.h>
 #include <SPIFFS.h>
@@ -76,17 +79,24 @@ const char* password = "your_password";
 /*----------------------- MATRIX PANEL CONFIG -------------------------*/
 #define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel, 128x64 breaks memory!
 #define PANEL_HEIGHT 64                                     // matirx made from WS2812B led strips will work up to 32x32 (any larger is too slow)
-#define PANELS_NUMBER 1                                     // number of chained HUB75_E panels, working with just a single panel at the moment, so obviously set to 1
+#define PANELS_NUMBER 1                                     // number of chained HUB75 panels, working with just a single panel at the moment, so obviously set to 1
 #define MATRIX_WIDTH (PANEL_WIDTH * PANELS_NUMBER)          // not tested with anything other than square 64x64, 32x32 and 16x16
 #define MATRIX_HEIGHT (PANEL_HEIGHT)
 #define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
 
-#define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit messaging...
+#ifdef USE_MICROPHONE
+  #define I2S_WS  32       // aka LRCL     21,22,32 and 33 avaiable?
+  #define I2S_SD  21       // aka DOUT
+  #define I2S_SCK 22       // aka BCLK
+  #include "audio_reactive.h"
+#endif
+
+#define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit serial messaging...
 
 // fixed maximums here for memory allocation, these must be >= variables used below
 //#define MAX_PATTERNS_AMBIENT_BACKGROUND 1     // not used yet? useful? plasma effects?
-#define MAX_PLAYLISTS_EFFECT 4                   // bluring/fading/sweeping effects
+#define MAX_PLAYLISTS_EFFECT 2                   // bluring/fading/sweeping effects
 #define MAX_PLAYLISTS_AUDIO 4                    // audio re-active effects
 #define MAX_PLAYLISTS_STATIC 4                   // standard non-audio animations inc. boids etc.
 
@@ -103,11 +113,11 @@ bool option1Diagnostics = false;
 bool option2LockFps = true;
 bool option3ShowRenderTime = false;
 bool option4PauseCycling = false;
-bool option5ChangeEffects = false;
+bool option5ChangeEffects = false;              // not used
 bool option6DisableInitialEffects = false;
 bool option7DisableAudio = false;
 bool option8DisableStatic = false;
-bool option9DisableFinalEffects = false;
+bool option9DisableFinalEffects = false;        // not used
 bool option10DisableCaleidoEffects = false;
 
 #include "FFTData.h"
@@ -159,6 +169,13 @@ void setup()
   Serial.begin(115200);
   delay(1000);     // allow comms to initilialise
 
+  // very experimental
+  #ifdef USE_MICROPHONE
+    setupAudio();
+    //setupNothing();
+  #endif
+
+
   #ifdef USE_HUB75
     HUB75_I2S_CFG mxconfig;
     mxconfig.mx_height = PANEL_HEIGHT;                // we have 64 pix height panels, as tested
@@ -206,6 +223,7 @@ void setup()
     FastLED.show();
   #endif
 
+
   // mount filesystem
   if(!SPIFFS.begin(true))
   {
@@ -247,7 +265,7 @@ void setup()
   listPatterns();
 
   // initialise all the initial effects patterns
-  for (uint8_t i=0; i < maxPlaylistsInitialEffect; i++)
+  for (uint8_t i=0; i < MAX_PLAYLISTS_EFFECT; i++)
   {
     playlistInitialEffects[i].default_fps = 90;
     playlistInitialEffects[i].pattern_fps = 90;
@@ -264,7 +282,7 @@ void setup()
   }
 
   // initialise all the audio effects patterns
-  for (uint8_t i=0; i < maxPlaylistsAudio; i++)
+  for (uint8_t i=0; i < MAX_PLAYLISTS_AUDIO; i++)
   {
     playlistAudio[i].default_fps = 90;
     playlistAudio[i].pattern_fps = 90;
@@ -281,7 +299,7 @@ void setup()
   }
 
   // initialise all the static/non-audio effects patterns
-  for (uint8_t i=0; i < maxPlaylistsStatic; i++)
+  for (uint8_t i=0; i < MAX_PLAYLISTS_STATIC; i++)
   {
     playlistStatic[i].default_fps = 90;
     playlistStatic[i].pattern_fps = 90;
@@ -297,6 +315,7 @@ void setup()
     playlistStatic[i].fps_timer = millis();
   }
 
+  // NOT CURRENTLY USED
   // initialise all the final effects patterns
   for (uint8_t i=0; i < maxPlaylistsFinalEffect; i++)
   {

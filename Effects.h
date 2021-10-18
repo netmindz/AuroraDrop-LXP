@@ -1054,7 +1054,7 @@ CRGBPalette16 AllRed_p = {
   }
   uint16_t XYCQ( uint16_t x, uint16_t y) 
   {
-    // ensure given half scaled matrix positions are within limits
+    // ensure given quarter scaled matrix positions are within limits
     if( x >= MATRIX_WIDTH / 4) return 0;
     if( y >= MATRIX_HEIGHT / 4) return 0;
     return (y * (MATRIX_WIDTH / 4)) + x;
@@ -1064,6 +1064,8 @@ CRGBPalette16 AllRed_p = {
 
 
   // AuroraDrop: modifed from ClearFrame()
+
+  // 0=full canvas, 1/2=half widths, 3=quarter, empty/255 = clear all
   void ClearCanvas(uint8_t id = 255)
   {
     switch (id) {
@@ -1120,13 +1122,13 @@ CRGBPalette16 AllRed_p = {
   }
 
 
-  void BresenhamLineCanvas(CRGB *canvas, int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness)
+  void BresLineCanvasH(CRGB *canvas, int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness)
   {
-    BresenhamLineCanvas(canvas, x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
+    BresLineCanvasH(canvas, x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
   }
 
   // AuroraDrop: draw line on canvas
-  void BresenhamLineCanvas(CRGB *canvas, int x0, int y0, int x1, int y1, CRGB color)
+  void BresLineCanvasH(CRGB *canvas, int x0, int y0, int x1, int y1, CRGB color)
   {
     int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;

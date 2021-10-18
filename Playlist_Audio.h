@@ -47,7 +47,7 @@ class Playlist_Audio : public Playlist {
     PatternAudioDotsSingle audioDotsSingle;
     PatternAudioRotatingSpectrum audioRotatingSpectrum;
     PatternAudioClassicSpectrum128 audioClassicSpectrum128;
-    //PatternAudioCubes audioCubes;
+    PatternAudioCubes audioCubes;
 
     PatternAudio8x8Squares audio8x8Squares;
     PatternAudioBigSpark audioBigSpark;
@@ -78,7 +78,7 @@ class Playlist_Audio : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 16;
+    const static int PATTERN_COUNT = 17;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -90,7 +90,7 @@ class Playlist_Audio : public Playlist {
       &audioDotsSingle,                   // dancing/rolling dots
       &audioRotatingSpectrum,
       &audioClassicSpectrum128,
-      //&audioCubes,
+      &audioCubes,
 
       &audio8x8Squares,
       &audioBigSpark,

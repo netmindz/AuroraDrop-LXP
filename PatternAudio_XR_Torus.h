@@ -129,7 +129,7 @@ class PatternAudioTorus : public Drawable {
         if (audio > 127) audio - 127;
         audio = (audio - fftData.specDataMinVolume) * 2;
 
-        if (i > 0) effects.BresenhamLineCanvas(effects.canvasH, lastx/2, lasty/2, x2/2, y2/2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, audio));
+        if (i > 0) effects.BresLineCanvasH(effects.canvasH, lastx/2, lasty/2, x2/2, y2/2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, audio));
 
         effects.ApplyCanvasH(effects.canvasH, (x1/2)-8, (y1/2)-8, 1.5);
 

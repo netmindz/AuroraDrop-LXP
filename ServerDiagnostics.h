@@ -6,6 +6,7 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <HTTPClient.h>
 
 // needed for udp 
 #include "AsyncUDP.h"
@@ -13,6 +14,7 @@ AsyncUDP udp;
 
 bool wifiConnected = false;
 int wifiMessage = 0;          // displays IP message when wifi first connects
+int newVersionAvailable = 0;
 
 // ! moved to AuroraDrop.ino for visibility ! // Replace with your network credentials
 //const char* ssid = "YourSSID";
@@ -22,6 +24,7 @@ const char* PARAM_INPUT_OPTION = "option";
 const char* PARAM_INPUT_EFFECTS = "effect";
 const char* PARAM_INPUT_AUDIO = "audio";
 const char* PARAM_INPUT_STATIC = "static";
+const char* PARAM_INPUT_PLAYLISTS = "playlists";
 const char* PARAM_INPUT_STATE = "state";
 
 // Create AsyncWebServer object on port 80
@@ -46,6 +49,8 @@ const char index_html[] PROGMEM = R"rawliteral(
     .switch input {display: none}
     .slider {position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 6px}
     .slider:before {position: absolute; content: ""; height: 24px; width: 24px; left: 6px; bottom: 6px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 3px}
+    .numeric {position: relative; display: inline-block; width: 60px; height: 36px; margin-bottom: 0.3rem; } 
+    .inputBox {background-color: #ccc;}
     input:checked+.slider {background-color: #b30000}
     input:checked+.slider:before {-webkit-transform: translateX(24px); -ms-transform: translateX(24px); transform: translateX(24px)}
     .row {display: flex;}
@@ -67,16 +72,22 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     <div class="column">
       <h4>Inital Effects</h4>
+      <h5>Concurrent</h5>
+      <label class="numeric"><input type="number" value="1" min="0" max="2" size="4" onchange="changeNumber(this)" id="1"><span class="inputBox"></span></label>
 %EFFECTS_PLACEHOLDER%
     </div>
 
     <div class="column">
       <h4>Audio Effects</h4>
+      <h5>Concurrent</h5>
+      <label class="numeric"><input type="number" value="2" min="0" max="4" size="4" onchange="changeNumber(this)" id="2"><span class="inputBox"></span></label>
 %AUDIO_PLACEHOLDER%
     </div>
 
     <div class="column">
       <h4>Static Effects</h4>
+      <h5>Concurrent</h5>
+      <label class="numeric"><input type="number" value="2" min="0" max="4" size="4" onchange="changeNumber(this)" id="3"><span class="inputBox"></span></label>
 %STATIC_PLACEHOLDER%
 <br />
 %BUTTONPLACEHOLDER%
@@ -105,6 +116,11 @@ function toggleStaticCheckbox(element) {
   var xhr = new XMLHttpRequest();
   if(element.checked){ xhr.open("GET", "/update?static="+element.id+"&state=1", true); }
   else { xhr.open("GET", "/update?static="+element.id+"&state=0", true); }
+  xhr.send();
+}
+function changeNumber(element) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "/update?playlists="+element.id+"&state="+element.value, true);
   xhr.send();
 }
 </script>
@@ -175,12 +191,11 @@ String processor(const String& var){
     buttons += "<h5>Lock Frame Rate</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Show Render Time</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"3\" " + optionState(option3ShowRenderTime) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Pause Effect Cycling</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Pause Palette Cycling (Future)</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Change Effects (Future)</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5ChangeEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Not Used</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5ChangeEffects) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Disable Initial Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"6\" " + optionState(option6DisableInitialEffects) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Disable Audio Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"7\" " + optionState(option7DisableAudio) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Disable Static Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"8\" " + optionState(option8DisableStatic) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Disable Final Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"9\" " + optionState(option9DisableFinalEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Not Used</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"9\" " + optionState(option9DisableFinalEffects) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Disable Caleido Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option10DisableCaleidoEffects) + "><span class=\"slider\"></span></label>";
     return buttons;
   }
@@ -272,8 +287,39 @@ String bitmapProcessor(const String& var){
 void checkWifiStatus() {
     if (WiFi.status() == WL_CONNECTED && !wifiConnected) {
       wifiConnected = true;
-      wifiMessage = 100;        // when non zero, displays connected info for x renders
+      wifiMessage = 1000;                // when non zero, displays connected info for x renders
       Serial.println(WiFi.localIP());
+
+#ifdef VERNO
+      // get version info from git repository and flash message if there is an update
+      HTTPClient http;
+      
+      String serverName = "https://raw.githubusercontent.com/";
+      String serverPath = serverName + "uklooney/AuroraDrop/main/Version.txt";
+      
+      // Your Domain name with URL path or IP address with path
+      http.begin(serverPath.c_str());
+      
+      // Send HTTP GET request
+      int httpResponseCode = http.GET();
+      
+      if (httpResponseCode>0) {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+        String payload = http.getString();
+        Serial.println(payload);
+        if (payload != VERNO) {
+          newVersionAvailable = 1500;        // when non zero, displays
+        }
+      }
+      else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+      }
+#endif
+
+
+
 
 
       // test connect to server
@@ -388,7 +434,7 @@ void checkWifiStatus() {
           inputMessage1 = request->getParam(PARAM_INPUT_EFFECTS)->value();
           inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
           // enable/disable chosen pattern in each playlist
-          for (int i = 0; i < maxPlaylistsInitialEffect; i++) {
+          for (int i = 0; i < MAX_PLAYLISTS_EFFECT; i++) {
             playlistInitialEffects[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
           }
         }
@@ -398,7 +444,7 @@ void checkWifiStatus() {
           inputMessage1 = request->getParam(PARAM_INPUT_AUDIO)->value();
           inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
           // enable/disable chosen pattern in each playlist
-          for (int i = 0; i < maxPlaylistsAudio; i++) {
+          for (int i = 0; i < MAX_PLAYLISTS_AUDIO; i++) {
             playlistAudio[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
           }
         }
@@ -409,8 +455,25 @@ void checkWifiStatus() {
           inputMessage1 = request->getParam(PARAM_INPUT_STATIC)->value();
           inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
           // enable/disable chosen pattern in each playlist
-          for (int i = 0; i < maxPlaylistsStatic; i++) {
+          for (int i = 0; i < MAX_PLAYLISTS_STATIC; i++) {
             playlistStatic[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
+          }
+        }
+
+        // number of simultaneous palylists 
+        if (request->hasParam(PARAM_INPUT_PLAYLISTS) && request->hasParam(PARAM_INPUT_STATE)) {
+          inputMessage1 = request->getParam(PARAM_INPUT_PLAYLISTS)->value();
+          inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
+          switch (inputMessage1.toInt()) {
+            case 1:
+              maxPlaylistsInitialEffect = inputMessage2.toInt();
+              break;
+            case 2:
+              maxPlaylistsAudio = inputMessage2.toInt();
+              break;
+            case 3:
+              maxPlaylistsStatic = inputMessage2.toInt();
+              break;
           }
         }
 

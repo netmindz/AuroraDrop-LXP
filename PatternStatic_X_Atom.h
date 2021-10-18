@@ -181,7 +181,7 @@ class PatternStaticAtom : public Drawable {
 
         if (i>0) {
         //effects.BresenhamLine(lastx, lasty, x2, y2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, audio / 4));
-        effects.BresenhamLineCanvas(effects.canvasH, lastx/2, lasty/2, x2/2, y2/2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, fftData.specData[i*6]));
+        effects.BresLineCanvasH(effects.canvasH, lastx/2, lasty/2, x2/2, y2/2, effects.ColorFromCurrentPalette(hueoffset + i * spirooffset, fftData.specData[i*6]));
         }
 
 
@@ -254,8 +254,8 @@ class PatternStaticAtom : public Drawable {
           if (audioData > 0) {
             //effects.BresenhamLineCanvasH(i, canvasHeight - audioData, i, 0, effects.ColorFromCurrentPalette((i*16) + color1, 32));
             //effects.BresenhamLineCanvasH(i, canvasHeight - 1, i, canvasHeight - audioData, effects.ColorFromCurrentPalette((i*16) + color2, 255));
-            effects.BresenhamLineCanvas(effects.canvasH, i, canvasHeight - audioData, i, 0, effects.ColorFromCurrentPalette((i*16) + color1, 32));
-            effects.BresenhamLineCanvas(effects.canvasH, i, canvasHeight - 1, i, canvasHeight - audioData, effects.ColorFromCurrentPalette((i*16) + color2, 255));
+            effects.BresLineCanvasH(effects.canvasH, i, canvasHeight - audioData, i, 0, effects.ColorFromCurrentPalette((i*16) + color1, 32));
+            effects.BresLineCanvasH(effects.canvasH, i, canvasHeight - 1, i, canvasHeight - audioData, effects.ColorFromCurrentPalette((i*16) + color2, 255));
           }
 
         }

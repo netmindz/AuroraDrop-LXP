@@ -20,44 +20,37 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PatternEffectTestBlur2d_H
-#define PatternEffectTestBlur2d_H
+#ifndef PatternEffectDimAll_H
+#define PatternEffectDimAll_H
 
-class PatternEffectTestBlur2d : public Drawable {
+class PatternEffectDimAll : public Drawable {
 private:
 
 
-public:
-    PatternEffectTestBlur2d() {
-      name = (char *)"2D Blurring";
-      id = "A";
-      enabled = true;
+  public:
+    PatternEffectDimAll() {
+      name = (char *)"DimAll 240";
+      id = "X";
+      enabled = false;
     }
 
 
-    // #############
-    // ### START ###
-    // #############
+    // ------------------ start -------------------
     void start(uint8_t _pattern) {
+      
 
-        
     }
 
-    // ##################
-    // ### DRAW FRAME ###
-    // ##################
+
+    // --------------------- draw frame -------------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
-        effects.DimAll(230);
 
-        // or cyclic bluring
-        //uint8_t blurAmount = 255;
-        uint8_t blurAmount = beatsin8(2, 10, 255);
 
-        blur2d(effects.leds, MATRIX_WIDTH > 255 ? 255 : MATRIX_WIDTH, MATRIX_HEIGHT > 255 ? 255 : MATRIX_HEIGHT, blurAmount);
-
-        return 0;
+      return 0;
     }
+
+
 };
 
 #endif

@@ -17,7 +17,7 @@
 #include "PatternStatic_M_Bounce.h"
 #include "PatternStatic_X_Atom.h"
 #include "PatternStatic_X_SimpleStars.h"
-#include "PatternStatic_XX_Cubes.h"
+#include "PatternStatic_X_Swirl.h"
 
 // theses are all just proof of concept from aurora demo,
 #include "PatternTest.h"
@@ -27,14 +27,13 @@
 #include "PatternXRadar.h"
 #include "PatternXMunch.h"
 #include "PatternXWave.h"
-
+#include "PatternStatic_X_SpiralingCurves.h"
 
 
 class Platlist_Static : public Playlist {
   private:
 
     PatternStaticWorms staticWorms;
-    PatternStaticCubes staticCubes;
     PatternStaticSimpleStars staticSimpleStars;
     PatternStaticAtom staticAtom;
 
@@ -50,6 +49,8 @@ class Platlist_Static : public Playlist {
     PatternRadar radar;
     PatternMunch munch;
     PatternWave wave;
+    PatternStaticSpiralingCurves spiralingCurves;
+    PatternStaticSwirl staticSwirl;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -58,7 +59,7 @@ class Platlist_Static : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 12;
+    const static int PATTERN_COUNT = 13;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -70,7 +71,8 @@ class Platlist_Static : public Playlist {
       &attract,
       &flowField,
       &staticBounce,
-      &staticCubes,
+      &spiralingCurves,
+      &staticSwirl,
 
       &munch,
       &radar,

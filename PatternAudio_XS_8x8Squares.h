@@ -196,8 +196,8 @@ class PatternAudio8x8Squares : public Drawable {
           if (audioData > 0) {
             //effects.BresenhamLineCanvasH(i, canvasHeight - audioData, i, 0, effects.ColorFromCurrentPalette((i*16) + color1, 32));
             //effects.BresenhamLineCanvasH(i, canvasHeight - 1, i, canvasHeight - audioData, effects.ColorFromCurrentPalette((i*16) + color2, 255));
-            effects.BresenhamLineCanvas(effects.canvasH, i, canvasHeight - audioData, i, 0, effects.ColorFromCurrentPalette((i*16) + color1, 32));
-            effects.BresenhamLineCanvas(effects.canvasH, i, canvasHeight - 1, i, canvasHeight - audioData, effects.ColorFromCurrentPalette((i*16) + color2, 255));
+            effects.BresLineCanvasH(effects.canvasH, i, canvasHeight - audioData, i, 0, effects.ColorFromCurrentPalette((i*16) + color1, 32));
+            effects.BresLineCanvasH(effects.canvasH, i, canvasHeight - 1, i, canvasHeight - audioData, effects.ColorFromCurrentPalette((i*16) + color2, 255));
           }
 
         }

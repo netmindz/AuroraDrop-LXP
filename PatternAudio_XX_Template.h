@@ -24,7 +24,7 @@
 #define PatternAudioTemplate_H
 
 class PatternAudioTemplate : public Drawable {
-private:
+  private:
 
 
   public:
