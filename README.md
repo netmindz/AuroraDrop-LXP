@@ -42,8 +42,8 @@ https://youtu.be/6lSb6BLZaRQ
 ## Latest Updates
 
 0.0.11
-* Added option to select the number of concurrent patterns running.
-* Option to check for new git updates.
+* Added option to select the number of concurrent patterns running from web interface.
+* Check for new git updates on start up.
 * Fixed some bugs.
 * Added some new bugs and patterns.
 
