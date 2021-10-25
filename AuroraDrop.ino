@@ -45,7 +45,7 @@
 #endif
 #endif
 
-// !! DO NOT change these if using a TTGO TFT display
+// !! DO NOT change these if using a TTGO-T-Display
 #define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel, 128x64 breaks memory!
 #define PANEL_HEIGHT 64                                     // matirx made from WS2812B led strips will work up to 32x32 (any larger is too currently slow)
 #define PANELS_NUMBER 1                                     // number of chained HUB75 panels, working with just a single panel at the moment, so obviously set to 1
