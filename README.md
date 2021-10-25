@@ -1,8 +1,8 @@
-# AuroraDrop v0.0.11
+# AuroraDrop v0.0.12
 
 RGB Matrix Audio Visualiser for ESP32
 
-Based on the Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic.
+Based on the FastLED Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic.
 
 Welcome. Work is in progress, updates may appear now and then.
 
@@ -10,12 +10,12 @@ Welcome. Work is in progress, updates may appear now and then.
 
 AuroraDrop creates and runs multiple random patterns based on audio input from your PC, and renders them in a sequenced, multi-parallelized, unpredictable flow. Thrown in are a few random effects, some image manipulations and complimentary fixed and re-active animations, also borrowed from the Jason's Auroa demo.
 
-AuroraDrop currently works with HUB75 matrix panels, and now, at an experimental level, on standard LED strip based panels (though not quite as fast).
+AuroraDrop currently works with HUB75 matrix panels, and now, at an experimental level, on standard LED strip based panels (though not quite as fast) and the TTGO TFT Dev Board.
 
 Details for wiring your ESP32 to a HUB75 panel can be found on mrfaptastic's ESP32-HUB75-MatrixPanel-I2S-DMA project page.
 https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA#2-wiring-esp32-with-the-led-matrix-panel
 
-## Some Pics and an Old Video
+## Some Pics and Videos
 
 ![example_matrix_animation1](https://user-images.githubusercontent.com/4552572/134411163-7eed342a-f806-48df-8284-c8c2a170b4af.gif)
 ![example_matrix_diagnostics1](https://user-images.githubusercontent.com/4552572/134822397-68405460-cfea-4bf5-96b5-e20ee566a729.png)
@@ -24,6 +24,12 @@ https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA#2-wiring-esp32-wi
 [![AuroraDrop](http://img.youtube.com/vi/6lSb6BLZaRQ/0.jpg)](http://www.youtube.com/watch?v=6lSb6BLZaRQ "AuroraDrop 0.0.3")
 
 https://youtu.be/6lSb6BLZaRQ
+
+
+[![AuroraDrop](http://img.youtube.com/vi/wxiZug6A2b8/0.jpg)](http://www.youtube.com/watch?v=wxiZug6A2b8 "AuroraDrop 0.0.12")
+
+https://youtu.be/wxiZug6A2b8
+
 
 ## Example Visualisations
 
@@ -40,8 +46,13 @@ https://youtu.be/6lSb6BLZaRQ
 
 ## Latest Updates
 
+0.0.12
+* Added support for TTGO-TFT Dev boards.
+* Some speed improvements.
+* Fixed some bugs.
+
 0.0.11
-* Added option to select the number of concurrent patterns running.
+* Added web server option to select the number of concurrent patterns running.
 * Option to check for new git updates.
 * Fixed some bugs.
 * Added some new bugs and patterns.
@@ -97,7 +108,7 @@ Tested on 64x64 1/32 scan LED Matrix
 
 ### Suggested Simple Hardware Solution
    
- * ESP32 I2S Matrix Shield
+ * ESP32 I2S Matrix Shield (tested with v2.0.6)
  * https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
  * https://www.youtube.com/watch?v=ZiR93TmSyE0
 
@@ -109,6 +120,9 @@ Libraries needed:-
  * ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.5)
  * https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
 
+ * Adafruit GFX Library (tested with 1.10.12)
+ * https://github.com/adafruit/Adafruit-GFX-Library
+
 Optional WiFi libraries needed:-
 
 *   https://github.com/me-no-dev/ESPAsyncWebServer/archive/master.zip
@@ -116,13 +130,22 @@ Optional WiFi libraries needed:-
 
 *   These will need to be manually installed in your arduino libraries folder as they are not available via the arduino library manager.
 
+Optional FFT libraries needed (experimental):-
+
+*   ArduinoFFT  (tested with v1.5.6)
+*   https://github.com/kosme/arduinoFFT
+
+Optional TFT libraries for TTGO-T-Display
+
+*  https://github.com/Xinyuan-LilyGO/TTGO-T-Display
 
 ### Library Dependancies
 
-  *  ESP32-RGB64x32MatrixPanel-I2S-DMA - the library this project is designed to be used with. This is what interacts with the matrix panel. You can install this from the Arduino Library manager by searching for "ESP32 64x32 LED MATRIX"
+  *  ESP32-HUB75-LED-MatrixPanel-I2S-DMA by mrfaptastic- the library this project is designed to be used with. This is what interacts with the matrix panel. You can install this from the Arduino Library manager by searching for "ESP32 HUB75 LED MATRIX PANEL DMA Display"
   *  Adafruit GFX - is a dependacy of the matrix library. This can also be installed from the library manager by searching for "Adafruit GFX"
-  *  FastLED - Again you can use the library manager and search for "FastLED"
-  *  Arduino FFT - This can also be installed from the library manager by searching for "arduinoFFT"
+  *  FastLED by Damiel Garcia- Again you can use the library manager and search for "FastLED"
+  *  Arduino FFT by Enrique Condes- This can also be installed from the library manager by searching for "arduinoFFT"
+  *  TFT_eSPI by
 
 
 ### Based on

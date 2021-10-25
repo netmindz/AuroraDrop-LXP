@@ -10,7 +10,7 @@
 *   FastLED (tested with v3.4)
 *   https://github.com/FastLED/FastLED
 *
-*   ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.5)
+*   ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.6)
 *   https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
 *
 *   Optional WiFi libraries needed:-
@@ -27,21 +27,45 @@
 *
 */
 
-#define DEBUG 1         // enable/disable debugging output over serial / not working yet
-#define VERNO "11"      // if defined, checks the git repository for updates on startup, comment out if not needed
+// =================================================================================================
+// == START basic user configuration ===============================================================
+// =================================================================================================
 
-// ------------ optional basic web server for testing ------------
-// -- uncomment below lines to enable basic web sever interface --
+// uncomment whichever display is relevent, hardware pins are defined later on if you need to change
+//#define USE_HUB75
+//#define USE_TTGO_TFT
+//#define USE_LEDSTRIP
+
+// check to ensure user has uncommented a line above, otherwise through a complie error 
+#ifndef USE_HUB75
+#ifndef USE_TTGO_TFT
+#ifndef USE_LEDSTRIP
+#error --- uncomment whichever display is relevent ---
+#endif 
+#endif
+#endif
+
+// !! DO NOT change these if using a TTGO TFT display
+#define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel, 128x64 breaks memory!
+#define PANEL_HEIGHT 64                                     // matirx made from WS2812B led strips will work up to 32x32 (any larger is too currently slow)
+#define PANELS_NUMBER 1                                     // number of chained HUB75 panels, working with just a single panel at the moment, so obviously set to 1
+
+#define VERNO "12"      // if defined, checks the git repository for updates on startup, comment out if delay is annoying/not needed
+
+// -- edit below lines to enable basic web sever interface, comment out if not needed/used --
 #define USE_WIFI
 const char* ssid = "your_ssid";
 const char* password = "your_password";
 
-// uncomment whichever is relevent, or both as long as panel sizes match
-#define USE_HUB75
-//#define USE_LEDSTRIP
-
-// experimental:- uncomment if a connected INMP441 microphone will be used
+// very experimental:- uncomment if a connected INMP441 microphone will be used (define pins below)
 //#define USE_MICROPHONE
+
+// enable/disable debugging output over serial / not used
+//#define DEBUG 1
+
+// =================================================================================================
+// == END user configuration =======================================================================
+// =================================================================================================
 
 #include <FastLED.h>
 #include <SPIFFS.h>
@@ -69,30 +93,43 @@ const char* password = "your_password";
 
 #ifdef USE_LEDSTRIP
   /*--------------------- LED STRIP GPIO ETC. CONFIG --------------------*/
-  #define LEDSTRIP_RGB_PIN          32 // PWM capable
+  #define LEDSTRIP_RGB_PIN          18 // PWM capable
   #define LEDSTRIP_TYPE             WS2812B
   #define LEDSTRIP_COLOR_ORDER      GRB
   #define LEDSTRIP_BRIGHTNESS       255
   #define SERPENTINE                true
 #endif
 
+#ifdef USE_TTGO_TFT
+  /*--------------------- LED STRIP GPIO ETC. CONFIG --------------------*/
+  #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
+  #include <SPI.h>
+  #define TFT_PANEL_WIDTH 240     // not used currently
+  #define TFT_PANEL_HEIGHT 135    // not used currently
+  #define TFT_PANEL_ROTATE 1
+  #define TFT_PANEL_PIXELATE      // uncomment for HUB75 like pixelated render //todo
+  TFT_eSPI *tft;
+  TFT_eSPI t = TFT_eSPI();
+
+#endif
+
+
 /*----------------------- MATRIX PANEL CONFIG -------------------------*/
-#define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel, 128x64 breaks memory!
-#define PANEL_HEIGHT 64                                     // matirx made from WS2812B led strips will work up to 32x32 (any larger is too slow)
-#define PANELS_NUMBER 1                                     // number of chained HUB75 panels, working with just a single panel at the moment, so obviously set to 1
 #define MATRIX_WIDTH (PANEL_WIDTH * PANELS_NUMBER)          // not tested with anything other than square 64x64, 32x32 and 16x16
 #define MATRIX_HEIGHT (PANEL_HEIGHT)
 #define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
 
+// moved from below for testing
+#include "FFTData.h"
+FFTData fftData;
+
 #ifdef USE_MICROPHONE
-  #define I2S_WS  32       // aka LRCL     21,22,32 and 33 avaiable?
-  #define I2S_SD  21       // aka DOUT
-  #define I2S_SCK 22       // aka BCLK
+  //#define I2S_WS  32       // aka LRCL     2, 32, 34 and 34(input) avaiable? when using HUB75
+  //#define I2S_SD  2        // aka DOUT     was 34
+  //#define I2S_SCK 33       // aka BCLK
   #include "audio_reactive.h"
 #endif
-
-#define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit serial messaging...
 
 // fixed maximums here for memory allocation, these must be >= variables used below
 //#define MAX_PATTERNS_AMBIENT_BACKGROUND 1     // not used yet? useful? plasma effects?
@@ -120,8 +157,8 @@ bool option8DisableStatic = false;
 bool option9DisableFinalEffects = false;        // not used
 bool option10DisableCaleidoEffects = false;
 
-#include "FFTData.h"
-FFTData fftData;
+//#include "FFTData.h"
+//FFTData fftData;
 
 #include "Geometry.h"  // Point
 #include "Effects.h"
@@ -171,6 +208,7 @@ void setup()
 
   // very experimental
   #ifdef USE_MICROPHONE
+  // setup audio prior to anything else
     setupAudio();
     //setupNothing();
   #endif
@@ -206,7 +244,6 @@ void setup()
     Serial.println("Starting LED Strip...");
     FastLED.addLeds<LEDSTRIP_TYPE, LEDSTRIP_RGB_PIN, LEDSTRIP_COLOR_ORDER>(effects.leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(LEDSTRIP_BRIGHTNESS);
-    delay(250);
     fill_solid(effects.leds, NUM_LEDS, CRGB::Red);
     FastLED.show();
     delay(250);
@@ -223,6 +260,22 @@ void setup()
     FastLED.show();
   #endif
 
+  #ifdef USE_TTGO_TFT
+    // test display
+    tft = &t;
+    Serial.println("Starting TFT Display...");
+    tft->init();
+    tft->setRotation(TFT_PANEL_ROTATE);
+    tft->fillScreen(tft->color565(255,0,0));
+    delay(250);
+    tft->fillScreen(tft->color565(0,255,0));
+    delay(250);
+    tft->fillScreen(tft->color565(0,0,255));
+    delay(250);
+    tft->fillScreen(tft->color565(255,255,255));
+    delay(250);
+    tft->fillScreen(tft->color565(0,0,0));
+  #endif
 
   // mount filesystem
   if(!SPIFFS.begin(true))
@@ -247,6 +300,14 @@ void setup()
       dma_display->print("Connecting to WiFi.."); 
       dma_display->setCursor(2,32);
       dma_display->print(ssid);
+    #endif 
+    #ifdef USE_TTGO_TFT
+      tft->setTextSize(2);
+      tft->setTextColor(0xffff);
+      tft->setCursor(24,12);
+      tft->print("Connecting.."); 
+      tft->setCursor(24,32);
+      tft->print(ssid);
     #endif 
     WiFi.begin(ssid, password);
     delay(1000);
@@ -356,7 +417,7 @@ void loop()
     checkWifiStatus();
   #endif
 
-  // check if there is any new audio data and proccess it to useful bins and flags used by the patterns
+  // check if there is any new audio data from serial port and proccess it to useful bins and flags used by the patterns
   fftData.processSerialData();
 
   // TODO: implement aurora demo menu system?
@@ -586,6 +647,9 @@ void loop()
   // seriously dim anything left rendering on the panel if there is no audio
   //if(fftData.noAudio) effects.DimAll(50);
 
+  effects.ShowFrame();
+
+/*
   #ifdef USE_HUB75
     // update the panel frame with the final effects rendered frame
     effects.ShowFrame();
@@ -598,6 +662,12 @@ void loop()
       FastLED.show();
     #endif
   #endif
+
+  #ifdef USE_TTGO_TFT
+    // update the panel frame with the final effects rendered frame
+    effects.ShowFrame();
+  #endif
+*/
 
   // ----------------------- end ---------------------------
 
