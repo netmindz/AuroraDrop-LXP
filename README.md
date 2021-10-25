@@ -48,7 +48,7 @@ https://youtu.be/wxiZug6A2b8
 ## Latest Updates
 
 0.0.12
-* Added support for TTGO-TFT Dev boards.
+* Added support for TTGO-TFT Dev boards. (You'll need to uncomment pertinent line in code for your hardware)
 * Some speed improvements.
 * Fixed some bugs.
 
