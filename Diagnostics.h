@@ -202,5 +202,136 @@ void UpdateDiagnosticsData() {
 
 #endif
 
+#ifdef USE_TTGO_TFT
+
+  // ------------------------ INFO --------------------------
+
+  // todo: don't duplicate code
+  TFT_eSPI *dma_display;
+  dma_display = &t;
+  // todo: don't duplicate code
+
+  // ---------------- show total render time ----------------
+  // show actual render time if over limit, 50 = 20fps
+  if (option3ShowRenderTime || option1Diagnostics) {
+    tft->setTextSize(2);
+
+    // test - black out area behind text
+    tft->setTextColor(BLACK);
+    tft->setCursor(98,112);
+    tft->print(actual_render_ms);
+    tft->print("ms");
+    tft->setCursor(102,112);
+    tft->print(actual_render_ms);
+    tft->print("ms");
+    tft->setCursor(100,110);
+    tft->print(actual_render_ms);
+    tft->print("ms");
+    tft->setCursor(100,114);
+    tft->print(actual_render_ms);
+    tft->print("ms");
+
+    // display total render time
+    tft->setTextColor(WHITE);
+    if (actual_render_ms > 50) tft->setTextColor(YELLOW);
+    tft->setCursor(100,112);
+    tft->print(actual_render_ms);
+    tft->print("ms");
+  }
+
+  // if WiFi has just connected, show IP address and version notice
+  #ifdef USE_WIFI 
+    if (wifiMessage > 0) {
+      wifiMessage--;
+      tft->setTextSize(2);
+      tft->setTextColor(WHITE, BLUE);
+      tft->setCursor(24,62);
+      tft->print(WiFi.localIP());
+      if (wifiMessage == 0) tft->fillScreen(0x0);
+    }
+    if (newVersionAvailable > 0) {
+      newVersionAvailable--;
+      tft->setTextColor(WHITE, RED);
+      tft->setCursor(24,92);
+      tft->print("Update Available!");
+      if (newVersionAvailable == 0) tft->fillScreen(0x0);
+    }
+  #endif
+
+  // ---------------------- DIAGNOSTICS -------------------------
+
+  if (option1Diagnostics) {
+
+    tft->setTextSize(2);
+    tft->setTextColor(WHITE);
+    tft->setCursor(100,92);
+    tft->print(total_render_ms);
+    tft->print("ms");
+
+    // actual fps
+    //tft->setCursor(2,46);
+    //tft->print(actual_fps);
+    //tft->print("fps");
+
+    // testing udp packet xfer rate
+    //tft->setCursor(2,46);
+    //tft->print(fftData.test1);
+    //tft->print("pk");
+
+    // testing socket xfer rate
+    //tft->setCursor(2,46);
+    //tft->print(fftData.test1);
+    //tft->print("pk");
+
+    //testing serial packets per second
+    tft->setCursor(24,92);
+    tft->print(fftData.serial_pps);
+    tft->print("pps");
+
+    
+    
+
+    tft->setCursor(24,112);
+    tft->print(fftData.bpm);
+    tft->print("bpm");
+
+  for (uint8_t i=0; i < maxPlaylistsInitialEffect; i++) {
+      tft->setTextColor(WHITE);
+      tft->setCursor(24,4+(i*20));
+      tft->print(playlistInitialEffects[i].getCurrentPatternId());      //tft->print(patternsAudio[i].id3);                 // why not?
+      tft->setTextColor(BLUE);
+      if (playlistInitialEffects[i].render_ms > 10) tft->setTextColor(YELLOW);
+      if (playlistInitialEffects[i].render_ms > 15) tft->setTextColor(MAGENTA);
+      tft->print(playlistInitialEffects[i].render_ms);
+      //tft->print(patternsInitEffects[i].fps_last);
+  }
+  for (uint8_t i=0; i < maxPlaylistsAudio; i++) {
+      tft->setTextColor(WHITE);
+      tft->setCursor(64,4+(i*20));
+      tft->print(playlistAudio[i].getCurrentPatternId());      //tft->print(patternsAudio[i].id3);                 // why not?
+      tft->setTextColor(BLUE);
+      if (playlistAudio[i].render_ms > 10) tft->setTextColor(YELLOW);
+      if (playlistAudio[i].render_ms > 15) tft->setTextColor(MAGENTA);
+      tft->print(playlistAudio[i].render_ms);
+      //tft->print(patternsAudio[i].fps_last);
+  }
+  for (uint8_t i=0; i < maxPlaylistsStatic; i++) {
+      tft->setTextColor(WHITE);
+      tft->setCursor(104,4+(i*20));
+      tft->print(playlistStatic[i].getCurrentPatternId());      //tft->print(patternsAudio[i].id3);                 // why not?
+      tft->setTextColor(BLUE);
+      if (playlistStatic[i].render_ms > 10) tft->setTextColor(YELLOW);
+      if (playlistStatic[i].render_ms > 15) tft->setTextColor(MAGENTA);
+      tft->print(playlistStatic[i].render_ms);
+      //tft->print(patternsStatic[i].fps_last);
+  }
+
+
+
+  }
+
+#endif
+
+
 
 }

@@ -324,5 +324,7 @@ class Boid {
 
 static const uint8_t AVAILABLE_BOID_COUNT = 64;
 //Boid boids[MAX_PATTERNS_OLD][AVAILABLE_BOID_COUNT];    // MAX_PATTERNS_5_STATIC
-Boid audioBoids[MAX_PLAYLISTS_AUDIO][AVAILABLE_BOID_COUNT];
-Boid staticBoids[MAX_PLAYLISTS_STATIC][AVAILABLE_BOID_COUNT];
+
+
+Boid audioBoids[MAX_PLAYLISTS_AUDIO][AVAILABLE_BOID_COUNT];  // TODO: do we need these?
+Boid staticBoids[MAX_PLAYLISTS_STATIC][AVAILABLE_BOID_COUNT];  // TODO: do we need all these

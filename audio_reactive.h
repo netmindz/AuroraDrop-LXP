@@ -11,9 +11,9 @@
 //#include <driver/i2s.h>
 #include <arduinoFFT.h>
 
-#define I2S_WS  32       // aka LRCL     21,22,32,33
-#define I2S_SD  21       // aka DOUT
-#define I2S_SCK 22       // aka BCLK
+#define I2S_WS  32  // was 32     // aka LRCL 15    21,22,32,33
+#define I2S_SD  2   // was 34     // aka DOUT 32
+#define I2S_SCK 33  // was 33     // aka BCLK 14
 #define MIN_SHOW_DELAY  15
 const i2s_port_t I2S_PORT = I2S_NUM_0;
 const int BLOCK_SIZE = 64;
@@ -22,8 +22,8 @@ const int SAMPLE_RATE = 10240;
 
 TaskHandle_t FFT_Task;
 
-int squelch = 0;                           // Squelch, cuts out low level sounds
-int gain = 30;                             // Gain, boosts input level*/
+int squelch = 0;    // was 0                       // Squelch, cuts out low level sounds
+int gain = 30;      // was 30                       // Gain, boosts input level*/
 uint16_t micData;                               // Analog input for FFT
 uint16_t micDataSm;                             // Smoothed mic data, as it's a bit twitchy
 
@@ -161,6 +161,21 @@ void FFTcode( void * parameter) {
     for (int i=0; i < 16; i++) {
         fftResult[i] = constrain((int)fftCalc[i],0,254);
     }
+
+/*
+    // testing
+    for (int i=0;i<16;i++) {
+      fftData.specData[i] = fftResult[i];
+      fftData.specData16[i] = fftResult[i];
+      fftData.specData32[i] = fftResult[i];
+    }
+
+    for (int i=0;i<8;i++) {
+      fftData.specData8[i] = fftResult[i];
+    }
+
+      fftData.noAudio = false;
+*/
 
   } // for(;;)
 } // FFTcode()

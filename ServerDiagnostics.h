@@ -207,42 +207,36 @@ String processor(const String& var){
 
   if (var == "EFFECTS_PLACEHOLDER"){
     String buttons4 = "";
-    if (maxPlaylistsInitialEffect > 0) {
-      int num = playlistInitialEffects[0].getPatternCount();
-      for (int i=0; i<num; i++) {
-        char* yy = playlistInitialEffects[0].getItemName(i);
-        bool isEnabled = playlistInitialEffects[0].getItemEnabled(i);
-        String mystring(yy);
-        buttons4 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleEffectCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
-      }
+    int num = playlistInitialEffects[0].getPatternCount();
+    for (int i=0; i<num; i++) {
+      char* yy = playlistInitialEffects[0].getItemName(i);
+      bool isEnabled = playlistInitialEffects[0].getItemEnabled(i);
+      String mystring(yy);
+      buttons4 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleEffectCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
     }
     return buttons4;
   }
 
   if (var == "AUDIO_PLACEHOLDER"){
     String buttons3 = "";
-    if (maxPlaylistsAudio > 0) {
-      int num = playlistAudio[0].getPatternCount();
-      for (int i=0; i<num; i++) {
-        char* yy = playlistAudio[0].getItemName(i);
-        bool isEnabled = playlistAudio[0].getItemEnabled(i);
-        String mystring(yy);
-        buttons3 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleAudioCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
-      }
+    int num = playlistAudio[0].getPatternCount();
+    for (int i=0; i<num; i++) {
+      char* yy = playlistAudio[0].getItemName(i);
+      bool isEnabled = playlistAudio[0].getItemEnabled(i);
+      String mystring(yy);
+      buttons3 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleAudioCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
     }
     return buttons3;
   }
 
   if (var == "STATIC_PLACEHOLDER"){
     String buttons = "";
-    if (maxPlaylistsStatic > 0) {
-      int num = playlistStatic[0].getPatternCount();
-      for (int i=0; i<num; i++) {
-        char* yy = playlistStatic[0].getItemName(i);
-        bool isEnabled = playlistStatic[0].getItemEnabled(i);
-        String mystring(yy);
-        buttons += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleStaticCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
-      }
+    int num = playlistStatic[0].getPatternCount();
+    for (int i=0; i<num; i++) {
+      char* yy = playlistStatic[0].getItemName(i);
+      bool isEnabled = playlistStatic[0].getItemEnabled(i);
+      String mystring(yy);
+      buttons += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleStaticCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
     }
     return buttons;
   }
@@ -497,4 +491,5 @@ void checkWifiStatus() {
     }
 
 }
+
 

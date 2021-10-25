@@ -139,6 +139,9 @@ public:
   CRGB *canvasH2;    // half width canvas no.2
   CRGB *canvasQ;    // quarter
 
+#ifdef USE_TTGO_TFT
+  uint16_t tftChunk[96*64];
+#endif
 
   Effects(){
     // we do dynamic allocation for leds buffer, otherwise esp32 toolchain can't link static arrays of such a big size for 256+ matrixes
@@ -218,6 +221,156 @@ public:
     #ifdef USE_LEDSTRIP
       FastLED.show();
     #endif
+
+    #ifdef USE_TTGO_TFT
+
+/*
+      // slow pixel by pixel drawing
+      for (uint8_t x=0; x<MATRIX_WIDTH; x=x+1) {
+        for (uint8_t y=0; y<MATRIX_HEIGHT; y=y+1) {
+          uint16_t _pixel = XY16(x,y);
+          uint16_t col = tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          #ifdef TFT_PANEL_FAST_DRAW
+            //tft->drawPixel(x, y, col);
+            tft->drawPixel((x*3)+24, (y*2)+3, col);        // draw one pixel
+          #else
+            tft->drawRect((x*3)+24, (y*2)+3, 3, 2, col);     // draw all pixels
+          #endif
+          //xxx1[XY16(x,y)] = col;
+        }
+      }
+*/
+
+
+      // latest attempt , pfff memory
+      uint16_t i;
+      uint16_t _pixel;
+      uint16_t col;
+      uint16_t offsetx = (240 - (96*2)) / 2;
+      uint16_t offsety = (135 - (64*2)) / 2;
+
+      i = 0;
+      for (uint16_t y=0;y<32;y++) {
+        for (uint16_t x=0;x<32;x++) {
+          _pixel = XY16(x,y);
+          col = tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          tftChunk[i] = col;
+          tftChunk[i+1] = col;
+          tftChunk[i+2] = col;
+          tftChunk[i+96] = col;
+          tftChunk[i+1+96] = col;
+          tftChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=31) i = i + 96;
+        }
+      }
+      tft->pushRect(0 + offsetx, 0 + offsety, 96, 64, tftChunk);
+
+
+      i = 0;
+      for (uint16_t y=0;y<32;y++) {
+        for (uint16_t x=32;x<64;x++) {
+          _pixel = XY16(x,y);
+          col = tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          tftChunk[i] = col;
+          tftChunk[i+1] = col;
+          tftChunk[i+2] = col;
+          tftChunk[i+96] = col;
+          tftChunk[i+1+96] = col;
+          tftChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=63) i = i + 96;
+        }
+      }
+      tft->pushRect(96 + offsetx, 0 + offsety, 96, 64, tftChunk);
+
+
+      i = 0;
+      for (uint16_t y=32;y<64;y++) {
+        for (uint16_t x=0;x<32;x++) {
+          _pixel = XY16(x,y);
+          col = tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          tftChunk[i] = col;
+          tftChunk[i+1] = col;
+          tftChunk[i+2] = col;
+          tftChunk[i+96] = col;
+          tftChunk[i+1+96] = col;
+          tftChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=31) i = i + 96;
+        }
+      }
+      tft->pushRect(0 + offsetx, 64 + offsety, 96, 64,tftChunk);
+
+
+      i = 0;
+      for (uint16_t y=32;y<64;y++) {
+        for (uint16_t x=32;x<64;x++) {
+          _pixel = XY16(x,y);
+          col = tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          tftChunk[i] = col;
+          tftChunk[i+1] = col;
+          tftChunk[i+2] = col;
+          tftChunk[i+96] = col;
+          tftChunk[i+1+96] = col;
+          tftChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=63) i = i + 96;
+        }
+      }
+      tft->pushRect(96 + offsetx, 64 + offsety, 96, 64, tftChunk);
+
+/*
+      // test - working example
+      //uint16_t i;
+      int half = MATRIX_WIDTH / 2;
+      int q = MATRIX_WIDTH / 4;
+      // map top left quarter to array
+      i = 0;
+      for (uint16_t y=0;y<64;y++) {
+        for (uint16_t x=0;x<64;x++) {
+          uint16_t _pixel = XY16(x,y);
+          uint16_t col = tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+
+          col = (col >> 8) | (col  << 8);
+
+          xxx1[i] = col;
+          i++;
+        }
+      }
+      //tft->pushRect(64,64,64,64,xxx1);//(0, row, w, 1, awColors);
+
+      //tft->pushRect(0,0,64,64,xxx1);//(0, row, w, 1, awColors);
+      //tft->pushRect(0,64,64,64,xxx1);//(0, row, w, 1, awColors);
+      //tft->pushRect(64,0,64,64,xxx1);//(0, row, w, 1, awColors);
+      //tft->pushRect(64,64,64,64,xxx1);//(0, row, w, 1, awColors);
+      //tft->pushRect(128,0,64,64,xxx1);//(0, row, w, 1, awColors);
+      tft->pushRect(128,64,64,64,xxx1);//(0, row, w, 1, awColors);
+*/
+
+
+/*
+      uint16_t i = 0;
+      tft->startWrite();
+      tft->setAddrWindow(0, 0, 240, 135);  //new Adafruit
+      uint32_t mcu_pixels = 240 * 135;
+      while (mcu_pixels--) {
+        uint16_t color = tft->color565(leds[i].r, leds[i].g, leds[i].b);
+        color = (color >> 8) | (color  << 8);
+        tft->pushColor(color);
+        i++;
+      }
+      tft->endWrite();
+*/
+
+
+    #endif
+
+
   }
 
   // scale the brightness of the screenbuffer down

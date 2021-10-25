@@ -1,6 +1,7 @@
 class FFTData{
   public:
 
+  #define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit serial messaging...
   #define MAX_SERIAL_MSG_LENGTH 255       // re-think !!!
   #define BINS 128  // was 96    // re-think !!!, 192/2 = 96, 192/3 = 64
 

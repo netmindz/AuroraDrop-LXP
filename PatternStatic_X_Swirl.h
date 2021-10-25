@@ -41,6 +41,17 @@ class PatternStaticSwirl : public Drawable {
             effects.leds[XY( i, nj)] += CHSV( ms / 37, 255, 255);
             effects.leds[XY(ni, j)] += CHSV( ms / 41, 255, 255);
 
+            effects.BresLine(i, j, j, i, 16, 128, LINEARBLEND);
+            effects.BresLine(ni, nj, nj, ni, 32, 255, LINEARBLEND);
+
+            effects.BresLine(i, nj, j, ni, 64, 128, LINEARBLEND);
+            effects.BresLine(ni, j, nj, i, 80, 128, LINEARBLEND);
+
+            effects.BresLine(ni, j, j, ni, 64, 128, LINEARBLEND);
+            effects.BresLine(ni, j, j, ni, 64, 128, LINEARBLEND);
+
+            effects.BresLine(i, nj, nj, i, 64, 128, LINEARBLEND);
+            effects.BresLine(i, nj, nj, i, 64, 128, LINEARBLEND);
 
             return 0;
         }
