@@ -143,6 +143,10 @@ public:
   uint16_t tftChunk[96*64];
 #endif
 
+#ifdef USE_TTGO_WATCH
+  uint16_t watchChunk[240*24];  // 10 strips 240px by 24px
+#endif
+
   Effects(){
     // we do dynamic allocation for leds buffer, otherwise esp32 toolchain can't link static arrays of such a big size for 256+ matrixes
     leds = (CRGB *)malloc(NUM_LEDS * sizeof(CRGB));
@@ -366,7 +370,203 @@ public:
       }
       tft->endWrite();
 */
+    #endif
 
+
+
+
+
+    #ifdef USE_TTGO_WATCH
+
+
+      uint16_t i;
+      uint16_t _pixel;
+      uint16_t col;
+
+    // split into 10 slices
+    for (uint16_t slice=0; slice<10; slice++) {
+      i = 0;
+      for (uint16_t y=slice*(MATRIX_HEIGHT/10);y<(slice*(MATRIX_HEIGHT/10))+6;y++) {
+        for (uint16_t x=0;x<MATRIX_WIDTH;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+3] = 0x0; // col;
+          watchChunk[i+240] = col;
+          watchChunk[i+1+240] = col;
+          watchChunk[i+2+240] = col;
+          watchChunk[i+3+240] = 0x0; // col;
+
+          // leave one line blank?
+          watchChunk[i+480] = col;
+          watchChunk[i+1+480] = col;
+          watchChunk[i+2+480] = 0x0; // col;
+          watchChunk[i+3+480] = 0x0; // col;
+          watchChunk[i+720] = 0x0; // col;
+          watchChunk[i+1+720] = 0x0; // col;
+          watchChunk[i+2+720] = 0x0; // col;
+          watchChunk[i+3+720] = 0x0; // col;
+
+
+          i = i + 4;
+        }
+        i = i + (240 * 3);
+      }
+      ttgo->tft->pushRect(0, slice*24, 240, 24, watchChunk);
+    }
+
+
+
+
+/*
+      i = 0;
+      for (uint16_t y=0;y<MATRIX_CENTER_Y;y++) {
+        for (uint16_t x=MATRIX_CENTER_X;x<MATRIX_WIDTH;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+96] = col;
+          watchChunk[i+1+96] = col;
+          watchChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=MATRIX_WIDTH-1) i = i + 96;
+        }
+      }
+      ttgo->tft->pushRect(96 + offsetx, 0 + offsety, 96, 64, watchChunk);
+
+
+      i = 0;
+      for (uint16_t y=MATRIX_CENTER_Y;y<MATRIX_HEIGHT;y++) {
+        for (uint16_t x=0;x<MATRIX_CENTER_X;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+96] = col;
+          watchChunk[i+1+96] = col;
+          watchChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=MATRIX_CENTER_X-1) i = i + 96;
+        }
+      }
+      ttgo->tft->pushRect(0 + offsetx, 64 + offsety, 96, 64,watchChunk);
+
+
+      i = 0;
+      for (uint16_t y=MATRIX_CENTER_Y;y<MATRIX_HEIGHT;y++) {
+        for (uint16_t x=MATRIX_CENTER_X;x<MATRIX_WIDTH;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+96] = col;
+          watchChunk[i+1+96] = col;
+          watchChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=MATRIX_WIDTH-1) i = i + 96;
+        }
+      }
+      ttgo->tft->pushRect(96 + offsetx, 64 + offsety, 96, 64, watchChunk);
+*/
+
+
+
+
+      /* WORKING
+      // latest attempt , pfff memory
+      uint16_t i;
+      uint16_t _pixel;
+      uint16_t col;
+      uint16_t offsetx = (240 - (96*2)) / 2;
+      uint16_t offsety = (240 - (64*2)) / 2;
+      //uint16_t offsetx = (240 - (120*2)) / 2;
+      //uint16_t offsety = (240 - (120*2)) / 2;
+
+      i = 0;
+      for (uint16_t y=0;y<MATRIX_CENTER_Y;y++) {
+        for (uint16_t x=0;x<MATRIX_CENTER_X;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+96] = col;
+          watchChunk[i+1+96] = col;
+          watchChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >= MATRIX_CENTER_X-1) i = i + 96;
+        }
+      }
+      ttgo->tft->pushRect(0 + offsetx, 0 + offsety, 96, 64, watchChunk);
+
+
+      i = 0;
+      for (uint16_t y=0;y<MATRIX_CENTER_Y;y++) {
+        for (uint16_t x=MATRIX_CENTER_X;x<MATRIX_WIDTH;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+96] = col;
+          watchChunk[i+1+96] = col;
+          watchChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=MATRIX_WIDTH-1) i = i + 96;
+        }
+      }
+      ttgo->tft->pushRect(96 + offsetx, 0 + offsety, 96, 64, watchChunk);
+
+
+      i = 0;
+      for (uint16_t y=MATRIX_CENTER_Y;y<MATRIX_HEIGHT;y++) {
+        for (uint16_t x=0;x<MATRIX_CENTER_X;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+96] = col;
+          watchChunk[i+1+96] = col;
+          watchChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=MATRIX_CENTER_X-1) i = i + 96;
+        }
+      }
+      ttgo->tft->pushRect(0 + offsetx, 64 + offsety, 96, 64,watchChunk);
+
+
+      i = 0;
+      for (uint16_t y=MATRIX_CENTER_Y;y<MATRIX_HEIGHT;y++) {
+        for (uint16_t x=MATRIX_CENTER_X;x<MATRIX_WIDTH;x++) {
+          _pixel = XY16(x,y);
+          col = ttgo->tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+          watchChunk[i] = col;
+          watchChunk[i+1] = col;
+          watchChunk[i+2] = col;
+          watchChunk[i+96] = col;
+          watchChunk[i+1+96] = col;
+          watchChunk[i+2+96] = col;
+          i = i + 3;
+          if (x >=MATRIX_WIDTH-1) i = i + 96;
+        }
+      }
+      ttgo->tft->pushRect(96 + offsetx, 64 + offsety, 96, 64, watchChunk);
+      */
 
     #endif
 
@@ -652,12 +852,25 @@ CRGBPalette16 AllRed_p = {
 
   // mirror the first 16x16 quadrant 3 times onto a 32x32
   void Caleidoscope2() {
-    for (int x = 0; x < MATRIX_CENTER_X; x++) {
-      for (int y = 0; y < MATRIX_CENTER_Y; y++) {
-        leds[XY16(MATRIX_WIDTH - 1 - x, y)] = leds[XY16(y, x)];
-        leds[XY16(x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(y, x)];
-        leds[XY16(MATRIX_WIDTH - 1 - x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
+    if (MATRIX_WIDTH == MATRIX_HEIGHT) {
+      for (int x = 0; x < MATRIX_CENTER_X; x++) {
+        for (int y = 0; y < MATRIX_CENTER_Y; y++) {
+          leds[XY16(MATRIX_WIDTH - 1 - x, y)] = leds[XY16(y, x)];
+          leds[XY16(x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(y, x)];
+          leds[XY16(MATRIX_WIDTH - 1 - x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
+        }
       }
+    }
+    else {
+      // TODO : fix this 
+      for (int x = 0; x < MATRIX_CENTER_X; x++) {
+        for (int y = 0; y < MATRIX_CENTER_Y; y++) {
+          leds[XY16(MATRIX_WIDTH - 1 - x, y)] = leds[XY16(x, y)];
+          leds[XY16(x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
+          leds[XY16(MATRIX_WIDTH - 1 - x, MATRIX_HEIGHT - 1 - y)] = leds[XY16(x, y)];
+        }
+      }
+
     }
   }
 
@@ -1250,6 +1463,11 @@ CRGBPalette16 AllRed_p = {
  void BresLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness, TBlendType blendType = LINEARBLEND)
   {
     CRGB color = ColorFromCurrentPalette(colorIndex, brightness);
+    BresLine(x0, y0, x1, y1, color, blendType);
+  }
+
+  void BresLine(int x0, int y0, int x1, int y1, CRGB color, TBlendType blendType = LINEARBLEND)
+  {
     int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int err = dx + dy, e2;
@@ -1643,7 +1861,57 @@ CRGBPalette16 AllRed_p = {
   }
 
 
+  void ShowLianLi120() 
+  {
+    uint8_t signHeight;
+    uint8_t signCenter;
 
+    //CRGB color  = 0xF800 ;
+    CRGB color  = 0xEF0000;
+    CRGB colorCenter  = 0x0A0A0A;
+
+    signHeight = MATRIX_HEIGHT;
+    if (fftData.noAudio) signHeight = signHeight - 7;
+    signCenter = signHeight / 2;
+
+    //left
+    BresLine(14, 0, 3, 11, color, NOBLEND);
+    BresLine(15, 0, 4, 11, color, NOBLEND);
+
+    BresLine(3, 11, 3, signHeight - 11, color, NOBLEND);
+    BresLine(4, 11, 4, signHeight - 11, color, NOBLEND);
+    BresLine(5, 10, 5, signHeight - 10, color, NOBLEND);
+
+    BresLine(3, signHeight - 11, 14, signHeight, color, NOBLEND);
+    BresLine(4, signHeight - 11, 15, signHeight, color, NOBLEND);
+
+    //right
+    BresLine(49, 0, 60, 11, color, NOBLEND);
+    BresLine(48, 0, 59, 11, color, NOBLEND);
+
+    BresLine(60, 11, 60, signHeight - 11, color, NOBLEND);
+    BresLine(59, 11, 59, signHeight - 11, color, NOBLEND);
+    BresLine(58, 10, 58, signHeight - 10, color, NOBLEND);
+
+    BresLine(60, signHeight - 11, 49, signHeight, color, NOBLEND);
+    BresLine(59, signHeight - 11, 48, signHeight, color, NOBLEND);
+
+    // centre circle
+    BresLine(29, signCenter - 6, 34, signCenter - 6, colorCenter, LINEARBLEND);
+    BresLine(27, signCenter - 5, 36, signCenter - 5, colorCenter, LINEARBLEND);
+    BresLine(26, signCenter - 4, 37, signCenter - 4, colorCenter, LINEARBLEND);
+    BresLine(26, signCenter - 3, 37, signCenter - 3, colorCenter, LINEARBLEND);
+    BresLine(25, signCenter - 2, 38, signCenter - 2, colorCenter, LINEARBLEND);
+    BresLine(25, signCenter - 1, 38, signCenter - 1, colorCenter, LINEARBLEND);
+    BresLine(25, signCenter , 38, signCenter, colorCenter, LINEARBLEND);
+    BresLine(25, signCenter + 1, 38, signCenter + 1, colorCenter, LINEARBLEND);
+    BresLine(25, signCenter + 2, 38, signCenter + 2, colorCenter, LINEARBLEND);
+    BresLine(25, signCenter + 3, 38, signCenter + 3, colorCenter, LINEARBLEND);
+    BresLine(26, signCenter + 4, 37, signCenter + 4, colorCenter, LINEARBLEND);
+    BresLine(26, signCenter + 5, 37, signCenter + 5, colorCenter, LINEARBLEND);
+    BresLine(27, signCenter + 6, 36, signCenter + 6, colorCenter, LINEARBLEND);
+    BresLine(29, signCenter + 7, 34, signCenter + 7, colorCenter, LINEARBLEND);
+  }
 
 
 

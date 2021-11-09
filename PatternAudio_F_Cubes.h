@@ -235,46 +235,52 @@ class PatternAudioCubes : public Drawable {
       cube[c].rotate(cube[c].Angx, cube[c].Angy);
 
       // Draw cube
-      int i;
+      if (!fftData.noAudio) {      
+  
+        int i;
 
-      CRGB color = effects.ColorFromCurrentPalette(cube[c].hue, 128);
+        CRGB color = effects.ColorFromCurrentPalette(cube[c].hue, 128);
 
-      uint8_t backgroundBrightness = 128;
-      uint8_t foregroundBrightness = 255;
+        uint8_t backgroundBrightness = 128;
+        uint8_t foregroundBrightness = 255;
 
-      effects.ClearCanvas(1);
+        effects.ClearCanvas(1);
 
-      // Backface
-      EdgePoint *e;
-      for (i = 0; i < 12; i++)
-      {
-        e = cube[c].edge + i;
-        if (!e->visible) {
-          effects.BresLine(cube[c].screen[e->x].x, cube[c].screen[e->x].y, cube[c].screen[e->y].x, cube[c].screen[e->y].y, cube[c].hue, backgroundBrightness);
-          effects.BresLineCanvasH(effects.canvasH, cube[c].screen[e->x].x/2, cube[c].screen[e->x].y/2, cube[c].screen[e->y].x/2, cube[c].screen[e->y].y/2, cube[c].hue, backgroundBrightness / 2);
-          //effects. matrix.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
-        }
-      }
-
-      color = effects.ColorFromCurrentPalette(cube[c].hue, 255);
-
-      // Frontface
-      for (i = 0; i < 12; i++)
-      {
-        e = cube[c].edge + i;
-        if (e->visible)
+        // Backface
+        EdgePoint *e;
+        for (i = 0; i < 12; i++)
         {
-          effects.BresLine(cube[c].screen[e->x].x, cube[c].screen[e->x].y, cube[c].screen[e->y].x, cube[c].screen[e->y].y, cube[c].hue, foregroundBrightness);
-          effects.BresLineCanvasH(effects.canvasH, cube[c].screen[e->x].x/2, cube[c].screen[e->x].y/2, cube[c].screen[e->y].x/2, cube[c].screen[e->y].y/2, cube[c].hue, foregroundBrightness / 2);
-          //matrix.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
+          e = cube[c].edge + i;
+          if (!e->visible) {
+            effects.BresLine(cube[c].screen[e->x].x, cube[c].screen[e->x].y, cube[c].screen[e->y].x, cube[c].screen[e->y].y, cube[c].hue, backgroundBrightness);
+            effects.BresLineCanvasH(effects.canvasH, cube[c].screen[e->x].x/2, cube[c].screen[e->x].y/2, cube[c].screen[e->y].x/2, cube[c].screen[e->y].y/2, cube[c].hue, backgroundBrightness / 2);
+            //effects. matrix.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
+          }
         }
+
+        color = effects.ColorFromCurrentPalette(cube[c].hue, 255);
+
+
+        // Frontface
+        for (i = 0; i < 12; i++)
+        {
+          e = cube[c].edge + i;
+          if (e->visible)
+          {
+            effects.BresLine(cube[c].screen[e->x].x, cube[c].screen[e->x].y, cube[c].screen[e->y].x, cube[c].screen[e->y].y, cube[c].hue, foregroundBrightness);
+            effects.BresLineCanvasH(effects.canvasH, cube[c].screen[e->x].x/2, cube[c].screen[e->x].y/2, cube[c].screen[e->y].x/2, cube[c].screen[e->y].y/2, cube[c].hue, foregroundBrightness / 2);
+            //matrix.drawLine(screen[e->x].x, screen[e->x].y, screen[e->y].x, screen[e->y].y, color);
+          }
+        }
+
+
+        effects.ApplyCanvasH(effects.canvasH, 0, 0);
+        effects.ApplyCanvasH(effects.canvasH, MATRIX_CENTER_X, 0);        // mirror/flip these?
+        effects.ApplyCanvasH(effects.canvasH, 0, MATRIX_CENTER_Y);
+        effects.ApplyCanvasH(effects.canvasH, MATRIX_CENTER_X, MATRIX_CENTER_Y);
+
       }
 
-
-      effects.ApplyCanvasH(effects.canvasH, 0, 0);
-      effects.ApplyCanvasH(effects.canvasH, MATRIX_CENTER_X, 0);        // mirror/flip these?
-      effects.ApplyCanvasH(effects.canvasH, 0, MATRIX_CENTER_Y);
-      effects.ApplyCanvasH(effects.canvasH, MATRIX_CENTER_X, MATRIX_CENTER_Y);
 
 
       // step on

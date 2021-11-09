@@ -14,6 +14,7 @@
 #include "PatternEffect_X_ElectricMandala.h"
 #include "PatternEffect_XX_Plasma.h"
 #include "PatternEffect_XX_SimplexNoise.h"
+#include "PatternEffect_X_Munch.h"
 #include "PatternEffect_X_DimAll.h"
 
 
@@ -29,6 +30,7 @@ class Playlist_InitialEffects : public Playlist {
     PatternEffectPlasma effectPlasma;
     PatternEffectSimplexNoise effectSimplexNoise;
     PatternEffectDimAll effectDimAll;
+    PatternEffectMunch effectMunch;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -37,7 +39,7 @@ class Playlist_InitialEffects : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 9;
+    const static int PATTERN_COUNT = 10;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -49,6 +51,8 @@ class Playlist_InitialEffects : public Playlist {
       &effectElectricMandella,   // plasma effect
       &effectPlasma,
       &effectSimplexNoise,
+      &effectMunch,
+
       &effectMinimal,
       &effectDimAll,
     };

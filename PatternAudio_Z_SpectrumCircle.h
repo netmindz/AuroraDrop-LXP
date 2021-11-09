@@ -29,6 +29,7 @@ class PatternAudioSpectrumCircle : public Drawable {
     PatternAudioSpectrumCircle() {
       name = (char *)"Audio Spectrum Circle";
       id = (char *)"f";
+      enabled = true;
     }
 
     // #------------- START -------------#

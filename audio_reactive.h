@@ -8,12 +8,12 @@
  * processing.
  */
 
-//#include <driver/i2s.h>
+#include <driver/i2s.h>
 #include <arduinoFFT.h>
 
-#define I2S_WS  32  // was 32     // aka LRCL 15    21,22,32,33
-#define I2S_SD  2   // was 34     // aka DOUT 32
-#define I2S_SCK 33  // was 33     // aka BCLK 14
+//#define I2S_WS  32  // was 32     // aka LRCL 15    21,22,32,33
+//#define I2S_SD  2   // was 34     // aka DOUT 32
+//#define I2S_SCK 33  // was 33     // aka BCLK 14
 #define MIN_SHOW_DELAY  15
 const i2s_port_t I2S_PORT = I2S_NUM_0;
 const int BLOCK_SIZE = 64;

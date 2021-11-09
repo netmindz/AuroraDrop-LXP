@@ -25,10 +25,9 @@
 #include "PatternXSpiro.h"
 #include "PatternXSpin.h"
 #include "PatternXRadar.h"
-#include "PatternXMunch.h"
 #include "PatternXWave.h"
 #include "PatternStatic_X_SpiralingCurves.h"
-
+//#include "PatternStatic_L_LianLi120.h"
 
 class Platlist_Static : public Playlist {
   private:
@@ -47,11 +46,10 @@ class Platlist_Static : public Playlist {
     PatternSpin spin;
     PatternStaticBounce staticBounce;
     PatternRadar radar;
-    PatternMunch munch;
     PatternWave wave;
     PatternStaticSpiralingCurves spiralingCurves;
     PatternStaticSwirl staticSwirl;
-
+    //PatternStaticLianLi120 staticLianLi;
     int currentIndex = 0;
     Drawable* currentItem;
 
@@ -59,12 +57,13 @@ class Platlist_Static : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 13;
+    const static int PATTERN_COUNT = 12;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
 
+      //&staticLianLi,
       &staticWorms,
       &spiralLines,                  // spiraling lines
       &flock,
@@ -74,12 +73,10 @@ class Platlist_Static : public Playlist {
       &spiralingCurves,
       &staticSwirl,
 
-      &munch,
       &radar,
       &wave,
       &incrementalDrift,
       &spiro,
-
       //&staticSimpleStars,       // don't work
       //&staticAtom,              // don't work
       //&spin,                  // BAD freezes randomly

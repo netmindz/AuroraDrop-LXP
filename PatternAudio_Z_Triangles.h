@@ -28,6 +28,7 @@ class PatternAudioTriangles : public Drawable {
     PatternAudioTriangles() {
       name = (char *)"Audio Triangles";
       id = (char *)"T";;
+      enabled = true;
     }
 
     bool cycleColors;
@@ -45,7 +46,7 @@ class PatternAudioTriangles : public Drawable {
     void start(uint8_t _pattern){
       cycleColors = random(0, 2);
       caleidoscopeMode = random(0, 2);
-      Serial.print("caleidoscopeMode="); Serial.println(caleidoscopeMode);
+      //Serial.print("caleidoscopeMode="); Serial.println(caleidoscopeMode);
     };
 
 

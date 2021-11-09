@@ -37,8 +37,8 @@ class PatternAudioSpectrumPeakBars : public Drawable {
     PatternAudioSpectrumPeakBars() 
     {
       name = (char *)"Audio Spectrum 1";
-      id2 = 1;
       id = (char *)"N";
+      enabled = true;
     }
 
 

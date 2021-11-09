@@ -8,17 +8,9 @@
 #include <ESPAsyncWebServer.h>
 #include <HTTPClient.h>
 
-// needed for udp 
-#include "AsyncUDP.h"
-AsyncUDP udp;
-
 bool wifiConnected = false;
 int wifiMessage = 0;          // displays IP message when wifi first connects
 int newVersionAvailable = 0;
-
-// ! moved to AuroraDrop.ino for visibility ! // Replace with your network credentials
-//const char* ssid = "YourSSID";
-//const char* password = "YourPassword";
 
 const char* PARAM_INPUT_OPTION = "option";
 const char* PARAM_INPUT_EFFECTS = "effect";
@@ -191,7 +183,7 @@ String processor(const String& var){
     buttons += "<h5>Lock Frame Rate</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Show Render Time</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"3\" " + optionState(option3ShowRenderTime) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Pause Effect Cycling</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Not Used</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5ChangeEffects) + "><span class=\"slider\"></span></label>";
+    buttons += "<h5>Lian-Li 120 Mode</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5LianLi120Mode) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Disable Initial Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"6\" " + optionState(option6DisableInitialEffects) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Disable Audio Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"7\" " + optionState(option7DisableAudio) + "><span class=\"slider\"></span></label>";
     buttons += "<h5>Disable Static Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"8\" " + optionState(option8DisableStatic) + "><span class=\"slider\"></span></label>";
@@ -312,55 +304,6 @@ void checkWifiStatus() {
       }
 #endif
 
-
-
-
-
-      // test connect to server
-      //*******************************************
-      // -------------------- udp setup and callbacks -------------------------
-      if (udp.listen(1234)) {
-        udp.onPacket([](AsyncUDPPacket packet) {
-          //uint8_t dsf[packet.length()];
-          //for (int i=0; i<packet.length(); i++)
-          //{
-          //  dsf[i] = packet.data()[0];
-          //}
-
-          fftData.test1++;
-          fftData.processUDPData(packet.data());
-
-                //Serial.print("UDP Packet Type: ");
-                //Serial.print(packet.isBroadcast() ? "Broadcast" : packet.isMulticast() ? "Multicast" : "Unicast");
-                //Serial.print(", From: ");
-                //Serial.print(packet.remoteIP());
-                //Serial.print(":");
-                //Serial.print(packet.remotePort());
-                //Serial.print(", To: ");
-                //Serial.print(packet.localIP());
-                //Serial.print(":");
-                //Serial.print(packet.localPort());
-                //Serial.print(", Length: ");
-                //Serial.print(packet.length());
-                //Serial.print(", Data: ");
-                //Serial.print("UDP: ");
-                //Serial.write(packet.data(), packet.length());
-                //Serial.println("");
-
-          ////and could send back as well
-          //WiFiUDP udpTX;
-          //IPAddress broadcastIP(255, 255, 255, 255);
-          //if (udpTX.beginPacket(broadcastIP , 1234) == 1) {
-          //  udpTX.print("hello world");
-          //  udpTX.endPacket();
-          //}
-      
-        });
-      }
-      //*******************************************
-
-
-
       // set route for root web page
       server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send_P(200, "text/html", index_html, processor);
@@ -403,7 +346,7 @@ void checkWifiStatus() {
               option4PauseCycling = inputMessage2.toInt();
               break;
             case 5:
-              option5ChangeEffects = inputMessage2.toInt();
+              option5LianLi120Mode = inputMessage2.toInt();
               break;
             case 6:
               option6DisableInitialEffects = inputMessage2.toInt();
@@ -470,8 +413,6 @@ void checkWifiStatus() {
               break;
           }
         }
-
-
 
         //else {
         //  inputMessage1 = "No message sent";

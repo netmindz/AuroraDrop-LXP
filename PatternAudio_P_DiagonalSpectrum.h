@@ -53,7 +53,7 @@ class PatternAudioDiagonalSpectrum : public Drawable {
       cycleColors = random(0, 2);
       caleidoscopeMode = random(0, 3);
       mirrorMode = random(0, 3);
-      Serial.print("caleidoscopeMode="); Serial.println(caleidoscopeMode);
+      //Serial.print("caleidoscopeMode="); Serial.println(caleidoscopeMode);
       //effects.ClearFrame();
 
 

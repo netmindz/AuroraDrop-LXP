@@ -48,7 +48,7 @@ class PatternAudioTorus : public Drawable {
     PatternAudioTorus() {
       name = (char *)"Torus";
       id = (char *)"R";
-      enabled = false;
+      enabled = true;
     }
 
     // #------------- START -------------#

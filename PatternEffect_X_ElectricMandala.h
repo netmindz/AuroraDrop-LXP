@@ -45,7 +45,7 @@ class PatternEffectElectricMandala : public Drawable {
     PatternEffectElectricMandala() {
       name = (char *)"Electric Mandala";
       id = "X";
-      enabled = false;
+      enabled = true;
     }
 
     void start(uint8_t _pattern) {

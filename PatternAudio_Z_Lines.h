@@ -29,7 +29,8 @@ class PatternAudioLines : public Drawable {
   public:
     PatternAudioLines() {
       name = (char *)"Audio Lines";
-      id2 = 1;
+      id = (char *)"L";
+      enabled = true;
     }
 
     bool cycleColors;
@@ -47,7 +48,7 @@ class PatternAudioLines : public Drawable {
     void start(uint8_t _pattern){
       cycleColors = random(0, 2);
       caleidoscopeMode = random(0, 2);
-      Serial.print("caleidoscopeMode="); Serial.println(caleidoscopeMode);
+      //Serial.print("caleidoscopeMode="); Serial.println(caleidoscopeMode);
       //effects.ClearFrame();
     };
 

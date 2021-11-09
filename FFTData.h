@@ -151,8 +151,14 @@ class FFTData{
       serial_pps_ms = millis();
     }
 
+
+
+// !!!!!!!!!!!!!!!!!!!!!!
+
     // flag no audio if no data
-    if (millis() > dataReceivedTime + 1000) noAudio = true;
+    //if (millis() > dataReceivedTime + 1000) noAudio = true;
+
+// !!!!!!!!!!!!!!!!!!!!!!
 
 
     int i = 1;
@@ -290,9 +296,6 @@ class FFTData{
               specData64[i/2] = total / 2;
             }
 
-
-            //Serial.println(spec8Data[4]);
-
             break;
 
 
@@ -308,19 +311,16 @@ class FFTData{
     }
   }
 
+  void ProcessSpecData() {
 
-  void processUDPData(uint8_t data[]) 
-  {
-    // audio spectrum data, 128 bytes long
 
-            dataReceivedTime = millis();
+            // TODO: peak dropoff timer
+            if (dropOffTimer + DROP_OFF_TIME < millis()) dropOffTimer = millis();
 
-            //PRINTS("Audio Spectrum Data\n");
-            if (iSilence < 255) iSilence++;
-            // we expect to find 128 bytes of data
             noAudio = true;
             specDataMinVolume = specData[0];
             specDataMaxVolume = 0;
+
             for (uint8_t i = 0; i < (BINS); i++) 
             {
               // if we see any data, clear the noAudio flag
@@ -330,13 +330,49 @@ class FFTData{
               if (specData[i] > specDataMaxVolume) specDataMaxVolume = specData[i];
               if (specData[i] < specDataMinVolume) specDataMinVolume = specData[i];
 
-              // new array, audio data 0-255 where 127 is peak, > 127 over peak
-              specData[i] = data[i+7];              // version, a value from 0 to 255, where 0 = silence
-
-
+              // peak
+              if (specDataPeak[i] > 0) specDataPeak[i]--;
+              if (specData[i] > specDataPeak[i]) specDataPeak[i] = specData[i];
             }
 
+            // put data into smaller bin groups for lower resolution workings
+            long total = 0;
 
+            // group of 8 bins
+            for (uint8_t i = 0; i < (BINS); i=i+12) 
+            {
+              total = 0;
+              for (uint8_t j = 0; j < 12; j++) 
+                total = total + (long)specData[i+j];
+              specData8[i/12] = total / 12;
+            }
+
+            // group of 16 bins
+            for (uint8_t i = 0; i < (BINS); i=i+6) 
+            {
+              total = 0;
+              for (uint8_t j = 0; j < 6; j++) 
+                total = total + (long)specData[i+j];
+              specData16[i/6] = total / 6;
+            }
+
+            // group of 32 bins
+            for (uint8_t i=0; i<BINS; i=i+3) 
+            {
+              total = 0;
+              for (uint8_t j = 0; j < 3; j++) 
+                total = total + (long)specData[i+j];
+              specData32[i/3] = total / 3;
+            }
+
+            // group of 64 bins
+            for (uint8_t i=0; i<BINS; i=i+2) 
+            {
+              total = 0;
+              for (uint8_t j = 0; j < 2; j++) 
+                total = total + (long)specData[i+j];
+              specData64[i/2] = total / 2;
+            }
 
   }
 

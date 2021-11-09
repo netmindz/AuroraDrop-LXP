@@ -5,7 +5,7 @@
 #define GREEN    0x07E0
 #define CYAN     0x07FF
 #define MAGENTA  0xF81F
-#define YELLOW   0xFFE0 
+#define YELLOW   0xFFE0
 #define WHITE    0xFFFF
 
 uint32_t actual_render_ms = 0;
@@ -332,6 +332,27 @@ void UpdateDiagnosticsData() {
 
 #endif
 
+#ifdef USE_TTGO_WATCH
+
+  // if WiFi has just connected, show IP address and version notice
+  #ifdef USE_WIFI 
+    if (wifiMessage > 0) {
+      wifiMessage--;
+      ttgo->tft->setTextSize(1);
+      ttgo->tft->setTextColor(WHITE, BLUE);
+      ttgo->tft->setCursor(4,62);
+      ttgo->tft->print(WiFi.localIP());
+      if (wifiMessage == 0) ttgo->tft->fillScreen(0x0);
+    }
+    if (newVersionAvailable > 0) {
+      newVersionAvailable--;
+      ttgo->tft->setTextColor(WHITE, RED);
+      ttgo->tft->setCursor(4,92);
+      ttgo->tft->print("Update Available!");
+      if (newVersionAvailable == 0) ttgo->tft->fillScreen(0x0);
+    }
+  #endif
 
 
+#endif
 }

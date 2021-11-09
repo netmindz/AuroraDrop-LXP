@@ -63,7 +63,7 @@ class PatternAudio8x8Squares : public Drawable {
     PatternAudio8x8Squares() {
       name = (char *)"8x8 Squares";
       id = (char *)"S";
-      enabled = false;
+      enabled = true;
     }
 
     // #------------- START -------------#

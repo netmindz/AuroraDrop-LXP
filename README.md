@@ -1,4 +1,4 @@
-# AuroraDrop v0.0.12
+# AuroraDrop v0.0.13
 
 RGB Matrix Audio Visualiser for ESP32
 
@@ -10,7 +10,7 @@ Welcome. Work is in progress, updates may appear now and then.
 
 AuroraDrop creates and runs multiple random patterns based on audio input from your PC, and renders them in a sequenced, multi-parallelized, unpredictable flow. Thrown in are a few random effects, some image manipulations and complimentary fixed and re-active animations, also borrowed from the Jason's Auroa demo.
 
-AuroraDrop currently works with HUB75 matrix panels, and now, at an experimental level, on standard LED strip based panels (though not quite as fast) and the TTGO TFT Dev Board.
+AuroraDrop currently works with HUB75 matrix panels, and now, at an experimental level, on standard LED strip based panels (though not quite as fast) and the TTGO TFT Dev Board and T-Watch.
 
 Details for wiring your ESP32 to a HUB75 panel can be found on mrfaptastic's ESP32-HUB75-MatrixPanel-I2S-DMA project page.
 https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA#2-wiring-esp32-with-the-led-matrix-panel
@@ -46,6 +46,15 @@ https://youtu.be/wxiZug6A2b8
 
 
 ## Latest Updates
+
+0.0.13
+* Added support for TTGO-WATCH (You'll need to uncomment pertinent line in code for your hardware and use WiFi TCP comms)
+* Revised serial interface comms. Requires update of the companion application.
+* Removed UDP support.
+* Added TCP support. Requires update of the companion application. (You'll need to uncomment pertinent line in code)
+* Added some plasma style effects and others.
+* Added Lian-Li SL120 effect option.
+* Added some bugs and left a lot of mess about.
 
 0.0.12
 * Added support for TTGO-TFT Dev boards. (You'll need to uncomment pertinent line in code for your hardware)

@@ -21,8 +21,7 @@
 *   These will need to be manually installed in your arduino libraries folder as
 *   they are not available via the arduino library manager.
 *
-*   See WiFi tutorial at:
-*
+*   See WiFi tutorials at:
 *   https://randomnerdtutorials.com/esp32-async-web-server-espasyncwebserver-library/
 *
 */
@@ -32,40 +31,53 @@
 // =================================================================================================
 
 // uncomment whichever display is relevent, hardware pins are defined later on if you need to change
-//#define USE_HUB75
+#define USE_HUB75
 //#define USE_TTGO_TFT
 //#define USE_LEDSTRIP
+//#define USE_TTGO_WATCH
 
-// check to ensure user has uncommented a line above, otherwise through a complie error 
-#ifndef USE_HUB75
-#ifndef USE_TTGO_TFT
-#ifndef USE_LEDSTRIP
-#error --- uncomment whichever display is relevent ---
-#endif 
-#endif
-#endif
-
-// !! DO NOT change these if using a TTGO-T-Display
-#define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel, 128x64 breaks memory!
+// !! DO NOT change these if using a TTGO-T-Display or Watch (tested with T-WATCH-2020 V3)
+#define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel and one/two 64x32 panels, 128x64 breaks memory!
 #define PANEL_HEIGHT 64                                     // matirx made from WS2812B led strips will work up to 32x32 (any larger is too currently slow)
-#define PANELS_NUMBER 1                                     // number of chained HUB75 panels, working with just a single panel at the moment, so obviously set to 1
+#define PANELS_NUMBER 1                                     // number of chained HUB75 panels, working with just a single panel 64x64 or up to 2 64x32 panels at the moment, so set to 1 or 2
 
-#define VERNO "12"      // if defined, checks the git repository for updates on startup, comment out if delay is annoying/not needed
+#define VERNO "13"      // if defined, checks the git repository for updates on startup, comment out if delay is annoying/not needed
 
-// -- edit below lines to enable basic web sever interface, comment out if not needed/used --
+// -- comment below lines to disable basic web sever interface and TCP comms interface, if not needed/used --
 #define USE_WIFI
 const char* ssid = "your_ssid";
 const char* password = "your_password";
+const char* hostPcIpAddress = "192.168.99.99";    // needed if using TCP comms
+const uint16_t hostPcIpPort = 81;                 // needed if using TCP comms
 
-// very experimental:- uncomment if a connected INMP441 microphone will be used (define pins below)
-//#define USE_MICROPHONE
 
-// enable/disable debugging output over serial / not used
-//#define DEBUG 1
+// uncomment whichever fft input is relevent
+#define USE_SERIAL_DATA
+//#define USE_TCP_DATA
+
+
+// very experimental (breaks memory or DMA):- uncomment if a connected INMP441 microphone will be used (define pins below)
+//#define USE_INMP441_MICROPHONE
+//#define USE_WATCH_MICROPHONE
+
+
+// enable/disable debugging output over serial, comment if not used (not sorted yet)
+#define DEBUG 1
 
 // =================================================================================================
 // == END user configuration =======================================================================
 // =================================================================================================
+
+// check to ensure user has uncommented display type definition above, otherwise through a complie error 
+#ifndef USE_HUB75
+#ifndef USE_TTGO_TFT
+#ifndef USE_LEDSTRIP
+#ifndef USE_TTGO_WATCH
+#error --- uncomment whichever display is relevent to your setup ---
+#endif 
+#endif 
+#endif
+#endif
 
 #include <FastLED.h>
 #include <SPIFFS.h>
@@ -110,7 +122,14 @@ const char* password = "your_password";
   #define TFT_PANEL_PIXELATE      // uncomment for HUB75 like pixelated render //todo
   TFT_eSPI *tft;
   TFT_eSPI t = TFT_eSPI();
+#endif
 
+#ifdef USE_TTGO_WATCH
+  #define PANEL_WIDTH 60                  // over write defaults
+  #define PANEL_HEIGHT 60
+  #define LILYGO_WATCH_2020_V3
+  #include <LilyGoWatch.h>
+  TTGOClass *ttgo;
 #endif
 
 
@@ -121,13 +140,20 @@ const char* password = "your_password";
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
 
 // moved from below for testing
-#include "FFTData.h"
+#include "FftData.h"
 FFTData fftData;
 
-#ifdef USE_MICROPHONE
+#ifdef USE_INMP441_MICROPHONE
   //#define I2S_WS  32       // aka LRCL     2, 32, 34 and 34(input) avaiable? when using HUB75
   //#define I2S_SD  2        // aka DOUT     was 34
   //#define I2S_SCK 33       // aka BCLK
+  #include "audio_reactive.h"
+#endif
+
+#ifdef USE_WATCH_MICROPHONE
+  #define I2S_WS  1          // aka LRCL     2, 32, 34 and 34(input) avaiable? when using HUB75
+  #define I2S_SD  2        // aka DOUT     was 34
+  #define I2S_SCK 0         // aka BCLK
   #include "audio_reactive.h"
 #endif
 
@@ -150,7 +176,7 @@ bool option1Diagnostics = false;
 bool option2LockFps = true;
 bool option3ShowRenderTime = false;
 bool option4PauseCycling = false;
-bool option5ChangeEffects = false;              // not used
+bool option5LianLi120Mode = true;
 bool option6DisableInitialEffects = false;
 bool option7DisableAudio = false;
 bool option8DisableStatic = false;
@@ -192,6 +218,14 @@ uint32_t Xlast_render_ms = millis();
   #include "ServerDiagnostics.h"
 #endif
 
+#ifdef USE_SERIAL_DATA
+  #include "FftComClient.h"
+#endif
+
+#ifdef USE_TCP_DATA
+  #include "FftTcpClient.h"
+#endif
+
 #include "Diagnostics.h"
 
 //long restartCount = 0;    // for rebooting
@@ -207,11 +241,19 @@ void setup()
   delay(1000);     // allow comms to initilialise
 
   // very experimental
-  #ifdef USE_MICROPHONE
+  #ifdef USE_INMP441_MICROPHONE
   // setup audio prior to anything else
     setupAudio();
     //setupNothing();
   #endif
+
+// very experimental
+  #ifdef USE_WATCH_MICROPHONE
+  // setup audio prior to anything else
+    setupAudio();
+    //setupNothing();
+  #endif
+
 
 
   #ifdef USE_HUB75
@@ -227,7 +269,7 @@ void setup()
     Serial.println("Starting HUB75 Display...");
     dma_display = new MatrixPanel_I2S_DMA(mxconfig);
     dma_display->begin();
-    dma_display->setBrightness8(150); //0-255   // 150 is good for me
+    dma_display->setBrightness8(128); //0-255   // 150 is good for me
     dma_display->fillScreenRGB888(255,0,0);
     delay(150);
     dma_display->fillScreenRGB888(0,255,0);
@@ -277,6 +319,16 @@ void setup()
     tft->fillScreen(tft->color565(0,0,0));
   #endif
 
+
+  #ifdef USE_TTGO_WATCH
+    Serial.println("Starting Watch Display...");
+    ttgo = TTGOClass::getWatch();
+    ttgo->begin();
+    ttgo->openBL();
+    ttgo->tft->fillScreen(ttgo->tft->color565(0,0,0));
+    ttgo->tft->setTextFont(2);
+  #endif
+
   // mount filesystem
   if(!SPIFFS.begin(true))
   {
@@ -309,12 +361,31 @@ void setup()
       tft->setCursor(24,32);
       tft->print(ssid);
     #endif 
+    #ifdef USE_TTGO_WATCH
+      ttgo->tft->setTextSize(2);
+      ttgo->tft->setTextColor(0xffff);
+      ttgo->tft->setCursor(4,12);
+      ttgo->tft->print("Connecting.."); 
+      ttgo->tft->setCursor(4,36);
+      ttgo->tft->print(ssid);
+    #endif 
     WiFi.begin(ssid, password);
     delay(1000);
   #else
     option1Diagnostics = false;
     option3ShowRenderTime = false;
   #endif
+
+  #ifdef USE_TCP_DATA
+    Serial.println("Starting TCP Client...");
+    setupTCPClient();
+  #endif
+
+  #ifdef USE_SERIAL_DATA
+    Serial.println("Starting Serial Comms Client...");
+    setupCOMClient();
+  #endif
+
 
   Serial.println("Starting AuroraDrop Demo...");
 
@@ -364,7 +435,7 @@ void setup()
   {
     playlistStatic[i].default_fps = 90;
     playlistStatic[i].pattern_fps = 90;
-    playlistStatic[i].ms_animation_max_duration = 10000;  // 60000, 1munute is good
+    playlistStatic[i].ms_animation_max_duration = 10000;  // 60000, 1 minute is good to give effects time to do stuff
     do {
       playlistStatic[i].moveRandom(1, i);
     }
@@ -418,7 +489,10 @@ void loop()
   #endif
 
   // check if there is any new audio data from serial port and proccess it to useful bins and flags used by the patterns
-  fftData.processSerialData();
+  // todo: move this to core 0?
+  #ifdef USE_SERIAL_DATA
+    //fftData.processSerialData();
+  #endif
 
   // TODO: implement aurora demo menu system?
   // menu.run(mainMenuItems, mainMenuItemCount);  
@@ -630,22 +704,17 @@ void loop()
   actual_render_ms = millis() - start_render_ms;
   // if optioned wait the full XXms before we render
 
-  // WTF kind of way is this do this?
-  if (option2LockFps) {
 
-
-    //while(millis() < start_render_ms + 50) {   // 40=25fps, 50=20fps;
-    //  delay(1);
-    //}
-
-
-  }
   total_render_ms = millis() - start_render_ms;
 
 
 
   // seriously dim anything left rendering on the panel if there is no audio
   //if(fftData.noAudio) effects.DimAll(50);
+
+  if (option5LianLi120Mode) {
+    effects.ShowLianLi120();
+  }
 
   effects.ShowFrame();
 

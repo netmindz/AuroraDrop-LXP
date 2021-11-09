@@ -1,7 +1,7 @@
-#ifndef PatternMunch_H
-#define PatternMunch_H
+#ifndef PatternEffectMunch_H
+#define PatternEffectMunch_H
 
-class PatternMunch : public Drawable {
+class PatternEffectMunch : public Drawable {
   private:
     byte count = 0;
     byte dir = 1;
@@ -9,10 +9,10 @@ class PatternMunch : public Drawable {
     byte generation = 0;
 
   public:
-    PatternMunch() {
+    PatternEffectMunch() {
       name = (char *)"Munch";
       id = "M";
-      enabled = false;
+      enabled = true;
     }
 
 

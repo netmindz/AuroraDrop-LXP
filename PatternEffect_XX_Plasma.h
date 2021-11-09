@@ -33,7 +33,7 @@ private:
     PatternEffectPlasma() {
       name = (char *)"Plasma";
       id = "P";
-      enabled = false;
+      enabled = true;
     }
 
 
