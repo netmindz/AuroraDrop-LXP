@@ -33,31 +33,29 @@
 // uncomment whichever display is relevent, hardware pins are defined later on if you need to change
 #define USE_HUB75
 //#define USE_TTGO_TFT
+//#define USE_TFT_ILI9341           //  edit you TFT_eSPI User_Setup.h    Tested with ILI9341 & ST7735
 //#define USE_LEDSTRIP
 //#define USE_TTGO_WATCH
 
-// !! DO NOT change these if using a TTGO-T-Display or Watch (tested with T-WATCH-2020 V3)
+// !! DO NOT change these if using a TTGO-T-Display, TTGO Watch (tested with T-WATCH-2020 V3), or ILI9341 TFT Display
 #define PANEL_WIDTH 64                                      // not tested with anything other than single square HUB75_E 64x64 panel and one/two 64x32 panels, 128x64 breaks memory!
 #define PANEL_HEIGHT 64                                     // matirx made from WS2812B led strips will work up to 32x32 (any larger is too currently slow)
 #define PANELS_NUMBER 1                                     // number of chained HUB75 panels, working with just a single panel 64x64 or up to 2 64x32 panels at the moment, so set to 1 or 2
 
-#define VERNO "13"      // if defined, checks the git repository for updates on startup, comment out if delay is annoying/not needed
+//#define VERNO "14"      // if defined, checks the git repository for updates on startup, comment out if delay is annoying/not needed
 
 // -- comment below lines to disable basic web sever interface and TCP comms interface, if not needed/used --
 #define USE_WIFI
-const char* ssid = "your_ssid";
-const char* password = "your_password";
-const char* hostPcIpAddress = "192.168.99.99";    // needed if using TCP comms
-const uint16_t hostPcIpPort = 81;                 // needed if using TCP comms
+//const char* ssid = "your_ssid";
+//const char* password = "your_password";
+//const char* hostPcIpAddress = "192.168.99.99";    // needed if using TCP comms
+const uint16_t hostPcIpPort = 82;                 // needed if using TCP comms
 
 
 // uncomment whichever fft input is relevent
 #define USE_SERIAL_DATA
 //#define USE_TCP_DATA
-
-
-// very experimental (breaks memory or DMA):- uncomment if a connected INMP441 microphone will be used (define pins below)
-//#define USE_INMP441_MICROPHONE
+//#define USE_INMP441_MICROPHONE   // still experimental :- uncomment if a connected INMP441 microphone will be used (define pins below)
 //#define USE_WATCH_MICROPHONE
 
 
@@ -68,14 +66,16 @@ const uint16_t hostPcIpPort = 81;                 // needed if using TCP comms
 // == END user configuration =======================================================================
 // =================================================================================================
 
-// check to ensure user has uncommented display type definition above, otherwise through a complie error 
+// check to ensure user has uncommented display type definition above, otherwise throw a complie error 
 #ifndef USE_HUB75
 #ifndef USE_TTGO_TFT
+#ifndef USE_TFT_ILI9341
 #ifndef USE_LEDSTRIP
 #ifndef USE_TTGO_WATCH
 #error --- uncomment whichever display is relevent to your setup ---
 #endif 
 #endif 
+#endif
 #endif
 #endif
 
@@ -120,12 +120,51 @@ const uint16_t hostPcIpPort = 81;                 // needed if using TCP comms
   #define TFT_PANEL_HEIGHT 135    // not used currently
   #define TFT_PANEL_ROTATE 1
   #define TFT_PANEL_PIXELATE      // uncomment for HUB75 like pixelated render //todo
+
+
+  // spotify example
+  //#define TFT_CS    14
+  //#define TFT_RST   17
+  //#define TFT_DC    15
+  //#define TFT_MOSI  22
+  //#define TFT_SCLK  18
+
+  // used by ttgo tft
+  //TFT_CS Pin :5
+  //TFT_RST Pin :23
+  //TFT_DC Pin :16
+  //TFT_MOSI Pin :19
+  //TFT_SCLK Pin :18
+
+  
+  TFT_eSPI *tft;
+  TFT_eSPI t = TFT_eSPI();
+#endif
+
+#ifdef USE_TFT_ILI9341
+  /*--------------------- LED STRIP GPIO ETC. CONFIG --------------------*/
+  #include <TFT_eSPI.h> // Graphics and font library for ILI9341 & ST7735 driver chip
+  #include <SPI.h>
+  #define PANEL_WIDTH 64          // over write defaults to allow integer scaling from 64x60 to 320x240  4:3
+  #define PANEL_HEIGHT 60
+  #define TFT_PANEL_WIDTH 240     // not used currently
+  #define TFT_PANEL_HEIGHT 320    // not used currently
+  #define TFT_PANEL_ROTATE 1
+  #define TFT_PANEL_PIXELATE      // uncomment for HUB75 like pixelated render // TODO:
+
+  // these are how my ILI9341 is wired and defined in User_Setup.h - (ESP32 WROOM32 DEV BOARD)
+  //#define TFT_CS    15
+  //#define TFT_RST   4
+  //#define TFT_DC    2
+  //#define TFT_MOSI  23
+  //#define TFT_SCLK  18
+  
   TFT_eSPI *tft;
   TFT_eSPI t = TFT_eSPI();
 #endif
 
 #ifdef USE_TTGO_WATCH
-  #define PANEL_WIDTH 60                  // over write defaults
+  #define PANEL_WIDTH 60                  // over write defaults for scaling to 240x240
   #define PANEL_HEIGHT 60
   #define LILYGO_WATCH_2020_V3
   #include <LilyGoWatch.h>
@@ -144,17 +183,24 @@ const uint16_t hostPcIpPort = 81;                 // needed if using TCP comms
 FFTData fftData;
 
 #ifdef USE_INMP441_MICROPHONE
-  //#define I2S_WS  32       // aka LRCL     2, 32, 34 and 34(input) avaiable? when using HUB75
-  //#define I2S_SD  2        // aka DOUT     was 34
-  //#define I2S_SCK 33       // aka BCLK
-  #include "audio_reactive.h"
+
+#ifdef USE_TFT_ILI9341
+  #define I2S_WS  22
+  #define I2S_SD  21
+  #define I2S_SCK 26
+#else
+  #define I2S_WS  32       // aka LRCL     2, 32, 34 and 34(input) avaiable? when using HUB75
+  #define I2S_SD  34        // aka DOUT     was 34, should be 2
+  #define I2S_SCK 33       // aka BCLK
+#endif
+  #include "FftMic.h"
 #endif
 
 #ifdef USE_WATCH_MICROPHONE
-  #define I2S_WS  1          // aka LRCL     2, 32, 34 and 34(input) avaiable? when using HUB75
+  #define I2S_WS  0  // 1          // aka LRCL     2, 32, 34 and 34(input) avaiable? when using HUB75
   #define I2S_SD  2        // aka DOUT     was 34
-  #define I2S_SCK 0         // aka BCLK
-  #include "audio_reactive.h"
+  #define I2S_SCK I2S_PIN_NO_CHANGE  // 0         // aka BCLK
+  #include "FftMic.h"
 #endif
 
 // fixed maximums here for memory allocation, these must be >= variables used below
@@ -238,7 +284,7 @@ void setup()
 
   // serial
   Serial.begin(115200);
-  delay(1000);     // allow comms to initilialise
+  delay(1000);
 
   // very experimental
   #ifdef USE_INMP441_MICROPHONE
@@ -302,7 +348,7 @@ void setup()
     FastLED.show();
   #endif
 
-  #ifdef USE_TTGO_TFT
+  #if defined USE_TTGO_TFT || defined USE_TFT_ILI9341
     // test display
     tft = &t;
     Serial.println("Starting TFT Display...");
@@ -353,7 +399,7 @@ void setup()
       dma_display->setCursor(2,32);
       dma_display->print(ssid);
     #endif 
-    #ifdef USE_TTGO_TFT
+    #if defined USE_TTGO_TFT || defined USE_TFT_ILI9341
       tft->setTextSize(2);
       tft->setTextColor(0xffff);
       tft->setCursor(24,12);
@@ -428,6 +474,20 @@ void setup()
     playlistAudio[i].start(i);
     playlistAudio[i].ms_previous = millis();
     playlistAudio[i].fps_timer = millis();
+
+    // FOR TESTING !!!!!
+    //if (i != 0) playlistAudio[i].setEnabled(false);     // DISABLE ALL BUT 1
+    //playlistAudio[i].enabled = false;
+    //playlistAudio[i].setItemEnabled(inputMessage1.toInt(), 0);
+    // FOR TESTING !!!!!
+    
+    //if (i != 0) {
+    //  for (uint8_t j=0; j < 21; j++) {
+    //    playlistAudio[i].setItemEnabled(j, 0);
+    //  }
+    //}
+
+
   }
 
   // initialise all the static/non-audio effects patterns
@@ -435,7 +495,7 @@ void setup()
   {
     playlistStatic[i].default_fps = 90;
     playlistStatic[i].pattern_fps = 90;
-    playlistStatic[i].ms_animation_max_duration = 10000;  // 60000, 1 minute is good to give effects time to do stuff
+    playlistStatic[i].ms_animation_max_duration = 60000;  // 60000, 1 minute is good to give effects time to do stuff
     do {
       playlistStatic[i].moveRandom(1, i);
     }
@@ -445,6 +505,8 @@ void setup()
     playlistStatic[i].start(i);
     playlistStatic[i].ms_previous = millis();
     playlistStatic[i].fps_timer = millis();
+
+
   }
 
   // NOT CURRENTLY USED
