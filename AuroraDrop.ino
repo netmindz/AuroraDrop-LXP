@@ -46,9 +46,9 @@
 
 // -- comment below lines to disable basic web sever interface and TCP comms interface, if not needed/used --
 #define USE_WIFI
-//const char* ssid = "your_ssid";
-//const char* password = "your_password";
-//const char* hostPcIpAddress = "192.168.99.99";    // needed if using TCP comms
+const char* ssid = "your_ssid";
+const char* password = "your_password";
+const char* hostPcIpAddress = "192.168.99.99";    // needed if using TCP comms
 const uint16_t hostPcIpPort = 82;                 // needed if using TCP comms
 
 
