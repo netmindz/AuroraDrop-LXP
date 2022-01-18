@@ -1,4 +1,4 @@
-# AuroraDrop v0.0.13
+# AuroraDrop v0.0.14
 
 RGB Matrix Audio Visualiser for ESP32
 
@@ -46,6 +46,11 @@ https://youtu.be/wxiZug6A2b8
 
 
 ## Latest Updates
+
+0.0.14
+* Added support for 320x240 eSPI TFT displays
+* Tisy up.
+* Fixed some bugs.
 
 0.0.13
 * Added support for TTGO-WATCH (You'll need to uncomment pertinent line in code for your hardware and use WiFi TCP comms)

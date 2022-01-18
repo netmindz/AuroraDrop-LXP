@@ -143,9 +143,14 @@ public:
   uint16_t tftChunk[96*64];
 #endif
 
+#ifdef USE_TFT_ILI9341
+  uint16_t tftChunk[320*12];  // 20 strips 320px by 12px, 4 rows of leds at a time
+#endif
+
 #ifdef USE_TTGO_WATCH
   uint16_t watchChunk[240*24];  // 10 strips 240px by 24px
 #endif
+
 
   Effects(){
     // we do dynamic allocation for leds buffer, otherwise esp32 toolchain can't link static arrays of such a big size for 256+ matrixes
@@ -229,7 +234,7 @@ public:
     #ifdef USE_TTGO_TFT
 
 /*
-      // slow pixel by pixel drawing
+      // test slow pixel by pixel drawing
       for (uint8_t x=0; x<MATRIX_WIDTH; x=x+1) {
         for (uint8_t y=0; y<MATRIX_HEIGHT; y=y+1) {
           uint16_t _pixel = XY16(x,y);
@@ -246,7 +251,7 @@ public:
 */
 
 
-      // latest attempt , pfff memory
+      // TODO: test attempt , pfff memory
       uint16_t i;
       uint16_t _pixel;
       uint16_t col;
@@ -372,6 +377,65 @@ public:
 */
     #endif
 
+
+
+    #ifdef USE_TFT_ILI9341
+
+
+      uint16_t i;
+      uint16_t _pixel;
+      uint16_t col;
+
+
+    // split into 20 slices, 64x60leds to 320x240 pixels, 1 led = 5x4 pixels
+    for (uint16_t slice=0; slice<20; slice++) {
+      i = 0;
+      // translate 3 rows of leds to 12 rows of pixels (4 high pixels per led)
+      for (uint16_t y=slice*3;y<(slice*3)+3;y++) {
+        for (uint16_t x=0;x<MATRIX_WIDTH;x++) {
+          _pixel = XY16(x,y);
+          col = tft->color565(leds[_pixel].r, leds[_pixel].g, leds[_pixel].b);
+          col = (col >> 8) | (col  << 8);
+
+          // 1st of 3 pixels per led (240px / 64led)
+          tftChunk[i] = 0x0;
+          tftChunk[i+1] = col;
+          tftChunk[i+2] = col;
+          tftChunk[i+3] = 0x0;
+          tftChunk[i+4] = 0x0;
+
+          tftChunk[i+320] = col;
+          tftChunk[i+1+320] = col;
+          tftChunk[i+2+320] = col;
+          tftChunk[i+3+320] = col;
+          tftChunk[i+4+320] = 0x0;
+
+          // leave one line blank?
+          tftChunk[i+640] = 0x0;
+          tftChunk[i+1+640] = col;
+          tftChunk[i+2+640] = col;
+          tftChunk[i+3+640] = 0x0;
+          tftChunk[i+4+640] = 0x0;
+          
+          tftChunk[i+960] = 0x0;
+          tftChunk[i+1+960] = 0x0;
+          tftChunk[i+2+960] = 0x0;
+          tftChunk[i+3+960] = 0x0;
+          tftChunk[i+4+960] = 0x0;
+
+
+          i = i + 5;    // led is 5 pixels wide
+        }
+        i = i + (320 * 3);  // position to start from for the next 3 rows of leds
+      }
+      tft->pushRect(0, slice*12, 320, 12, tftChunk);    // 12 rows of pixels at a time
+
+    }
+
+
+
+
+    #endif
 
 
 
@@ -1863,17 +1927,59 @@ CRGBPalette16 AllRed_p = {
 
   void ShowLianLi120() 
   {
+    static uint8_t hue;
+
+    const CRGBPalette16 newPalette_p = CRGBPalette16(CRGB::Cyan, CRGB::Yellow, CRGB::Magenta);
+
     uint8_t signHeight;
     uint8_t signCenter;
 
     //CRGB color  = 0xF800 ;
     CRGB color  = 0xEF0000;
+    CRGB colorBlack  = 0x0;
     CRGB colorCenter  = 0x0A0A0A;
 
     signHeight = MATRIX_HEIGHT;
     if (fftData.noAudio) signHeight = signHeight - 7;
     signCenter = signHeight / 2;
 
+    int ver = 1;
+    int x0,yy0;
+    switch (ver) {
+      case 1:
+
+        for (uint8_t i=0; i<signHeight; i++) {
+          //color = ColorFromCurrentPalette(i*4,233,NOBLEND);
+          color = ColorFromPalette(newPalette_p, i*4 + hue, 255, LINEARBLEND);
+
+          if (i < 11) {
+            x0 = 14 - i;
+            BresLine(x0, i, x0 + 1, i, color, NOBLEND);
+            x0 = 48 + i;
+            BresLine(x0, i, x0 + 1, i, color, NOBLEND);
+          }
+          else
+          {
+            if (i > signHeight - 11) {
+              x0 = (i - (signHeight - 11) + 3);
+              BresLine(x0, i, x0 + 1, i, color, NOBLEND);
+              x0 = 59 - (i - (signHeight - 11));
+              BresLine(x0, i, x0 + 1, i, color, NOBLEND);
+            }
+            else
+            {
+              BresLine(3, i, 5, i, color, NOBLEND);
+              BresLine(58, i, 60, i, color, NOBLEND);
+            }
+          }
+
+        }
+        // change color slowly
+        hue++;
+
+        break;
+      case 0:
+        // original method
     //left
     BresLine(14, 0, 3, 11, color, NOBLEND);
     BresLine(15, 0, 4, 11, color, NOBLEND);
@@ -1911,6 +2017,24 @@ CRGBPalette16 AllRed_p = {
     BresLine(26, signCenter + 5, 37, signCenter + 5, colorCenter, LINEARBLEND);
     BresLine(27, signCenter + 6, 36, signCenter + 6, colorCenter, LINEARBLEND);
     BresLine(29, signCenter + 7, 34, signCenter + 7, colorCenter, LINEARBLEND);
+
+    // draw black lines at bottom if silent
+    if (signHeight != MATRIX_HEIGHT) {
+      BresLine(0, 63, 63, 63, colorBlack, NOBLEND);
+      BresLine(0, 62, 63, 62, colorBlack, NOBLEND);
+      BresLine(0, 61, 63, 61, colorBlack, NOBLEND);
+      BresLine(0, 60, 63, 60, colorBlack, NOBLEND);
+      BresLine(0, 59, 63, 59, colorBlack, NOBLEND);
+      BresLine(0, 58, 63, 58, colorBlack, NOBLEND);
+
+    }
+
+        break;
+    }
+
+
+
+
   }
 
 

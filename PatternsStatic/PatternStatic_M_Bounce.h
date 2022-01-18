@@ -20,74 +20,66 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef PatternAttract_H
+#ifndef PatternStaticBounce_H
 
-class PatternAttract : public Drawable {
+class PatternStaticBounce : public Drawable {
 private:
-    const int count = 16;  // 16
-    Attractor attractor;
+    static const int count = AVAILABLE_BOID_COUNT;
+    PVector gravity = PVector(0, 0.0125);
+    //PVector gravity = PVector(0, 0.125);
+
+    float startVelocityScale;
 
 public:
-    PatternAttract() {
-      name = (char *)"Attract";
-      id = "A";
+    PatternStaticBounce() {
+      name = (char *)"Bounce";
+      id = "B";
       enabled = true;
     }
 
-    // #############
-    // ### START ###
-    // #############
+    // ------------------------ START ------------------------
     void start(uint8_t _pattern) {
-        int direction = random(0, 2);
-        if (direction == 0)
-            direction = -1;
+        startVelocityScale = (float)random(10,20) / 1000.0;
 
+        unsigned int colorWidth = 256 / count;
         for (int i = 0; i < count; i++) {
-            Boid boid = Boid(31, 63 - i);  // Boid boid = Boid(15, 31 - i);
-            boid.mass = 1; // random(0.1, 2);
-            boid.mass = random(0.1, 2);
-            boid.velocity.x = ((float) random(40, 50)) / 100.0;   // ((float) random(40, 50)) / 100.0;
-            boid.velocity.x *= direction;
-            boid.velocity.y = 0;
-            boid.colorIndex = i * 32;
+            Boid boid = Boid(i, 0);
+            boid.velocity.x = 0;
+            boid.velocity.y = i * -startVelocityScale;  // was -0.01, now random betwee -0.01 and -0.02
+            boid.colorIndex = colorWidth * i;
+            boid.maxforce = 10;
+            boid.maxspeed = 10;
             staticBoids[_pattern][i] = boid;
-            //dim = random(170, 250);
         }
     }
 
-    // ##################
-    // ### DRAW FRAME ###
-    // ##################
+    // -------------------------- DRAW FRAME -------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
         // dim all pixels on the display
-        uint8_t dim = beatsin8(2, 170, 250);
 
-        //effects.DimAll(dim);
-        effects.DimAll(250);
+        //effects.DimAll(250);
+
+        //effects.DimAll(170); effects.ShowFrame();
 
         for (int i = 0; i < count; i++) {
             Boid boid = staticBoids[_pattern][i];
 
-            PVector force = attractor.attract(boid);
-            boid.applyForce(force);
+            boid.applyForce(gravity);
 
             boid.update();
 
-            // test extra duplicate effects.drawBackgroundFastLEDPixelCRGB(boid.location.x / 2, boid.location.y / 2, effects.ColorFromCurrentPalette(boid.colorIndex));
+            //if (!serialData.noAudio)
+                effects.drawBackgroundFastLEDPixelCRGB(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
 
-
-            effects.drawBackgroundFastLEDPixelCRGB(boid.location.x, boid.location.y, effects.ColorFromCurrentPalette(boid.colorIndex));
-            //effects.ApplyCanvasH(boid.location.x - 8, boid.location.y - 8, 1);
+            if (boid.location.y >= MATRIX_HEIGHT - 1) {
+                boid.location.y = MATRIX_HEIGHT - 1;
+                boid.velocity.y *= -1.0;
+            }
 
             staticBoids[_pattern][i] = boid;
         }
 
-        //effects.Caleidoscope1();
-        //effects.SpiralStream(31, 15, 64, 128);        // for 64 pixel wide matrix!
-
-
-        //////effects.ShowFrame();
-        return 50;
+        return 0;  // 15
     }
 };
 

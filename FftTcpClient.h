@@ -22,7 +22,7 @@ void TCPcode( void * parameter) {
       // if the client isn't connect, then attempt
       if (!tcpClientConnected) {
 
-        if (!client.connect(hostPcIpAddress, hostPcPort)) {
+        if (!client.connect(hostPcIpAddress, hostPcIpPort)) {
           Serial.println("TCP client connection failed");
           delay(1000);
         }

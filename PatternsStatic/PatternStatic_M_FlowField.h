@@ -37,7 +37,7 @@ class PatternFlowField : public Drawable {
     uint16_t speed = 1;
     uint16_t scale = 26;
 
-    static const int count = 40;
+    static const int count = AVAILABLE_BOID_COUNT - 12;
 
     byte hue = 0;
 

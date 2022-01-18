@@ -11,11 +11,19 @@
 #include <driver/i2s.h>
 #include <arduinoFFT.h>
 
+// moved to AuroraDrop.ino
 //#define I2S_WS  32  // was 32     // aka LRCL 15    21,22,32,33
 //#define I2S_SD  2   // was 34     // aka DOUT 32
 //#define I2S_SCK 33  // was 33     // aka BCLK 14
 #define MIN_SHOW_DELAY  15
-const i2s_port_t I2S_PORT = I2S_NUM_0;
+
+#ifdef USE_WATCH_MICROPHONE
+  const i2s_port_t I2S_PORT = I2S_NUM_0;
+#else
+  const i2s_port_t I2S_PORT = I2S_NUM_1;
+#endif
+
+//const i2s_port_t I2S_PORT = I2S_NUM_0;   // was I2S_NUM_0, clash with HUB75?
 const int BLOCK_SIZE = 64;
 
 const int SAMPLE_RATE = 10240;
@@ -25,9 +33,9 @@ TaskHandle_t FFT_Task;
 int squelch = 0;    // was 0                       // Squelch, cuts out low level sounds
 int gain = 30;      // was 30                       // Gain, boosts input level*/
 uint16_t micData;                               // Analog input for FFT
-uint16_t micDataSm;                             // Smoothed mic data, as it's a bit twitchy
+//uint16_t micDataSm;                             // Smoothed mic data, as it's a bit twitchy
 
-const uint16_t samples = 256;    // 512 breaks memory!!!                 // This value MUST ALWAYS be a power of 2
+const uint16_t samples = 512;    // 512 breaks memory!!!                 // This value MUST ALWAYS be a power of 2
 unsigned int sampling_period_us;
 unsigned long microseconds;
 
@@ -40,10 +48,8 @@ double vReal[samples];
 double vImag[samples];
 double fftBin[samples];
 
-// no worky
-//double *vReal;
-//double *vImag;
-//double *fftBin;
+// take copy of data prior to fft
+//double vRealCopy[max_samples];
 
 
 // Try and normalize fftBin values to a max of 4096, so that 4096/16 = 256.
@@ -103,7 +109,7 @@ void FFTcode( void * parameter) {
       //
       FFT.MajorPeak(&FFT_MajorPeak, &FFT_Magnitude);          // let the effects know which freq was most dominant
 
-      Serial.printf("Magnitude: %d\n", FFT_Magnitude);
+      if (FFT_Magnitude > 0) Serial.printf("Magnitude: %d\n", FFT_Magnitude);
 
       for (int i = 0; i < samples; i++) {                     // Values for bins 0 and 1 are WAY too large. Might as well start at 3.
         double t = 0.0;
@@ -162,20 +168,45 @@ void FFTcode( void * parameter) {
         fftResult[i] = constrain((int)fftCalc[i],0,254);
     }
 
-/*
-    // testing
-    for (int i=0;i<16;i++) {
-      fftData.specData[i] = fftResult[i];
-      fftData.specData16[i] = fftResult[i];
-      fftData.specData32[i] = fftResult[i];
+
+
+    for (int i=0;i<128;i++) {
+        fftData.specData[i] = fftBin[i*2];
+        fftData.specData64[i/2] = fftBin[i*2];
+        fftData.specData32[i/4] = fftBin[i*2];
+        fftData.specData16[i/8] = fftBin[i*2];
     }
 
     for (int i=0;i<8;i++) {
       fftData.specData8[i] = fftResult[i];
     }
 
-      fftData.noAudio = false;
+/*
+    // testing
+    for (int i=0;i<16;i++) {
+      fftData.specData[i] = fftResult[i];
+      fftData.specData[i+16] = fftResult[i];
+      fftData.specData[i+32] = fftResult[i];
+      fftData.specData[i+48] = fftResult[i];
+      fftData.specData[i+64] = fftResult[i];
+      fftData.specData[i+80] = fftResult[i];
+      fftData.specData[i+96] = fftResult[i];
+      fftData.specData[i+112] = fftResult[i];
+
+      fftData.specData64[i] = fftResult[i];
+      fftData.specData64[i+16] = fftResult[i];
+      fftData.specData64[i+32] = fftResult[i];
+      fftData.specData64[i+48] = fftResult[i];
+
+      fftData.specData32[i] = fftResult[i];
+      fftData.specData32[i+16] = fftResult[i];
+
+      fftData.specData16[i] = fftResult[i];
+    }
 */
+
+    fftData.noAudio = false;
+
 
   } // for(;;)
 } // FFTcode()
@@ -186,13 +217,10 @@ void setupNothing() {
 
 void setupAudio() {
 
-  // no worky
-  //vReal = (double *)malloc(samples * sizeof(double));
-  //vImag = (double *)malloc(samples * sizeof(double));
-  //fftBin = (double *)malloc(samples * sizeof(double));
-  Serial.println("Audio setup...");
     
+  #ifdef USE_INMP441_MICROPHONE    
   // Attempt to configure INMP441 Microphone
+  Serial.println("INMP441 Audio setup...");
   esp_err_t err;
   const i2s_config_t i2s_config = {
     .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),  // Receive, not transfer
@@ -210,6 +238,31 @@ void setupAudio() {
     .data_out_num = -1,         // not used (only for speakers)
     .data_in_num = I2S_SD       // DOUT aka SD
   };
+  #endif
+
+  #ifdef USE_WATCH_MICROPHONE  
+  #define MIC_DATA            2
+  #define MIC_CLOCK           0  
+  // Attempt to configure TTGO Watch Microphone
+  Serial.println("TTGO Watch Audio setup...");
+  esp_err_t err;
+  const i2s_config_t i2s_config = {
+    .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM),  // Receive, not transfer
+    .sample_rate = SAMPLE_RATE*2,                       // 10240 * 2 (20480) Hz
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,       // could only get it to work with 32bits
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,        // LEFT when pin is tied to ground.
+    .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,           // Interrupt level 1
+    .dma_buf_count = 8,                                 // number of buffers
+    .dma_buf_len = BLOCK_SIZE                           // samples per buffer
+  };
+  const i2s_pin_config_t pin_config = {
+    .bck_io_num = I2S_PIN_NO_CHANGE,      // BCLK aka SCK
+    .ws_io_num = MIC_CLOCK,        // LRCL aka WS
+    .data_out_num = I2S_PIN_NO_CHANGE,         // not used (only for speakers)
+    .data_in_num = MIC_DATA       // DOUT aka SD
+  };
+  #endif
   
   // Configuring the I2S driver and pins.
   // This function must be called before any I2S driver read/write operations.
@@ -218,11 +271,19 @@ void setupAudio() {
     Serial.printf("Failed installing driver: %d\n", err);
     while (true);
   }
+
   err = i2s_set_pin(I2S_PORT, &pin_config);
   if (err != ESP_OK) {
     Serial.printf("Failed setting pin: %d\n", err);
     while (true);
   }
+
+  err = i2s_set_clk(I2S_PORT, SAMPLE_RATE*2, I2S_BITS_PER_SAMPLE_32BIT, I2S_CHANNEL_MONO);
+  if (err != ESP_OK) {
+    Serial.printf("Failed setting clock: %d\n", err);
+    while (true);
+  }
+
   Serial.println("I2S driver installed.");
   delay(100);
 

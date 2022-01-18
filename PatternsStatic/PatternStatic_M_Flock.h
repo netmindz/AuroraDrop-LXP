@@ -43,7 +43,7 @@ class PatternFlock : public Drawable {
       enabled = true;
     }
 
-    static const int boidCount = 10;
+    static const int boidCount = AVAILABLE_BOID_COUNT / 4; // 10?
     Boid predator;
 
     PVector wind;

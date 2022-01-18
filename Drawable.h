@@ -28,7 +28,7 @@ public:
     char* name;
 
     // modified by AuroraDrop
-    uint8_t randomWeight = 10;            // for helping weighted random selection (ha) of better patterns into playlists, 0=low, 10=high
+    //uint8_t randomWeight = 10;            // for helping weighted random selection (ha) of better patterns into playlists, 0=low, 10=high
     unsigned int default_fps = 90;
     unsigned long ms_animation_max_duration = 10000;    // 10 default seconds
     unsigned long fps = 0;   // running fps (this is NOT a matix refresh rate!)

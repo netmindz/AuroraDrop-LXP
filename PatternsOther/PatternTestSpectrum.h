@@ -26,7 +26,7 @@ class PatternTestSpectrum : public Drawable {
       for (byte i = 0; i < MATRIX_WIDTH; i++) 
       {
         //bass
-        effects.BresLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / 6), i*4, 255, LINEARBLEND);
+        effects.BresLine(i, MATRIX_HEIGHT-1, i, MATRIX_HEIGHT-1 - (fftData.specData[i] / 6), i*4, 255, LINEARBLEND);
       }
 
       for (byte i = 0; i < MATRIX_WIDTH; i++) 

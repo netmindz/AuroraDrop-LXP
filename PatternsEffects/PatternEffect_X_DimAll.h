@@ -29,7 +29,7 @@ private:
 
   public:
     PatternEffectDimAll() {
-      name = (char *)"DimAll 240";
+      name = (char *)"DimAll 32";
       id = "X";
       enabled = false;
     }
@@ -38,14 +38,13 @@ private:
     // ------------------ start -------------------
     void start(uint8_t _pattern) {
       
-
     }
 
 
     // --------------------- draw frame -------------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
-
-
+  
+      effects.DimAll(32);
 
       return 0;
     }

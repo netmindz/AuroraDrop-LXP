@@ -6,16 +6,17 @@
 
 //#include "Vector.h"
 
-#include "PatternEffect_A_TestBlur2d.h"
-#include "PatternEffect_B_SpiralStream1.h"
-#include "PatternEffect_C_Stream1.h"
-#include "PatternEffect_D_Move.h"
-#include "PatternEffect_E_Minimal.h"
-#include "PatternEffect_X_ElectricMandala.h"
-#include "PatternEffect_XX_Plasma.h"
-#include "PatternEffect_XX_SimplexNoise.h"
-#include "PatternEffect_X_Munch.h"
-#include "PatternEffect_X_DimAll.h"
+#include "PatternsEffects\PatternEffect_A_TestBlur2d.h"
+#include "PatternsEffects\PatternEffect_B_SpiralStream1.h"
+#include "PatternsEffects\PatternEffect_C_Stream1.h"
+#include "PatternsEffects\PatternEffect_D_Move.h"
+#include "PatternsEffects\PatternEffect_E_Minimal.h"
+#include "PatternsEffects\PatternEffect_X_ElectricMandala.h"
+#include "PatternsEffects\PatternEffect_XX_Plasma.h"
+#include "PatternsEffects\PatternEffect_XX_SimplexNoise.h"
+#include "PatternsEffects\PatternEffect_X_Munch.h"
+#include "PatternsEffects\PatternEffect_X_DimAll.h"
+#include "PatternsEffects\PatternEffect_X2_Life.h"
 
 
 class Playlist_InitialEffects : public Playlist {
@@ -31,6 +32,7 @@ class Playlist_InitialEffects : public Playlist {
     PatternEffectSimplexNoise effectSimplexNoise;
     PatternEffectDimAll effectDimAll;
     PatternEffectMunch effectMunch;
+    //PatternEffectLife effectLife;   // memory :(
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -55,6 +57,10 @@ class Playlist_InitialEffects : public Playlist {
 
       &effectMinimal,
       &effectDimAll,
+
+      // memory hungry, uncomment only one
+      //&effectLife,
+
     };
 
   public:

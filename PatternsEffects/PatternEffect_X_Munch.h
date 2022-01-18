@@ -12,7 +12,7 @@ class PatternEffectMunch : public Drawable {
     PatternEffectMunch() {
       name = (char *)"Munch";
       id = "M";
-      enabled = true;
+      enabled = false;
     }
 
 

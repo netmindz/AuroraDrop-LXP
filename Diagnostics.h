@@ -202,7 +202,7 @@ void UpdateDiagnosticsData() {
 
 #endif
 
-#ifdef USE_TTGO_TFT
+#if defined USE_TTGO_TFT || defined USE_TFT_ILI9341
 
   // ------------------------ INFO --------------------------
 

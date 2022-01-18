@@ -3,44 +3,49 @@
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
-#include "PatternTest.h"
+#include "PatternsOther\PatternTest.h"
 
-#include "PatternAudio_A_RotatingWave.h"
-#include "PatternAudio_B_CircularWave.h"
-#include "PatternAudio_C_DotsSingle.h"
-#include "PatternAudio_D_RotatingSpectrum.h"
-#include "PatternAudio_E_ClassicSpectrum128.h"
-#include "PatternAudio_F_Cubes.h"
+#include "PatternsAudio\PatternAudio_A_RotatingWave.h"
+#include "PatternsAudio\PatternAudio_B_CircularWave.h"
+#include "PatternsAudio\PatternAudio_C_DotsSingle.h"
+#include "PatternsAudio\PatternAudio_D_RotatingSpectrum.h"
+#include "PatternsAudio\PatternAudio_E_ClassicSpectrum128.h"
+#include "PatternsAudio\PatternAudio_F_Cubes.h"
 
-#include "PatternAudio_N_SpectrumPeakBars.h"
-#include "PatternAudio_O_Spectrum2.h"
+#include "PatternsAudio\PatternAudio_N_SpectrumPeakBars.h"
+#include "PatternsAudio\PatternAudio_O_Spectrum2.h"
 
-#include "PatternAudio_R_AuroraDrop.h"
+#include "PatternsAudio\PatternAudio_R_AuroraDrop.h"
 
-#include "PatternAudio_XR_Torus.h"
-#include "PatternAudio_XS_8x8Squares.h"
-#include "PatternAudio_XT_BigSpark.h"
-#include "PatternAudio_XX_Aurora.h"
-
-
+#include "PatternsAudio\PatternAudio_XR_Torus.h"
+#include "PatternsAudio\PatternAudio_XS_8x8Squares.h"
+#include "PatternsAudio\PatternAudio_XT_BigSpark.h"
+#include "PatternsAudio\PatternAudio_XX_Aurora.h"
 
 
 // test patterns to integrate
-#include "PatternAudio_Z_Lines.h"
-#include "PatternAudio_Z_Circles.h"
-#include "PatternAudio_Z_Triangles.h"
-#include "PatternAudio_Z_WaveSingle.h"
-#include "PatternAudio_P_DiagonalSpectrum.h"
-#include "PatternAudio_Z_SpectrumCircle.h"
+#include "PatternsAudio\PatternAudio_Z_Lines.h"
+#include "PatternsAudio\PatternAudio_Z_Circles.h"
+#include "PatternsAudio\PatternAudio_Z_Triangles.h"
+#include "PatternsAudio\PatternAudio_Z_WaveSingle.h"
+#include "PatternsAudio\PatternAudio_P_DiagonalSpectrum.h"
+#include "PatternsAudio\PatternAudio_Z_SpectrumCircle.h"
+#include "PatternsAudio\PatternAudio_XY_2dWaves.h"
+#include "PatternsAudio\PatternAudio_XY_2dGrid.h"
+#include "PatternsAudio\PatternAudio_XY_3dGrid.h"
 
 
-#include "PatternTestCanvas.h"
-#include "PatternTestSpectrum.h"
+#include "PatternsOther\PatternTestCanvas.h"
+#include "PatternsOther\PatternTestSpectrum.h"
+
+#include "PatternsAudio\PatternAudio_X1_Angles.h"
 
 
 
 class Playlist_Audio : public Playlist {
   private:
+
+    PatternAudioAngles audioAngles;
 
     PatternAudioRotatingWave audioRotatingWave;
     PatternAudioCircularWave audioCircularWave;
@@ -66,6 +71,11 @@ class Playlist_Audio : public Playlist {
     PatternAudioCircles audioCircles;
     PatternAudioLines audioLines;
 
+    PatternAudio2dWaves audio2dWaves;
+
+    PatternAudio2dGrid audio2dGrid;
+    PatternAudio3dGrid audio3dGrid;
+
     PatternTest patternTest;
     PatternTestSpectrum patternTestSpectrum;
 
@@ -78,13 +88,14 @@ class Playlist_Audio : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 17;
+    const static int PATTERN_COUNT = 21;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
 
-      
+      &audioAngles,
+
       &audioRotatingWave,
       &audioCircularWave,
       &audioDotsSingle,                   // dancing/rolling dots
@@ -92,6 +103,10 @@ class Playlist_Audio : public Playlist {
       &audioClassicSpectrum128,
       &audioCubes,
 
+      &audio2dWaves,
+
+      &audio2dGrid,
+      &audio3dGrid,
       &audio8x8Squares,
       &audioBigSpark,
       &audioTorus,
@@ -106,6 +121,9 @@ class Playlist_Audio : public Playlist {
 
       &patternTest,
       &patternTestSpectrum,
+
+
+
 
       //&audioAurora,
       //&audioWaveSingle,   // doing
