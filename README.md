@@ -8,7 +8,7 @@ Welcome. Work is in progress, updates may appear now and then.
 
 ## Introduction
 
-AuroraDrop LXP currently works *only* with HUB75 matrix panels and an INMP441 microphone. The goal of this fork is to make a functional display with zero interaction on the end-user's part. /This means no web server, no network audio, no TFT displays, no LED strips, etc./
+AuroraDrop LXP currently works *only* with HUB75 matrix panels and an INMP441 microphone. The goal of this fork is to make a functional display with zero interaction on the end-user's part. *This means no web server, no network audio, no TFT displays, no LED strips, etc.*
 
 Major goals of this fork are:
 
