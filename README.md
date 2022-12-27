@@ -1,5 +1,7 @@
 # AuroraDrop LXP v1.0.0
 
+THIS HAS JUST BEEN FORKED. CURRENTLY NO MODIFIED CODE HAS BEEN UPLOADED YET.
+
 RGB Matrix Audio Visualiser for ESP32
 
 Forked from AuaoraDrop by uklooney, based on the FastLED Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic.
@@ -8,24 +10,30 @@ Welcome. Work is in progress, updates may appear now and then.
 
 ## Introduction
 
-AuroraDrop LXP currently works *only* with HUB75 matrix panels and an INMP441 microphone. The goal of this fork is to make a functional display with zero interaction on the end-user's part. *This means no web server, no network audio, no TFT displays, no LED strips, etc.*
+AuroraDrop LXP currently works *only* with HUB75 matrix panels and an INMP441 microphone. The goal of this fork is to make a functional audio visualization display with zero interaction on the end-user's part. *This means no web server, no network audio, no TFT displays, no LED strips, etc.*
 
 Major goals of this fork are:
 
+* Using the INMP441 microphone for audio input (other I2S inputs may work with minor modifications)
 * Automatic gain control
 * Basic BPM detection
 * Code cleanup for future modification
 * Removal of all functions that aren't used with this specific hardware
+* ...and some sort of physical integration with the panel that isn't a jumble of wires.
 
 I suggest using the original AuroraDrop project for details on wiring and if you have other needs past HUB75+INMP441 integrations.
 
 ## Hardware Recommendations
 
-This code has been tested with two 64x64 pixel HUB74 "E" panels in horizontal mode. Also works fine with two 64x32 panels. More than two 64x64 panels is currently unstable.
+This code has been tested with up to two 64x64 pixel HUB74 "E" panels in horizontal mode. Also works fine with up to two 64x32 panels. More than two 64x64 panels is currently unstable, but two 64x64 panels sits nicely on a small shelf and looks impressive. 
 
 The recommended ESP32 target for the project is specificially the ESP32-S3-DevKitM-1 board. 
 
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32s3/user-guide-devkitm-1.html
+
+The board was selected because the HUB75 driver has optimizations for the ESP32-S3 which makes it faster, and the DevKitM1 (`not` C1) board has a VERY advantageous pin arrangement that can be used to directly attach to the HUB75 connector (with some pin header bending!)
+
+The audio input is accomplished with the INMP441 microphone. Commonly available circular breakouts have the needed resistor and capacitor on the PCB.
 
 ## Latest Updates
 
@@ -38,16 +46,6 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32
 * Deactivation of some very CPU intensive effects
 * RGB LED on ESP32-S3-DevKitM-1 to do basic frames-per-second monitoring
 * Removal of webserver and networking code
-
-## Notes
-
-AuroraDrop's audio visualisations currently only works when your ESP32 is connected to your PC via the USB connection, and you are running the companion windows application 'AuroraDrop Companion' (there is an WIP experimental network streaming mode). This application captures and processes the current audio playing on
-your PC and passes this to the ESP32 via serial communications, which then renders the visualisations.
-
-https://github.com/uklooney/AuroraDropCompanion
-
-Tested on 64x64 1/32 scan LED Matrix
-
 
 ### Suggested Simple Hardware Solution
    
