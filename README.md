@@ -16,7 +16,7 @@ Major goals of this fork are:
 * Automatic gain control
 * Basic BPM detection
 * Code cleanup for future modification
-* Removal of all functions that aren't used with this specific hardware
+* Removal of all functions that aren't used with the specific target hardware
 * ...and some sort of physical integration with the panel that isn't a jumble of wires.
 
 I suggest using the original AuroraDrop project for details on wiring and if you have other needs past HUB75+INMP441 integrations.
