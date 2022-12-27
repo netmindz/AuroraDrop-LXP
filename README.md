@@ -6,8 +6,6 @@ RGB Matrix Audio Visualiser for ESP32
 
 Forked from AuaoraDrop by uklooney, based on the FastLED Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic.
 
-Welcome. Work is in progress, updates may appear now and then.
-
 ## Introduction
 
 AuroraDrop LXP currently works *only* with HUB75 matrix panels and an INMP441 microphone. The goal of this fork is to make a functional audio visualization display with zero interaction on the end-user's part. *This means no web server, no network audio, no TFT displays, no LED strips, etc.*
