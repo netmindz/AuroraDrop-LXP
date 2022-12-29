@@ -23,8 +23,8 @@ TaskHandle_t FFT_Task;
 
 //float cutrate = 1.0; // 1 is divide by 1 = no cut
 //float cutratemin = 1.1;
-float avg_mag = 4096/16;
-float pre_avg_mag = 4096/16;
+// float avg_mag = 4096/16;
+// float pre_avg_mag = 4096/16;
 
 int squelch = 2;    // was 0                       // Squelch, cuts out low level sounds
 float gain = 0;      // was 30                       // Gain, boosts input level*/
@@ -61,11 +61,14 @@ int linearNoise[16] = { 34, 28, 26, 25, 20, 12, 9, 6, 4, 4, 3, 2, 2, 2, 2, 2 };
 
 // Table of multiplication factors so that we can even out the frequency response.
 //
+// I obtained these numbers by running the basics of the code below but outputting an average of the 16 bins over time
+// The recording was done in a quiet room at no gain, to see what the natural "noise" sounded like to the mic.
+// I'm sure there's a proper way to do this, but it seemed to help flatten the curve when the room was quiet.
+//
 // double fftResultPink[16] = {1.00,1.00,1.73,1.78,1.68,1.56,1.55,1.63,1.79,1.62,1.80,2.06,2.47,3.35,6.83,9.55}; // Troy
 // double fftResultPink[16] = {1.70,1.71,1.73,1.78,1.68,1.56,1.55,1.63,1.79,1.62,1.80,2.06,2.47,3.35,6.83,9.55}; // original
-// double fftResultPink[16] = {2.01,2.31,2.53,2.42,1.87,1.00,1.51,2.33,3.46,1.45,1.61,1.69,2.19,2.40,2.72,2.71}; // sampled room tone on INMP441 mic, zero gain
+// double fftResultPink[16] = {2.01,2.31,2.53,2.42,1.87,1.00,1.51,2.33,3.46,1.45,1.61,1.69,2.19,2.40,2.72,2.71}; // sampled room tone on INMP441 mic
 double fftResultPink[16] = {2.15,2.48,2.74,2.64,2.08,1.00,1.64,2.41,4.22,1.61,2.05,1.86,2.36,2.69,3.17,3.12}; // later when things were quieter.
-// double fftResultPink[16] = {1.00,1.04,1.08,1.20,1.22,1.27,1.31,1.20,1.07,1.51,1.11,1.64,1.28,1.39,1.29,1.53};
 
 int specDataMinVolume = 128;
 int specDataMaxVolume = 0;
@@ -80,21 +83,16 @@ arduinoFFT FFT = arduinoFFT(vReal, vImag, samples, SAMPLE_RATE);
 //
 // Define this to use reciprocal multiplication for division and some more speedups that might decrease precision
 // #define FFT_SPEED_OVER_PRECISION
-float mag = 128;
 float magAvg = 64;
 int avgSampleCount = 1;
 float lastBeat = 0;  // time of last beat in millis()
 float bpm_interval = 480; // 125 BPM = 480ms
-float bpm_interval_avg = bpm_interval_avg;
-float accumulated_frame_error = 0;
 float magThreshold = 1.5;
 float magThresholdAvg = magThreshold;
 int animation_duration = 60000/120*16;
 //
 double beatTime = 60.0 / 140 * 1000;
 //
-// #include "MedianFilterLib2.h"
-// MedianFilter2<float> medianFilter2(16);
 // END BPM STUFF
 
 double fftAvg( int from, int to) {
@@ -156,13 +154,10 @@ void FFTcode( void * pvParameters) {
             // post: "Inputting audio to an ESP32 from an INMP441 I2S microphone: success"
             // link: https://www.esp32.com/viewtopic.php?t=15185
             //
-            // I question if this is "right" or just copied from somewhere:
-            //
-
-            micData = abs(buffer32[i] >> 16); 
+            micData = abs(buffer32[i] >> 16);   // this does seem to work just fine.
             //
             // I've also seen it with 14 bits shifted... 
-
+            //
             // uint8_t buffer32[samples * 4];
             // ... read I2S ...
             // uint8_t mid = buffer32[i * 4 + 2];
@@ -174,15 +169,11 @@ void FFTcode( void * pvParameters) {
 
         }
 
-        FFT.DCRemoval(); // The INMP441 has an internal high-pass to eliminate low-end signals but this still seems to help
+        FFT.DCRemoval();                                    // The INMP441 has an internal high-pass to eliminate low-end signals but this still seems to help
         FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD);    // Weigh data
         FFT.Compute(FFT_FORWARD);                           // Compute FFT
         FFT.ComplexToMagnitude();                           // Compute magnitudes
-
-        // vReal[3 .. 255] contain useful data, each a 20Hz interval (60Hz - 5120Hz).
-        // There could be interesting data at bins 0 to 2, but there are too many artifacts.
-        //
-        FFT.MajorPeak(&FFT_MajorPeak, &FFT_Magnitude);          // let the effects know which freq was most dominant
+        FFT.MajorPeak(&FFT_MajorPeak, &FFT_Magnitude);      // let the effects know which freq was most dominant
 
         for (int i = 0; i < samples; i++) {
 
@@ -193,42 +184,16 @@ void FFTcode( void * pvParameters) {
 
         }
 
-        /* This FFT post processing is a DIY endeavour. What we really need is someone with sound engineering expertise to do a great job here AND most importantly, that the animations look GREAT as a result.
-        *
-        * Andrew's updated mapping of 256 bins down to the 16 result bins with Sample Freq = 10240, samples = 512 and some overlap.
-        * Based on testing, the lowest/Start frequency is 60 Hz (with bin 3) and a highest/End frequency of 5120 Hz in bin 255.
-        * Now, Take the 60Hz and multiply by 1.320367784 to get the next frequency and so on until the end. Then detetermine the bins.
-        * End frequency = Start frequency * multiplier ^ 16
-        * Multiplier = (End frequency/ Start frequency) ^ 1/16
-        * Multiplier = 1.320367784
-        */
-
-        //                     // Range
-        // fftCalc[0] = (fftAdd(3,4)) /2;        // 60 - 100
-        // fftCalc[1] = (fftAdd(4,5)) /2;        // 80 - 120
-        // fftCalc[2] = (fftAdd(5,7)) /3;        // 100 - 160
-        // fftCalc[3] = (fftAdd(7,9)) /3;        // 140 - 200
-        // fftCalc[4] = (fftAdd(9,12)) /4;       // 180 - 260
-        // fftCalc[5] = (fftAdd(12,16)) /5;      // 240 - 340
-        // fftCalc[6] = (fftAdd(16,21)) /6;      // 320 - 440
-        // fftCalc[7] = (fftAdd(21,28)) /8;      // 420 - 600
-        // fftCalc[8] = (fftAdd(29,37)) /10;     // 580 - 760
-        // fftCalc[9] = (fftAdd(37,48)) /12;     // 740 - 980
-        // fftCalc[10] = (fftAdd(48,64)) /17;    // 960 - 1300
-        // fftCalc[11] = (fftAdd(64,84)) /21;    // 1280 - 1700
-        // fftCalc[12] = (fftAdd(84,111)) /28;   // 1680 - 2240
-        // fftCalc[13] = (fftAdd(111,147)) /37;  // 2220 - 2960
-        // fftCalc[14] = (fftAdd(147,194)) /48;  // 2940 - 3900
-        // fftCalc[15] = (fftAdd(194, 255)) /62; // 3880 - 5120
-
+        // Average FFT "bins" 3 to 255 into 16 easier to manage bins
+        // 
         fftCalc[0] = fftAvg(3,4);       // 60 - 100
-        fftCalc[1] = fftAvg(4,5);        // 80 - 120
-        fftCalc[2] = fftAvg(5,7);        // 100 - 160
-        fftCalc[3] = fftAvg(7,9);        // 140 - 200
-        fftCalc[4] = fftAvg(9,12);       // 180 - 260
-        fftCalc[5] = fftAvg(12,16);      // 240 - 340
-        fftCalc[6] = fftAvg(16,21);      // 320 - 440
-        fftCalc[7] = fftAvg(21,28);      // 420 - 600
+        fftCalc[1] = fftAvg(4,5);       // 80 - 120
+        fftCalc[2] = fftAvg(5,7);       // 100 - 160
+        fftCalc[3] = fftAvg(7,9);       // 140 - 200
+        fftCalc[4] = fftAvg(9,12);      // 180 - 260
+        fftCalc[5] = fftAvg(12,16);     // 240 - 340
+        fftCalc[6] = fftAvg(16,21);     // 320 - 440
+        fftCalc[7] = fftAvg(21,28);     // 420 - 600
         fftCalc[8] = fftAvg(29,37);     // 580 - 760
         fftCalc[9] = fftAvg(37,48);     // 740 - 980
         fftCalc[10] = fftAvg(48,64);    // 960 - 1300
@@ -278,8 +243,6 @@ void FFTcode( void * pvParameters) {
 
             totalVolume += fftResult[i];
 
-            // if min/max volume breached then update
-            //
             if (fftResult[i] > specDataMaxVolume) {
                 
                 specDataMaxVolume = fftResult[i];
@@ -296,13 +259,27 @@ void FFTcode( void * pvParameters) {
 
         if (specDataMaxVolume == 254) {
 
-            if (gain > 0) gain -= 1;
-            if (gain < 0) gain = 0;
+            if (gain > 0) {
+            
+                gain -= 1;
+            
+            }
+            
+            if (gain < 0) {
+                
+                gain = 0;
+                
+            }
 
         } else if (specDataMaxVolume < 128) {
 
             gain += 0.01;
-            if (gain > gain_max) gain = gain_max;
+            
+            if (gain > gain_max) {
+                
+                gain = gain_max;
+
+            }
 
         }
 
@@ -336,12 +313,6 @@ void FFTcode( void * pvParameters) {
 
         }
 
-        // for (int i=0;i<8;i++) {
-
-        //     fftData.specData8[i] = fftResult[i];
-
-        // }
-
         // BPM inspiration: https://github.com/blaz-r/ESP32-music-beat-sync/blob/main/src/ESP32-music-beat-sync.cpp
         // It's not currently "great" but it figures it out within a two BPM window.
         //
@@ -353,7 +324,7 @@ void FFTcode( void * pvParameters) {
 
             lastBeat = millis();
 
-            if (bpm_interval > 426 && bpm_interval < 600) { // between 100 and 140 BPM in ms
+            if (bpm_interval > 426 && bpm_interval < 600) { // between 100 and 140 BPM (in ms) as a filter for out-of-spec detections
 
                 mean_int = mean_int * 0.9 + bpm_interval * 0.1;
 
@@ -363,54 +334,13 @@ void FFTcode( void * pvParameters) {
 
                 magThresholdAvg = magThresholdAvg * 0.9 + (fftResult[0]/magAvg) * 0.1;
 
-                // Serial.printf("Int:%f,mInt:%f,BPM:%d,FrameErr:%f\n", bpm_interval, mean_int, fftData.bpm, accumulated_frame_error/10);
-                
-                accumulated_frame_error = 0;
-
             }
-
-        } else {
-
-            // not currenntly used, but the idea is to suss out how much
-            // 'extra' time renderig takes up to get a more accurate BPM
-            // ...but this doesn't seem to really be directly correlated 
-            // to BPM intervals.
-            //
-            accumulated_frame_error += millis()-audio_time;
 
         } // END BPM
         
-        // testing
-        // for (int i=0;i<16;i++) {
-            //   fftData.specData[i] = fftResult[i];
-            //   fftData.specData[i+16] = fftResult[i];
-            //   fftData.specData[i+32] = fftResult[i];
-            //   fftData.specData[i+48] = fftResult[i];
-            //   fftData.specData[i+64] = fftResult[i];
-            //   fftData.specData[i+80] = fftResult[i];
-            //   fftData.specData[i+96] = fftResult[i];
-            //   fftData.specData[i+112] = fftResult[i];
-
-            //   fftData.specData64[i] = fftResult[i];
-            //   fftData.specData64[i+16] = fftResult[i];
-            //   fftData.specData64[i+32] = fftResult[i];
-            //   fftData.specData64[i+48] = fftResult[i];
-
-            //   fftData.specData32[i] = fftResult[i];
-            //   fftData.specData32[i+16] = fftResult[i];
-
-            //   fftData.specData16[i] = fftResult[i];
-        // }
-
         fftData.noAudio = false;
 
     }
-
-}
-
-void setupNothing() {
-  
-  // noop
 
 }
 
@@ -440,9 +370,6 @@ void setupAudio() {
         .data_in_num = I2S_SD       // SD .... and L/R in all my tests is to VCC (not ground!) for Left Output
     };
 
-    Serial.println("Doing Driver...");
-    delay(1000);
-
     // Configuring the I2S driver and pins.
     // This function must be called before any I2S driver read/write operations.
     //
@@ -455,9 +382,6 @@ void setupAudio() {
 
     }
 
-    Serial.println("Doing Pins...");
-    delay(1000);
-
     err = i2s_set_pin(I2S_PORT, &pin_config);
 
     if (err != ESP_OK) {
@@ -466,9 +390,6 @@ void setupAudio() {
         while (true);
 
     }
-
-    Serial.println("Doing Clock...");
-    delay(1000);
 
     err = i2s_set_clk(I2S_PORT, SAMPLE_RATE*2, I2S_BITS_PER_SAMPLE_32BIT, I2S_CHANNEL_MONO);
 
@@ -480,8 +401,7 @@ void setupAudio() {
     }
 
     Serial.println("I2S driver installed.");
-
-    delay(100);
+    delay(500);
 
     // Test to see if we have a digital microphone installed or not.
 

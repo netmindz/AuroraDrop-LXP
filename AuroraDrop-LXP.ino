@@ -13,16 +13,6 @@
 *   ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.6)
 *   https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
 *
-*   Optional WiFi libraries needed:-
-*
-*   https://github.com/me-no-dev/ESPAsyncWebServer/archive/master.zip
-*   https://github.com/me-no-dev/AsyncTCP/archive/master.zip
-*
-*   These will need to be manually installed in your arduino libraries folder as
-*   they are not available via the arduino library manager.
-*
-*   See WiFi tutorials at:
-*   https://randomnerdtutorials.com/esp32-async-web-server-espasyncwebserver-library/
 *
 */
 
@@ -30,11 +20,7 @@
 // == START basic user configuration ===============================================================
 // =================================================================================================
 
-#include <Adafruit_NeoPixel.h>
-// Adafruit_NeoPixel pixels(1, 48, NEO_GRB + NEO_KHZ800); // 1 pixel at GPIO 48
-Adafruit_NeoPixel pixels(1, 38, NEO_GRB + NEO_KHZ800); // 1 pixel at GPIO 48
-
-#define USE_HUB75
+// #define USE_HUB75
 
 #define PANEL_WIDTH 64
 #define PANEL_HEIGHT 64               
@@ -44,11 +30,11 @@ Adafruit_NeoPixel pixels(1, 38, NEO_GRB + NEO_KHZ800); // 1 pixel at GPIO 48
 const char* ssid = "nwtworkname";
 const char* password = "networkpassword";
 
-#define USE_INMP441_MICROPHONE
+// #define USE_INMP441_MICROPHONE
 
-#define DEBUG 1
+// #define DEBUG 1
 
-#include <SPIFFS.h>
+// #include <SPIFFS.h>
 
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 
@@ -82,6 +68,10 @@ const char* password = "networkpassword";
     #define I2S_SD  8
     #define I2S_SCK 7
 
+    // ESP32-S3 Devkit C/M have these
+    //
+    #define ONBOARD_RGB_LED 48
+
 #else
 
     #pragma message("HUB75 - Testbed Board Pinout")
@@ -112,6 +102,19 @@ const char* password = "networkpassword";
     #define I2S_WS  1
     #define I2S_SD  2
     #define I2S_SCK 17
+
+    // ESP32-S3 Devkit C/M have these
+    //
+    #define ONBOARD_RGB_LED 48
+
+#endif
+
+#ifdef ONBOARD_RGB_LED
+
+    // If it's present and not initialized, it can behave randonly...
+
+    #include <Adafruit_NeoPixel.h>
+    Adafruit_NeoPixel pixels(1, ONBOARD_RGB_LED, NEO_GRB + NEO_KHZ800); // I use this as an FPS indicator in Diagnostics.h
 
 #endif
 
@@ -193,10 +196,14 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
 
-    pixels.begin();
-    pixels.setBrightness(10);
-    pixels.clear();
-    pixels.show();
+    #ifdef ONBOARD_RGB_LED
+
+        pixels.begin();
+        pixels.setBrightness(10);
+        pixels.clear();
+        pixels.show();
+
+    #endif
 
     HUB75_I2S_CFG mxconfig;
     mxconfig.mx_height = PANEL_HEIGHT;
@@ -225,39 +232,16 @@ void setup() {
     dma_display->setBrightness8(128);    //0-255   // 150 is good for me
     dma_display->begin();
     dma_display->fillScreenRGB888(255,0,0);
-    pixels.setPixelColor(0,255,0,0);
-    pixels.show();
     delay(150);
     dma_display->fillScreenRGB888(0,255,0);
-    pixels.setPixelColor(0,0,255,0);
-    pixels.show();
     delay(150);
     dma_display->fillScreenRGB888(0,0,255);
     delay(150);
-    pixels.setPixelColor(0,0,0,255);
-    pixels.show();
     dma_display->fillScreenRGB888(128,128,128);
-    pixels.setPixelColor(0,128,128,128);
-    pixels.show();
     delay(150);
     dma_display->clearScreen();
-    pixels.clear();
-    pixels.show();
 
     setupAudio();
-
-    // mount filesystem
-    if(!SPIFFS.begin(true)) {
-
-        Serial.println("An Error has occurred while mounting SPIFFS");
-
-        dma_display->setTextColor(255);
-        dma_display->setCursor(2,2);
-        dma_display->print("SPIFFS Error"); 
-
-        delay(1000);
-
-    }
 
     Serial.println("Starting AuroraDrop LXG Demo...");
 
@@ -265,8 +249,6 @@ void setup() {
     //
     effects.Setup();
 
-    // TODO: redo this
-    //
     Serial.println("Effects being loaded: ");
     listPatterns();
 
@@ -297,7 +279,7 @@ void setup() {
 
         playlistAudio[i].default_fps = 90;
         playlistAudio[i].pattern_fps = 90;
-        playlistAudio[i].ms_animation_max_duration = animation_duration;          // 5000ms is good, but should be bpm related
+        playlistAudio[i].ms_animation_max_duration = animation_duration;
 
         do {
             playlistAudio[i].moveRandom(1, i);
@@ -398,7 +380,6 @@ void loop() {
                         playlistInitialEffects[i].moveRandom(1, i);
                     } while (!playlistInitialEffects[i].getCurrentItemEnabled());
 
-                    // patterns.move(1);
                     playlistInitialEffects[i].ms_animation_max_duration = animation_duration;
                     playlistInitialEffects[i].start(i); 
 
@@ -434,8 +415,6 @@ void loop() {
             //
             if (playlistInitialEffects[i].fps_timer + 1000 < millis()) {
 
-                //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-
                 playlistInitialEffects[i].fps_timer = millis();
                 playlistInitialEffects[i].fps_last = playlistInitialEffects[i].fps;
 
@@ -467,7 +446,6 @@ void loop() {
                         playlistAudio[i].moveRandom(1, i);
                     } while (!playlistAudio[i].getCurrentItemEnabled());
 
-                    //patterns.move(1);
                     playlistAudio[i].ms_animation_max_duration = animation_duration;
                     playlistAudio[i].start(i);  
 
@@ -511,10 +489,6 @@ void loop() {
             //
             if (playlistAudio[i].fps_timer + 1000 < millis()){
 
-                //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-
-                // fillScreen(dma_display->color565(128, 0, 0));
-
                 playlistAudio[i].fps_timer = millis();
                 playlistAudio[i].fps_last = playlistAudio[i].fps;
 
@@ -546,7 +520,6 @@ void loop() {
                         playlistStatic[i].moveRandom(1, i);
                     } while (!playlistStatic[i].getCurrentItemEnabled());
 
-                    //patterns.move(1);
                     playlistStatic[i].ms_animation_max_duration = animation_duration;
                     playlistStatic[i].start(i);  
 
@@ -582,8 +555,6 @@ void loop() {
             //
             if (playlistStatic[i].fps_timer + 1000 < millis()){
 
-                //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-
                 playlistStatic[i].fps_timer = millis();
                 playlistStatic[i].fps_last = playlistStatic[i].fps;
 
@@ -597,7 +568,7 @@ void loop() {
 
     }
 
-    // apply final set of effects   ??? WE NEED BETTER POST EFFECTS RANDONISM ???
+    // apply final set of effects
     //
     if (!option9DisableFinalEffects) {
 
@@ -615,8 +586,6 @@ void loop() {
                         playlistFinalEffects[i].moveRandom(1, i);
                     } while (!playlistFinalEffects[i].getCurrentItemEnabled());
 
-                    //patterns.move(1);
-                    
                     playlistFinalEffects[i].ms_animation_max_duration = animation_duration;
                     playlistFinalEffects[i].start(i);  
 
@@ -650,8 +619,6 @@ void loop() {
 
             if (playlistFinalEffects[i].fps_timer + 1000 < millis()){
 
-                //Serial.printf_P(PSTR("Effect fps: %ld\n"), fps[i]);
-
                 playlistFinalEffects[i].fps_timer = millis();
                 playlistFinalEffects[i].fps_last = playlistFinalEffects[i].fps;
 
@@ -665,19 +632,9 @@ void loop() {
 
     }
 
-    // still tweaking bpm oscillators
-    //
     effects.updateBpmOscillators();
 
     actual_render_ms = millis() - start_render_ms;
-
-    // if optioned wait the full XXms before we render
-    //
-    // TODO: put in the wait code? :D
-
-    // seriously dim anything left rendering on the panel if there is no audio
-    //
-    //if(fftData.noAudio) effects.DimAll(50);
 
     if (option5LianLi120Mode) {
 
@@ -692,8 +649,6 @@ void loop() {
 }
 
 void listPatterns() {
-
-    // TODO:  working functionality
 
     if (CountPlaylistsAudio > 0) {
 

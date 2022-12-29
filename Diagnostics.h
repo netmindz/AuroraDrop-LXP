@@ -16,27 +16,27 @@ uint32_t actual_fps = 0;
 
 void UpdateDiagnosticsData() {
 
-    if (actual_render_ms > 1000/20) {
-        
-        pixels.setPixelColor(0,255,0,0);
-        pixels.show();
+    #ifdef ONBOARD_RGB_LED
 
-    } else if (actual_render_ms > 1000/30) {
-        
-        pixels.setPixelColor(0,255,191,0);
-        pixels.show();
+        if (actual_render_ms > 1000/20) {
+            
+            pixels.setPixelColor(0,255,0,0);
+            pixels.show();
 
-    } else {
+        } else if (actual_render_ms > 1000/30) {
+            
+            pixels.setPixelColor(0,255,191,0);
+            pixels.show();
 
-        pixels.setPixelColor(0,0,255,0);
-        pixels.show();
+        } else {
 
-    }
+            pixels.setPixelColor(0,0,255,0);
+            pixels.show();
 
-    // fftData.ProcessSpecData();
+        }
 
-    // Serial.printf("%d\t%d\t%d\t%d\n",fftData.specDataPeak[0],fftData.specDataPeak[1],fftData.specDataPeak[2],fftData.specDataPeak[3]);
-    
+    #endif
+
     // ------------------------ INFO --------------------------
 
     // ---------------- show total render time ----------------
@@ -222,49 +222,6 @@ void UpdateDiagnosticsData() {
             dma_display->drawFastVLine(i+(i*4)+3, 0, height, GREEN);
 
         }
-
-        /*
-        static uint16_t offset = 0;
-
-        for (uint8_t i=0; i < MATRIX_WIDTH; i++) {
-
-            uint16_t x = i + offset;
-
-            if (x >= MATRIX_WIDTH) {
-
-                x = x - 64;
-
-            }
-
-            uint16_t color = RED;
-
-            if (i+offset > 32) {
-                
-                color = GREEN;
-
-            }
-            
-            if (i+offset > 64) {
-                
-                color = CYAN;
-
-            }
-
-            //color = i * 1024;   // 682 for 96
-            uint8_t height = map8(fftData.specData[i+offset],0,16);
-            
-            dma_display->drawFastVLine(x, 36 + (8-height), height, color);
-
-        }
-
-        offset++;
-
-        if (offset >= 32) {
-
-            offset = offset - 32;
-
-        }
-        */
 
     }
 

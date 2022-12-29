@@ -953,48 +953,80 @@ class Effects {
 
     }
 
-    // TODO: CLEANUP BELOW
+    // give it a linear tail downwards
+    //
+    void StreamDown(byte scale) {
+
+        for (int x = 0; x < MATRIX_WIDTH; x++) {
+
+            for (int y = 1; y < MATRIX_HEIGHT; y++) {
+
+                leds[XY16(x, y)] += leds[XY16(x, y - 1)];
+                leds[XY16(x, y)].nscale8(scale);
+
+            }
+
+        }
+
+        for (int x = 0; x < MATRIX_WIDTH; x++) {
+            
+            leds[XY16(x, 0)].nscale8(scale);
+            
+        }
+
+    }
+
+    // give it a linear tail upwards
+    //
+    void StreamUp(byte scale) {
     
-  // give it a linear tail downwards
-  void StreamDown(byte scale)
-  {
-    for (int x = 0; x < MATRIX_WIDTH; x++) {
-      for (int y = 1; y < MATRIX_HEIGHT; y++) {
-        leds[XY16(x, y)] += leds[XY16(x, y - 1)];
-        leds[XY16(x, y)].nscale8(scale);
-      }
-    }
-    for (int x = 0; x < MATRIX_WIDTH; x++)
-      leds[XY16(x, 0)].nscale8(scale);
-  }
+        for (int x = 0; x < MATRIX_WIDTH; x++) {
 
-  // give it a linear tail upwards
-  void StreamUp(byte scale)
-  {
-    for (int x = 0; x < MATRIX_WIDTH; x++) {
-      for (int y = MATRIX_HEIGHT - 2; y >= 0; y--) {
-        leds[XY16(x, y)] += leds[XY16(x, y + 1)];
-        leds[XY16(x, y)].nscale8(scale);
-      }
-    }
-    for (int x = 0; x < MATRIX_WIDTH; x++)
-      leds[XY16(x, MATRIX_HEIGHT - 1)].nscale8(scale);
-  }
+            for (int y = MATRIX_HEIGHT - 2; y >= 0; y--) {
 
-  // give it a linear tail up and to the left
-  void StreamUpAndLeft(byte scale)
-  {
-    for (int x = 0; x < MATRIX_WIDTH - 1; x++) {
-      for (int y = MATRIX_HEIGHT - 2; y >= 0; y--) {
-        leds[XY16(x, y)] += leds[XY16(x + 1, y + 1)];
-        leds[XY16(x, y)].nscale8(scale);
-      }
+                leds[XY16(x, y)] += leds[XY16(x, y + 1)];
+                leds[XY16(x, y)].nscale8(scale);
+
+            }
+
+        }
+
+        for (int x = 0; x < MATRIX_WIDTH; x++) {
+
+            leds[XY16(x, MATRIX_HEIGHT - 1)].nscale8(scale);
+
+        }
+        
     }
-    for (int x = 0; x < MATRIX_WIDTH; x++)
-      leds[XY16(x, MATRIX_HEIGHT - 1)].nscale8(scale);
-    for (int y = 0; y < MATRIX_HEIGHT; y++)
-      leds[XY16(MATRIX_WIDTH - 1, y)].nscale8(scale);
-  }
+
+    // give it a linear tail up and to the left
+    //
+    void StreamUpAndLeft(byte scale) {
+
+        for (int x = 0; x < MATRIX_WIDTH - 1; x++) {
+
+            for (int y = MATRIX_HEIGHT - 2; y >= 0; y--) {
+
+                leds[XY16(x, y)] += leds[XY16(x + 1, y + 1)];
+                leds[XY16(x, y)].nscale8(scale);
+
+            }
+
+        }
+
+        for (int x = 0; x < MATRIX_WIDTH; x++) {
+            
+            leds[XY16(x, MATRIX_HEIGHT - 1)].nscale8(scale);
+            
+        }
+
+        for (int y = 0; y < MATRIX_HEIGHT; y++) {
+            
+            leds[XY16(MATRIX_WIDTH - 1, y)].nscale8(scale);
+            
+        }
+    
+    }
 
   // give it a linear tail up and to the right
   void StreamUpAndRight(byte scale)
@@ -1096,275 +1128,335 @@ class Effects {
     }
   }
 
-
-
-
-  CRGB ColorFromCurrentPalette(uint8_t index = 0, uint8_t brightness = 255, TBlendType blendType = LINEARBLEND) {
-    return ColorFromPalette(currentPalette, index, brightness, currentBlendType);
-  }
-
-  CRGB HsvToRgb(uint8_t h, uint8_t s, uint8_t v) {
-    CHSV hsv = CHSV(h, s, v);
-    CRGB rgb;
-    hsv2rgb_spectrum(hsv, rgb);
-    return rgb;
-  }
-
-  void NoiseVariablesSetup() {
-    noisesmoothing = 200;
-
-    noise_x = random16();
-    noise_y = random16();
-    noise_z = random16();
-    noise_scale_x = 6000;
-    noise_scale_y = 6000;
-  }
-
-  void FillNoise() {
-    for (uint16_t i = 0; i < MATRIX_WIDTH; i++) {
-      uint32_t ioffset = noise_scale_x * (i - MATRIX_CENTER_Y);
-
-      for (uint16_t j = 0; j < MATRIX_HEIGHT; j++) {
-        uint32_t joffset = noise_scale_y * (j - MATRIX_CENTER_Y);
-
-        byte data = inoise16(noise_x + ioffset, noise_y + joffset, noise_z) >> 8;
-
-        uint8_t olddata = noise[i][j];
-        uint8_t newdata = scale8(olddata, noisesmoothing) + scale8(data, 256 - noisesmoothing);
-        data = newdata;
-
-        noise[i][j] = data;
-      }
-    }
-  }
-
-  // non leds2 memory version.
-  void MoveX(byte delta) 
-  {
-
-    CRGB tmp = 0;
-
-    for (int y = 0; y < MATRIX_HEIGHT; y++) 
-    {
- 
-      // Shift Left: https://codedost.com/c/arraypointers-in-c/c-program-shift-elements-array-left-direction/
-      // Computationally heavier but doesn't need an entire leds2 array
-
-      tmp = leds[XY16(0, y)];      
-      for (int m = 0; m < delta; m++)
-      {
-        // Do this delta time for each row... computationally expensive potentially.
-        for(int x = 0; x < MATRIX_WIDTH; x++)
-        {
-            leds[XY16(x, y)] = leds [XY16(x+1, y)];
-        }
-
-        leds[XY16(MATRIX_WIDTH-1, y)] = tmp;
-      }
-   
-
-      /*
-      // Shift
-      for (int x = 0; x < MATRIX_WIDTH - delta; x++) {
-        leds2[XY(x, y)] = leds[XY(x + delta, y)];
-      }
-
-      // Wrap around
-      for (int x = MATRIX_WIDTH - delta; x < MATRIX_WIDTH; x++) {
-        leds2[XY(x, y)] = leds[XY(x + delta - MATRIX_WIDTH, y)];
-      }
-      */
-    } // end row loop
-
-    /*
-    // write back to leds
-    for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
-      for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
-        leds[XY(x, y)] = leds2[XY(x, y)];
-      }
-    }
-    */
-  }
-
-  void MoveY(byte delta)
-  {
+    CRGB ColorFromCurrentPalette(uint8_t index = 0, uint8_t brightness = 255, TBlendType blendType = LINEARBLEND) {
     
-    CRGB tmp = 0; 
-    for (int x = 0; x < MATRIX_WIDTH; x++) 
-    {
-      tmp = leds[XY16(x, 0)];      
-      for (int m = 0; m < delta; m++) // moves
-      {
-        // Do this delta time for each row... computationally expensive potentially.
-        for(int y = 0; y < MATRIX_HEIGHT; y++)
-        {
-            leds[XY16(x, y)] = leds [XY16(x, y+1)];
+        return ColorFromPalette(currentPalette, index, brightness, currentBlendType);
+    
+    }
+
+    CRGB HsvToRgb(uint8_t h, uint8_t s, uint8_t v) {
+
+        CHSV hsv = CHSV(h, s, v);
+        CRGB rgb;
+        
+        hsv2rgb_spectrum(hsv, rgb);
+
+        return rgb;
+
+    }
+
+    void NoiseVariablesSetup() {
+
+        noisesmoothing = 200;
+
+        noise_x = random16();
+        noise_y = random16();
+        noise_z = random16();
+        noise_scale_x = 6000;
+        noise_scale_y = 6000;
+
+    }
+
+    void FillNoise() {
+
+        for (uint16_t i = 0; i < MATRIX_WIDTH; i++) {
+
+            uint32_t ioffset = noise_scale_x * (i - MATRIX_CENTER_Y);
+
+            for (uint16_t j = 0; j < MATRIX_HEIGHT; j++) {
+
+                uint32_t joffset = noise_scale_y * (j - MATRIX_CENTER_Y);
+
+                byte data = inoise16(noise_x + ioffset, noise_y + joffset, noise_z) >> 8;
+
+                uint8_t olddata = noise[i][j];
+                uint8_t newdata = scale8(olddata, noisesmoothing) + scale8(data, 256 - noisesmoothing);
+                data = newdata;
+
+                noise[i][j] = data;
+
+            }
+            
         }
 
-        leds[XY16(x, MATRIX_HEIGHT-1)] = tmp;
-      }
-    } // end column loop
-  } /// MoveY
-
-  // ------- AuroraDrop Additions: ----------------------------------------------------------------------------------------------
-
-  #define CALEIDOSCOPE_COUNT 9
-
-  uint16_t beatSineOsci[6];            // full 0-65535
-  uint8_t beatSineOsci8[6];            // byte sized 0-255
-  uint8_t beatSineOsciWidth[6];        // matrix width, 0-63 or whatever...
-  uint8_t beatCosineOsciWidth[6];      // matrix width, 0-63 or whatever...
-  uint8_t beatSawOsci8[6];
-  uint8_t beatSawOsciWidth[6];
-  uint8_t beatSquareOsci8[6];
-  uint8_t beatSquareOsciWidth[6];
-
-
-  // general system bpm oscillators, patterns can set up their own if they need to be more specific
-  //
-  void updateBpmOscillators() {
-    // oscillators for sine wave forms at variuos rates proportional to the tempo
-    // do we need all these? used anywhere?
-    // scaled 0-65535
-    beatSineOsci[0] = beatsin16(fftData.bpm, 0, 65535);
-    beatSineOsci[1] = beatsin16(fftData.bpm / 2, 0, 65535);
-    beatSineOsci[2] = beatsin16(fftData.bpm / 4, 0, 65535);
-    beatSineOsci[3] = beatsin16(fftData.bpm / 8, 0, 65535);
-    beatSineOsci[4] = beatsin16(fftData.bpm / 16, 0, 65535);
-    beatSineOsci[5] = beatsin16(fftData.bpm / 32, 0, 65535);
-    // scaled 0-255
-    beatSineOsci8[0] = beatsin16(fftData.bpm, 0, 255);
-    beatSineOsci8[1] = beatsin16(fftData.bpm / 2, 0, 255);
-    beatSineOsci8[2] = beatsin16(fftData.bpm / 4, 0, 255);
-    beatSineOsci8[3] = beatsin16(fftData.bpm / 8, 0, 255);
-    beatSineOsci8[4] = beatsin16(fftData.bpm / 16, 0, 255);
-    beatSineOsci8[5] = beatsin16(fftData.bpm / 32, 0, 255);
-    // scaled for matrix width (e.g. 0-63)
-    beatSineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_HEIGHT-1);
-    beatSineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_HEIGHT-1);
-    beatSineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_HEIGHT-1);
-    beatSineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_HEIGHT-1);
-    beatSineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_HEIGHT-1);
-    beatSineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_HEIGHT-1);
-    beatCosineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_HEIGHT-1, 0 , 16384);
-    beatCosineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_HEIGHT-1, 0 , 16384);
-    beatCosineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_HEIGHT-1, 0 , 16384);
-    beatCosineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_HEIGHT-1, 0 , 16384);
-    beatCosineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_HEIGHT-1, 0 , 16384);
-    beatCosineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_HEIGHT-1, 0 , 16384);
-    // oscillators for saw tooth wave forms, scaled 0-255
-    beatSawOsci8[0] = beat8(fftData.bpm);
-    beatSawOsci8[1] = beat8(fftData.bpm / 2);
-    beatSawOsci8[2] = beat8(fftData.bpm / 4);
-    beatSawOsci8[3] = beat8(fftData.bpm / 8);
-    beatSawOsci8[4] = beat8(fftData.bpm / 16);
-    beatSawOsci8[5] = beat8(fftData.bpm / 32);
-    // scaled for matrix width
-    beatSawOsciWidth[0] = map8(beatSawOsci8[0], 0, MATRIX_HEIGHT - 1);
-    beatSawOsciWidth[1] = map8(beatSawOsci8[1], 0, MATRIX_HEIGHT - 1);
-    beatSawOsciWidth[2] = map8(beatSawOsci8[2], 0, MATRIX_HEIGHT - 1);
-    beatSawOsciWidth[3] = map8(beatSawOsci8[3], 0, MATRIX_HEIGHT - 1);
-    beatSawOsciWidth[4] = map8(beatSawOsci8[4], 0, MATRIX_HEIGHT - 1);
-    beatSawOsciWidth[5] = map8(beatSawOsci8[5], 0, MATRIX_HEIGHT - 1);
-    // oscillators for square wave forms, scaled 0-255
-    beatSquareOsci8[0] = squarewave8(beat8(fftData.bpm), 128);
-    beatSquareOsci8[1] = squarewave8(beat8(fftData.bpm / 2), 128);
-    beatSquareOsci8[2] = squarewave8(beat8(fftData.bpm / 4), 128);
-    beatSquareOsci8[3] = squarewave8(beat8(fftData.bpm / 8), 128);
-    beatSquareOsci8[4] = squarewave8(beat8(fftData.bpm / 16), 128);
-    beatSquareOsci8[5] = squarewave8(beat8(fftData.bpm / 32), 128);
-
-  }
-
-
-  // AuroraDrop: copied from XY16( uint16_t x, uint16_t y)
-  uint16_t XYCH( uint16_t x, uint16_t y) 
-  {
-    // ensure given half scaled matrix positions are within limits
-    if( x >= MATRIX_WIDTH / 2) return 0;
-    if( y >= MATRIX_HEIGHT / 2) return 0;
-    return (y * (MATRIX_WIDTH / 2)) + x;
-    //return (y * (MATRIX_WIDTH_TOTAL / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
-  }
-  uint16_t XYCQ( uint16_t x, uint16_t y) 
-  {
-    // ensure given quarter scaled matrix positions are within limits
-    if( x >= MATRIX_WIDTH / 4) return 0;
-    if( y >= MATRIX_HEIGHT / 4) return 0;
-    return (y * (MATRIX_WIDTH / 4)) + x;
-    //return (y * (MATRIX_WIDTH_TOTAL / 2)) + x + 1; // everything offset by one to capute out of bounds stuff - never displayed by ShowFrame()
-  }
-
-
-
-  // AuroraDrop: modifed from ClearFrame()
-
-  // 0=full canvas, 1/2=half widths, 3=quarter, empty/255 = clear all
-  void ClearCanvas(uint8_t id = 255)
-  {
-    switch (id) {
-      // 0=full canvas, 1/2=half widths, 3=quarter, empty/255 = clear all
-      //case 0:
-      //  memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
-      //  break;
-      case 1:
-        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-        break;
-      case 2:
-        memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-        break;
-      case 3:
-      //  memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
-      //  break;
-      case 255:
-      //  memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
-        memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-        memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
-        memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
-        break;
-      default:
-        Serial.println("No Canvas?");
     }
-  }
 
+    // non leds2 memory version.
+    //
+    void MoveX(byte delta) {
 
- void BresLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness, TBlendType blendType = LINEARBLEND)
-  {
-    CRGB color = ColorFromCurrentPalette(colorIndex, brightness);
-    BresLine(x0, y0, x1, y1, color, blendType);
-  }
+        CRGB tmp = 0;
 
-  void BresLine(int x0, int y0, int x1, int y1, CRGB color, TBlendType blendType = LINEARBLEND)
-  {
-    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-    int err = dx + dy, e2;
-    for (;;) {
-      if (blendType == LINEARBLEND) {
-        leds[XY16(x0, y0)] += color;
-      }
-      else
-      {
-        leds[XY16(x0, y0)] = color;
-      }
-      if (x0 == x1 && y0 == y1) break;
-      e2 = 2 * err;
-      if (e2 > dy) {
-        err += dy;
-        x0 += sx;
-      }
-      if (e2 < dx) {
-        err += dx;
-        y0 += sy;
-      }
+        for (int y = 0; y < MATRIX_HEIGHT; y++) {
+
+            // Shift Left: https://codedost.com/c/arraypointers-in-c/c-program-shift-elements-array-left-direction/
+            // Computationally heavier but doesn't need an entire leds2 array
+
+            tmp = leds[XY16(0, y)];      
+
+            for (int m = 0; m < delta; m++) {
+
+                // Do this delta time for each row... computationally expensive potentially.
+
+                for(int x = 0; x < MATRIX_WIDTH; x++) {
+
+                    leds[XY16(x, y)] = leds [XY16(x+1, y)]; 
+
+                }
+
+                leds[XY16(MATRIX_WIDTH-1, y)] = tmp;
+
+            }
+
+        } // end row loop
+
     }
-  }
+
+    void MoveY(byte delta) {
+
+        CRGB tmp = 0; 
+
+        for (int x = 0; x < MATRIX_WIDTH; x++) {
+
+            tmp = leds[XY16(x, 0)];     
+
+            for (int m = 0; m < delta; m++) {
+
+                // Do this delta time for each row... computationally expensive potentially.
+
+                for(int y = 0; y < MATRIX_HEIGHT; y++) {
+
+                    leds[XY16(x, y)] = leds [XY16(x, y+1)];
+                
+                }
+
+                leds[XY16(x, MATRIX_HEIGHT-1)] = tmp;
+                
+            }
+
+        }
+    
+    }
+
+    // ------- AuroraDrop Additions: ----------------------------------------------------------------------------------------------
+
+    #define CALEIDOSCOPE_COUNT 9
+
+    uint16_t beatSineOsci[6];            // full 0-65535
+    uint8_t beatSineOsci8[6];            // byte sized 0-255
+    uint8_t beatSineOsciWidth[6];        // matrix width, 0-63 or whatever...
+    uint8_t beatCosineOsciWidth[6];      // matrix width, 0-63 or whatever...
+    uint8_t beatSawOsci8[6];
+    uint8_t beatSawOsciWidth[6];
+    uint8_t beatSquareOsci8[6];
+    uint8_t beatSquareOsciWidth[6];
 
 
-  void BresLineCanvasH(CRGB *canvas, int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness)
-  {
-    BresLineCanvasH(canvas, x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
-  }
+    // general system bpm oscillators, patterns can set up their own if they need to be more specific
+    //
+    void updateBpmOscillators() {
+
+        // oscillators for sine wave forms at variuos rates proportional to the tempo
+        // do we need all these? used anywhere?
+        // scaled 0-65535
+        //        
+        beatSineOsci[0] = beatsin16(fftData.bpm, 0, 65535);
+        beatSineOsci[1] = beatsin16(fftData.bpm / 2, 0, 65535);
+        beatSineOsci[2] = beatsin16(fftData.bpm / 4, 0, 65535);
+        beatSineOsci[3] = beatsin16(fftData.bpm / 8, 0, 65535);
+        beatSineOsci[4] = beatsin16(fftData.bpm / 16, 0, 65535);
+        beatSineOsci[5] = beatsin16(fftData.bpm / 32, 0, 65535);
+
+        // scaled 0-255
+        //
+        beatSineOsci8[0] = beatsin16(fftData.bpm, 0, 255);
+        beatSineOsci8[1] = beatsin16(fftData.bpm / 2, 0, 255);
+        beatSineOsci8[2] = beatsin16(fftData.bpm / 4, 0, 255);
+        beatSineOsci8[3] = beatsin16(fftData.bpm / 8, 0, 255);
+        beatSineOsci8[4] = beatsin16(fftData.bpm / 16, 0, 255);
+        beatSineOsci8[5] = beatsin16(fftData.bpm / 32, 0, 255);
+
+        // scaled for matrix width (e.g. 0-63)
+        //
+        beatSineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_HEIGHT-1);
+        beatSineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_HEIGHT-1);
+        beatSineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_HEIGHT-1);
+        beatSineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_HEIGHT-1);
+        beatSineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_HEIGHT-1);
+        beatSineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_HEIGHT-1);
+        beatCosineOsciWidth[0] = beatsin16(fftData.bpm, 0, MATRIX_HEIGHT-1, 0 , 16384);
+        beatCosineOsciWidth[1] = beatsin16(fftData.bpm / 2, 0, MATRIX_HEIGHT-1, 0 , 16384);
+        beatCosineOsciWidth[2] = beatsin16(fftData.bpm / 4, 0, MATRIX_HEIGHT-1, 0 , 16384);
+        beatCosineOsciWidth[3] = beatsin16(fftData.bpm / 8, 0, MATRIX_HEIGHT-1, 0 , 16384);
+        beatCosineOsciWidth[4] = beatsin16(fftData.bpm / 16, 0, MATRIX_HEIGHT-1, 0 , 16384);
+        beatCosineOsciWidth[5] = beatsin16(fftData.bpm / 32, 0, MATRIX_HEIGHT-1, 0 , 16384);
+        
+        // oscillators for saw tooth wave forms, scaled 0-255
+        //
+        beatSawOsci8[0] = beat8(fftData.bpm);
+        beatSawOsci8[1] = beat8(fftData.bpm / 2);
+        beatSawOsci8[2] = beat8(fftData.bpm / 4);
+        beatSawOsci8[3] = beat8(fftData.bpm / 8);
+        beatSawOsci8[4] = beat8(fftData.bpm / 16);
+        beatSawOsci8[5] = beat8(fftData.bpm / 32);
+
+        // scaled for matrix width
+        //
+        beatSawOsciWidth[0] = map8(beatSawOsci8[0], 0, MATRIX_HEIGHT - 1);
+        beatSawOsciWidth[1] = map8(beatSawOsci8[1], 0, MATRIX_HEIGHT - 1);
+        beatSawOsciWidth[2] = map8(beatSawOsci8[2], 0, MATRIX_HEIGHT - 1);
+        beatSawOsciWidth[3] = map8(beatSawOsci8[3], 0, MATRIX_HEIGHT - 1);
+        beatSawOsciWidth[4] = map8(beatSawOsci8[4], 0, MATRIX_HEIGHT - 1);
+        beatSawOsciWidth[5] = map8(beatSawOsci8[5], 0, MATRIX_HEIGHT - 1);
+        
+        // oscillators for square wave forms, scaled 0-255
+        //
+        beatSquareOsci8[0] = squarewave8(beat8(fftData.bpm), 128);
+        beatSquareOsci8[1] = squarewave8(beat8(fftData.bpm / 2), 128);
+        beatSquareOsci8[2] = squarewave8(beat8(fftData.bpm / 4), 128);
+        beatSquareOsci8[3] = squarewave8(beat8(fftData.bpm / 8), 128);
+        beatSquareOsci8[4] = squarewave8(beat8(fftData.bpm / 16), 128);
+        beatSquareOsci8[5] = squarewave8(beat8(fftData.bpm / 32), 128);
+
+    }
+
+
+    // AuroraDrop: copied from XY16( uint16_t x, uint16_t y)
+    //
+    uint16_t XYCH( uint16_t x, uint16_t y) {
+
+        // ensure given half scaled matrix positions are within limits
+
+        if( x >= MATRIX_WIDTH / 2) {
+            
+            return 0;
+        
+        }
+        
+        if( y >= MATRIX_HEIGHT / 2) {
+            
+            return 0;
+            
+        }
+
+        return (y * (MATRIX_WIDTH / 2)) + x;
+
+    }
+
+    uint16_t XYCQ( uint16_t x, uint16_t y) {
+
+        // ensure given quarter scaled matrix positions are within limits
+
+        if( x >= MATRIX_WIDTH / 4) {
+            
+            return 0;
+            
+        }
+
+        if( y >= MATRIX_HEIGHT / 4) {
+            
+            return 0;
+
+        }
+
+        return (y * (MATRIX_WIDTH / 4)) + x;
+
+    }
+
+    // AuroraDrop: modifed from ClearFrame()
+    // 0=full canvas, 1/2=half widths, 3=quarter, empty/255 = clear all
+    //
+    void ClearCanvas(uint8_t id = 255) {
+        
+        switch (id) {
+
+            // 0=full canvas, 1/2=half widths, 3=quarter, empty/255 = clear all
+
+            case 0:
+                // memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB)); // flush
+            break;
+            
+            case 1:
+                memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+            break;
+            
+            case 2:
+                memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+            break;
+
+            case 3:
+                //  memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+            break;
+            
+            case 255:
+                //  memset(canvasF, 0x00, NUM_LEDS * sizeof(CRGB));
+                memset(canvasH, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+                memset(canvasH2, 0x00, NUM_LEDS * sizeof(CRGB) / 4);
+                memset(canvasQ, 0x00, NUM_LEDS * sizeof(CRGB) / 16);
+            break;
+
+            default:
+                Serial.println("No Canvas?");
+
+        }
+
+    }
+
+    void BresLine(int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness, TBlendType blendType = LINEARBLEND) {
+
+        CRGB color = ColorFromCurrentPalette(colorIndex, brightness);
+        BresLine(x0, y0, x1, y1, color, blendType);
+    
+    }
+
+    void BresLine(int x0, int y0, int x1, int y1, CRGB color, TBlendType blendType = LINEARBLEND) {
+
+        int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+        int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy, e2;
+
+        for (;;) {
+            
+            if (blendType == LINEARBLEND) {
+            
+                leds[XY16(x0, y0)] += color;
+            
+            } else {
+                
+                leds[XY16(x0, y0)] = color;
+            
+            }
+
+            if (x0 == x1 && y0 == y1) {
+                
+                break;
+
+            }
+
+            e2 = 2 * err;
+
+            if (e2 > dy) {
+
+                err += dy;
+                x0 += sx;
+            }
+
+            if (e2 < dx) {
+
+                err += dx;
+                y0 += sy;
+
+            }
+
+        }
+        
+    }
+
+    void BresLineCanvasH(CRGB *canvas, int x0, int y0, int x1, int y1, byte colorIndex, uint8_t brightness) {
+    
+        BresLineCanvasH(canvas, x0, y0, x1, y1, ColorFromCurrentPalette(colorIndex, brightness));
+    
+    }
 
   // AuroraDrop: draw line on canvas
   void BresLineCanvasH(CRGB *canvas, int x0, int y0, int x1, int y1, CRGB color)
@@ -1841,75 +1933,6 @@ class Effects {
 
   }
 
-
-
-
-
-
-
-  void GenerateBitmap()
-  {
-
-    unsigned char *img = NULL;
-    int r,g,b;
-    int x,y;
-    int w = MATRIX_WIDTH ;
-    int h = MATRIX_HEIGHT;
-    int filesize = 54 + 3 * w * h;
-
-    img = (unsigned char *)malloc(3*w*h);
-    memset(img,0,3*w*h);
-
-    // encode data from panel to img
-    for(int i=0; i<w; i++)
-    {
-      for(int j=0; j<h; j++)
-      {
-          x=i; y=(h-1)-j;
-          r = leds[XY16(i, j)].r;
-          g = leds[XY16(i, j)].g;
-          b = leds[XY16(i, j)].b;
-          img[(x+y*w)*3+2] = (unsigned char)(r);
-          img[(x+y*w)*3+1] = (unsigned char)(g);
-          img[(x+y*w)*3+0] = (unsigned char)(b);
-      }
-    }
-
-    unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0, 0,0, 54,0,0,0};
-    unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0, 24,0};
-    unsigned char bmppad[3] = {0,0,0};
-
-    bmpfileheader[ 2] = (unsigned char)(filesize    );
-    bmpfileheader[ 3] = (unsigned char)(filesize>> 8);
-    bmpfileheader[ 4] = (unsigned char)(filesize>>16);
-    bmpfileheader[ 5] = (unsigned char)(filesize>>24);
-
-    bmpinfoheader[ 4] = (unsigned char)(       w    );
-    bmpinfoheader[ 5] = (unsigned char)(       w>> 8);
-    bmpinfoheader[ 6] = (unsigned char)(       w>>16);
-    bmpinfoheader[ 7] = (unsigned char)(       w>>24);
-    bmpinfoheader[ 8] = (unsigned char)(       h    );
-    bmpinfoheader[ 9] = (unsigned char)(       h>> 8);
-    bmpinfoheader[10] = (unsigned char)(       h>>16);
-    bmpinfoheader[11] = (unsigned char)(       h>>24);
-
-    File file = SPIFFS.open("/test.bmp", FILE_WRITE);
-    if (!file)
-    {
-      Serial.println("There was an error opening the file for writing");
-      return;
-    }
-    file.write(bmpfileheader,14);
-    file.write(bmpinfoheader,40);
-    for(int i=0; i<h; i++)
-    {
-      file.write(img+(w*(h-i-1)*3),w*3);
-      file.write(bmppad,(4-(w*3)%4)%4);
-    }
-    file.close();
-    free(img);
-  } 
-  
 };
 
 #endif
