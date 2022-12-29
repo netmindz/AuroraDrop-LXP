@@ -104,3 +104,11 @@ The audio input is accomplished with the INMP441 microphone. Commonly available 
 
  * Portions of this code are adapted from Random Nerd Tutorials:
    * https://randomnerdtutorials.com/esp32-async-web-server-espasyncwebserver-library/
+
+### Why "LXP" ???
+
+This started off as just grabbing some different LED panels off Amazon to see what they could do.
+
+Once I discovered AuroraDrop I decided to take this on as a Christmas present. I discuss lots of my ongoing projects with the intended recipient, so I just told them it was my secret project "LXP"... 
+
+...which stood for "Leigh's Xmas Present"
