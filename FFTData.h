@@ -1,35 +1,39 @@
 class FFTData{
-  public:
 
-  #define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit serial messaging...
-  #define MAX_SERIAL_MSG_LENGTH 255       // re-think !!!
-  #define BINS 128  // was 96    // re-think !!!, 192/2 = 96, 192/3 = 64
+    // this class holds some data, but nothing calls its functions...
+    // ... and a lot of things are defined and never used.
 
- uint8_t test1;
+    public:
 
-//  const uint8_t SERIAL_MSG_AUDIO_SPECTRUM = 65;  // A
-  const uint32_t DROP_OFF_TIME = 10;    // not implemented yet
+    #define SERIAL_MSG_AUDIO_SPECTRUM 65  // to revisit serial messaging...
+    #define MAX_SERIAL_MSG_LENGTH 255     // re-think !!!
+    #define BINS 128                      // was 96    // re-think !!!, 192/2 = 96, 192/3 = 64
 
-  bool preambleFound = false;
-  uint8_t preambleCount = 0;
-  byte preambleBytes[7];
+    uint8_t test1;
 
-  uint32_t serial_pps_ms = millis();
-  uint8_t serial_pps_count = 0;
-  uint8_t serial_pps = 0;
+    //  const uint8_t SERIAL_MSG_AUDIO_SPECTRUM = 65;  // A
+    const uint32_t DROP_OFF_TIME = 10;    // not implemented yet
 
-  bool messageFound = false;
-  uint8_t messageSize = 0;     // max 255 bytes in message
-  uint8_t messageCount = 0;    // byte counter for message current being read
-  uint8_t messageType = 0;
+    bool preambleFound = false;
+    uint8_t preambleCount = 0;
+    byte preambleBytes[7];
 
-  byte inData[MAX_SERIAL_MSG_LENGTH];
-  uint8_t iSilence = 255;                 // to implement instead of noAudio boolean, user counter insteasd for short delay?
-  uint32_t dropOffTimer = millis();       // to implement peak drop off 
+    uint32_t serial_pps_ms = millis();
+    uint8_t serial_pps_count = 0;
+    uint8_t serial_pps = 0;
 
-  uint16_t bpm = 64;    // for testing currently, not fully implemented yet by most test patterns
+    bool messageFound = false;
+    uint8_t messageSize = 0;     // max 255 bytes in message
+    uint8_t messageCount = 0;    // byte counter for message current being read
+    uint8_t messageType = 0;
 
-  /* ---------------------------------------------------------------------------------------------------------
+    byte inData[MAX_SERIAL_MSG_LENGTH];
+    uint8_t iSilence = 255;                 // to implement instead of noAudio boolean, user counter insteasd for short delay?
+    uint32_t dropOffTimer = millis();       // to implement peak drop off 
+
+    uint16_t bpm = 120;    // for testing currently, not fully implemented yet by most test patterns
+
+    /* ---------------------------------------------------------------------------------------------------------
 
     TODO: do we want more bytes for better resolution? is 128 enough? want stereo? 
 
@@ -69,7 +73,7 @@ class FFTData{
     General Bpm/Tempo
     Flag to indicate sudden volume spikes within certain frequency ranges
     Indicators for highests peak(s) within full(sub) frequency range(s)
-    
+
     #define LO_LO 0
     #define LO 1
     #define LO_MID 2
@@ -93,289 +97,176 @@ class FFTData{
     byte specData32MaxBin[32];      // (0-2) which of the 3 sub bins within each of the 32 bins has highest volume
     byte specData32MinBin[32];      // (0-2) which of the 3 sub bins within each of the 32 bins has lowest volume
 
+    ------------------------------------------------------------------------------------------------------ */
 
-   ------------------------------------------------------------------------------------------------------ */
+    byte specDataMaxVolume;
+    byte specDataMinVolume;
 
-  byte specDataMaxVolume;
-  byte specDataMinVolume;
+    // TODO: allocate memory dynamicaly?
+    //
+    byte **specDataTodo = nullptr;
 
-  /* ------------------------------------------------------------------------------------------------------ */
+    // new audio data arrays
+    // all data (currently 128 bins, all mono)
+    //
+    byte specData[BINS];                // 0-127 = silence to peak level, 128-255 == over peak 
+    byte specDataPeak[BINS];            // 0-127 = silence to peak level, 128-255 == over peak 
 
+    // 8 averaged bins
+    //
+    byte specData8[8];
+    byte specData8Peak[8];
 
-  // TODO: allocate memory dynamicaly?
-  byte **specDataTodo = nullptr;
-  
-  // new audio data arrays
-  // all data (currently 128 bins, all mono)
-  byte specData[BINS];                // 0-127 = silence to peak level, 128-255 == over peak 
-  byte specDataPeak[BINS];            // 0-127 = silence to peak level, 128-255 == over peak 
+    // 16 averaged bins
+    //
+    byte specData16[16];
+    byte specData16Peak[16];
 
-  // 8 averaged bins
-  byte specData8[8];
-  byte specData8Peak[8];
+    // 32 averaged bins
+    //
+    byte specData32[32];
+    byte specData32Peak[32];
 
-  // 16 averaged bins
-  byte specData16[16];
-  byte specData16Peak[16];
+    // 64 averaged bins
+    //
+    byte specData64[64];
+    byte specData64Peak[64];
 
-  // 32 averaged bins
-  byte specData32[32];
-  byte specData32Peak[32];
+    uint32_t dataReceivedTime = 0;
 
-  // 64 averaged bins
-  byte specData64[64];
-  byte specData64Peak[64];
+    bool noConnection = true;
+    bool noData = true;
+    bool noAudio = true;
 
-  uint32_t dataReceivedTime = 0;
+    FFTData() {
 
-  bool noConnection = true;
-  bool noData = true;
-  bool noAudio = true;
+        // TODO: do we need to do this, as arrays are currently only 128 bytes? should we do it anyway?
+        // we should do dynamic allocation for large audio data, otherwise esp32 toolchain can't link static arrays of such a big size
+        //
+        specDataTodo = (byte **)malloc(BINS * sizeof(byte *));
 
+    };
 
-  FFTData() {
-    // TODO: do we need to do this, as arrays are currently only 128 bytes? should we do it anyway?
-    // we should do dynamic allocation for large audio data, otherwise esp32 toolchain can't link static arrays of such a big size
-    specDataTodo = (byte **)malloc(BINS * sizeof(byte *));
-  };
+    void ProcessSpecData() {
 
+        // this doesn't seem to ever be called.
 
-  void processSerialData()
-  {
+        // TODO: peak dropoff timer
+        //
+        if (dropOffTimer + DROP_OFF_TIME < millis()) dropOffTimer = millis();
 
-    // momitor packets received per second
-    if (millis() > serial_pps_ms + 1000)
-    {
-      serial_pps = serial_pps_count;
-      serial_pps_count = 0;
-      serial_pps_ms = millis();
+        noAudio = true;
+        specDataMinVolume = specData[0];
+        specDataMaxVolume = 0;
+
+        for (uint8_t i = 0; i < (BINS); i++) {
+
+            // if we see any data, clear the noAudio flag
+            //
+            if (specData[i] > 0) {
+                
+                noAudio = false;
+
+            }
+
+            // if min/max volume breached then update
+            //
+            if (specData[i] > specDataMaxVolume) {
+                
+                specDataMaxVolume = specData[i];
+
+            }
+
+            if (specData[i] < specDataMinVolume) {
+                
+                specDataMinVolume = specData[i];
+
+            }
+
+            // peak
+            //
+            if (specDataPeak[i] > 0) {
+                
+                specDataPeak[i]--;
+
+            }
+
+            if (specData[i] > specDataPeak[i]) {
+                
+                specDataPeak[i] = specData[i];
+
+            }
+
+        }
+
+        // put data into smaller bin groups for lower resolution workings
+        //
+        long total = 0;
+
+        // group of 8 bins
+        //
+        for (uint8_t i = 0; i < (BINS); i=i+12) {
+
+            total = 0;
+
+            for (uint8_t j = 0; j < 12; j++) {
+
+                total = total + (long)specData[i+j];
+
+            }
+
+            specData8[i/12] = total / 12;
+
+        }
+
+        // group of 16 bins
+        //
+        for (uint8_t i = 0; i < (BINS); i=i+6) {
+
+            total = 0;
+
+            for (uint8_t j = 0; j < 6; j++) {
+            
+                total = total + (long)specData[i+j];
+
+            }
+            
+            specData16[i/6] = total / 6;
+
+        }
+
+        // group of 32 bins
+        //
+        for (uint8_t i=0; i<BINS; i=i+3) {
+
+            total = 0;
+
+            for (uint8_t j = 0; j < 3; j++) {
+
+                total = total + (long)specData[i+j];
+
+            }
+
+            specData32[i/3] = total / 3;
+
+        }
+
+        // group of 64 bins
+        //
+        for (uint8_t i=0; i<BINS; i=i+2) {
+
+            total = 0;
+
+            for (uint8_t j = 0; j < 2; j++) {
+            
+                total = total + (long)specData[i+j];
+
+            }
+
+            specData64[i/2] = total / 2;
+
+        }
+
     }
-
-
-
-// !!!!!!!!!!!!!!!!!!!!!!
-
-    // flag no audio if no data
-    //if (millis() > dataReceivedTime + 1000) noAudio = true;
-
-// !!!!!!!!!!!!!!!!!!!!!!
-
-
-    int i = 1;
-    while (Serial.available() > 0) 
-    {
-
-      // TODO: re-write this better including CRC?
-      // the preamble connsists of five + two (seven) bytes: 69, 96 ,69 ,69 ,0, xx, yy 
-      // where xx denotes the message type, and yy the length (number of bytes) in the message
-      if (!preambleFound) 
-      {
-        // start looking for the preamble sequence
-        while (Serial.available() > 0 && !preambleFound) 
-        {
-          // shift preamble array up
-          preambleBytes[6] = preambleBytes[5];
-          preambleBytes[5] = preambleBytes[4];
-          preambleBytes[4] = preambleBytes[3];
-          preambleBytes[3] = preambleBytes[2];
-          preambleBytes[2] = preambleBytes[1];
-          preambleBytes[1] = preambleBytes[0];
-          // read and add new byte
-          preambleBytes[0] = Serial.read();
-          // compare latest 5 byte sequence with preamble
-          if (preambleBytes[6] == 69 && preambleBytes[5] == 96 && preambleBytes[4] == 69 && preambleBytes[3] == 96 && preambleBytes[2] == 0) 
-          {
-            // if match then set flag
-            preambleFound = true;
-            messageFound = false;
-            messageCount = 0;
-            messageSize = preambleBytes[0];
-            messageType = preambleBytes[1];
-            //PRINTS("PREAMBLE FOUND\n");
-          }
-        }
-      }
-
-      // process the incoming message data in the buffer
-      if (preambleFound && !messageFound) 
-      {
-        while (Serial.available() > 0 && !messageFound) 
-        {
-          // get the next byte and put into array
-          inData[messageCount] = Serial.read();
-          messageCount++;
-          if (messageCount >= messageSize)
-          {
-            messageFound = true;
-          }
-        }
-      }
-
-
-      // process the received message
-      if (preambleFound && messageFound) 
-      {
-        //Serial.print("MESSAGE FOUND: ");
-        //Serial.println(messageType);
-        serial_pps_count++;
-        dataReceivedTime = millis();
-        // process the message depending on its type
-        String sTemp;
-        switch (messageType) 
-        {
-          case 0:
-          // do nothing
-
-          break;
-
-
-          case SERIAL_MSG_AUDIO_SPECTRUM:
-            // audio spectrum data, 128 bytes long
-            //PRINTS("Audio Spectrum Data\n");
-            if (iSilence < 255) iSilence++;
-            // we expect to find 128 bytes of data
-            noAudio = true;
-            specDataMinVolume = specData[0];
-            specDataMaxVolume = 0;
-            for (uint8_t i = 0; i < (BINS); i++) 
-            {
-              // if we see any data, clear the noAudio flag
-              if (specData[i] > 0) noAudio = false;
-
-              // if min/max volume breached then update
-              if (specData[i] > specDataMaxVolume) specDataMaxVolume = specData[i];
-              if (specData[i] < specDataMinVolume) specDataMinVolume = specData[i];
-
-              // new array, audio data 0-255 where 127 is peak, > 127 over peak
-              specData[i] = inData[i];              // version, a value from 0 to 255, where 0 = silence
-              // peak
-              if (specDataPeak[i] > 0) specDataPeak[i]--;
-              if (inData[i] > specDataPeak[i]) specDataPeak[i] = inData[i];
-
-            }
-
-            // todo peak dropoff timer
-            if (dropOffTimer + DROP_OFF_TIME < millis()) dropOffTimer = millis();
-
-            // put data into smaller bin groups for lower resolution workings
-            long total = 0;
-
-            // group of 8 bins
-            for (uint8_t i = 0; i < (BINS); i=i+12) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 12; j++) 
-                total = total + (long)specData[i+j];
-              specData8[i/12] = total / 12;
-            }
-
-            // group of 16 bins
-            for (uint8_t i = 0; i < (BINS); i=i+6) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 6; j++) 
-                total = total + (long)specData[i+j];
-              specData16[i/6] = total / 6;
-            }
-
-            // group of 32 bins
-            for (uint8_t i=0; i<BINS; i=i+3) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 3; j++) 
-                total = total + (long)specData[i+j];
-              specData32[i/3] = total / 3;
-            }
-
-            // group of 64 bins
-            for (uint8_t i=0; i<BINS; i=i+2) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 2; j++) 
-                total = total + (long)specData[i+j];
-              specData64[i/2] = total / 2;
-            }
-
-            break;
-
-
-
-
-        }
-
-        preambleFound = false;
-        messageFound = false;
-      }
-
-      // end 
-    }
-  }
-
-  void ProcessSpecData() {
-
-
-            // TODO: peak dropoff timer
-            if (dropOffTimer + DROP_OFF_TIME < millis()) dropOffTimer = millis();
-
-            noAudio = true;
-            specDataMinVolume = specData[0];
-            specDataMaxVolume = 0;
-
-            for (uint8_t i = 0; i < (BINS); i++) 
-            {
-              // if we see any data, clear the noAudio flag
-              if (specData[i] > 0) noAudio = false;
-
-              // if min/max volume breached then update
-              if (specData[i] > specDataMaxVolume) specDataMaxVolume = specData[i];
-              if (specData[i] < specDataMinVolume) specDataMinVolume = specData[i];
-
-              // peak
-              if (specDataPeak[i] > 0) specDataPeak[i]--;
-              if (specData[i] > specDataPeak[i]) specDataPeak[i] = specData[i];
-            }
-
-            // put data into smaller bin groups for lower resolution workings
-            long total = 0;
-
-            // group of 8 bins
-            for (uint8_t i = 0; i < (BINS); i=i+12) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 12; j++) 
-                total = total + (long)specData[i+j];
-              specData8[i/12] = total / 12;
-            }
-
-            // group of 16 bins
-            for (uint8_t i = 0; i < (BINS); i=i+6) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 6; j++) 
-                total = total + (long)specData[i+j];
-              specData16[i/6] = total / 6;
-            }
-
-            // group of 32 bins
-            for (uint8_t i=0; i<BINS; i=i+3) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 3; j++) 
-                total = total + (long)specData[i+j];
-              specData32[i/3] = total / 3;
-            }
-
-            // group of 64 bins
-            for (uint8_t i=0; i<BINS; i=i+2) 
-            {
-              total = 0;
-              for (uint8_t j = 0; j < 2; j++) 
-                total = total + (long)specData[i+j];
-              specData64[i/2] = total / 2;
-            }
-
-  }
-
 
 };
-

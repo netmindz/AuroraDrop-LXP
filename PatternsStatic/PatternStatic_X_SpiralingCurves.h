@@ -9,8 +9,9 @@
 class PatternStaticSpiralingCurves : public Drawable {
 private:
 
-    #define speed -12  //   was -6
-
+		// #define speed -12
+		uint8_t  speed  = -12;
+		
     byte hue;
     //uint8_t  speed  = fftData.bpm;
 

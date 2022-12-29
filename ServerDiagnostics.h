@@ -9,7 +9,7 @@
 #include <HTTPClient.h>
 
 bool wifiConnected = false;
-int wifiMessage = 0;          // displays IP message when wifi first connects
+int wifiMessage = 1;          // displays IP message when wifi first connects
 int newVersionAvailable = 0;
 
 const char* PARAM_INPUT_OPTION = "option";
@@ -164,271 +164,345 @@ const char bitmap_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
-String optionState(bool option){
-  if(option){
-    return "checked";
-  }
-  else {
-    return "";
-  }
-}
+String optionState(bool option) {
 
+    if (option) {
+
+        return "checked";
+
+    } else {
+
+        return "";
+
+    }
+
+}
 
 // Replaces placeholder with button section in your web page
+//
 String processor(const String& var){
-  //Serial.println(var);
-  if(var == "SLIDERPLACEHOLDER"){
-    String buttons = "";
-    buttons += "<h5>Show Diagnostics</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"1\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Lock Frame Rate</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Show Render Time</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"3\" " + optionState(option3ShowRenderTime) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Pause Effect Cycling</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Lian-Li SL120 Mode</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5LianLi120Mode) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Disable Initial Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"6\" " + optionState(option6DisableInitialEffects) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Disable Audio Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"7\" " + optionState(option7DisableAudio) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Disable Static Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"8\" " + optionState(option8DisableStatic) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Not Used</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"9\" " + optionState(option9DisableFinalEffects) + "><span class=\"slider\"></span></label>";
-    buttons += "<h5>Disable Caleido Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option10DisableCaleidoEffects) + "><span class=\"slider\"></span></label>";
+
+    //Serial.println(var);
+
+    if(var == "SLIDERPLACEHOLDER"){
+
+        String buttons = "";
+        
+        buttons += "<h5>Show Diagnostics</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"1\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Lock Frame Rate</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"2\" " + optionState(option2LockFps) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Show Render Time</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"3\" " + optionState(option3ShowRenderTime) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Pause Effect Cycling</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"4\" " + optionState(option4PauseCycling) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Lian-Li SL120 Mode</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"5\" " + optionState(option5LianLi120Mode) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Disable Initial Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"6\" " + optionState(option6DisableInitialEffects) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Disable Audio Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"7\" " + optionState(option7DisableAudio) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Disable Static Patterns</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"8\" " + optionState(option8DisableStatic) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Not Used</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"9\" " + optionState(option9DisableFinalEffects) + "><span class=\"slider\"></span></label>";
+        buttons += "<h5>Disable Caleido Effects</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option10DisableCaleidoEffects) + "><span class=\"slider\"></span></label>";
+
     return buttons;
-  }
-  if (var == "BUTTONPLACEHOLDER"){
-    String buttons2 = "";
-    buttons2 += "<h5>TEST</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
-    return buttons2;
-  }
 
-  if (var == "EFFECTS_PLACEHOLDER"){
-    String buttons4 = "";
-    int num = playlistInitialEffects[0].getPatternCount();
-    for (int i=0; i<num; i++) {
-      char* yy = playlistInitialEffects[0].getItemName(i);
-      bool isEnabled = playlistInitialEffects[0].getItemEnabled(i);
-      String mystring(yy);
-      buttons4 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleEffectCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
     }
-    return buttons4;
-  }
 
-  if (var == "AUDIO_PLACEHOLDER"){
-    String buttons3 = "";
-    int num = playlistAudio[0].getPatternCount();
-    for (int i=0; i<num; i++) {
-      char* yy = playlistAudio[0].getItemName(i);
-      bool isEnabled = playlistAudio[0].getItemEnabled(i);
-      String mystring(yy);
-      buttons3 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleAudioCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+    if (var == "BUTTONPLACEHOLDER"){
+
+        String buttons2 = "";
+        
+        buttons2 += "<h5>TEST</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleOptionCheckbox(this)\" id=\"10\" " + optionState(option1Diagnostics) + "><span class=\"slider\"></span></label>";
+    
+        return buttons2;
+
     }
-    return buttons3;
-  }
 
-  if (var == "STATIC_PLACEHOLDER"){
-    String buttons = "";
-    int num = playlistStatic[0].getPatternCount();
-    for (int i=0; i<num; i++) {
-      char* yy = playlistStatic[0].getItemName(i);
-      bool isEnabled = playlistStatic[0].getItemEnabled(i);
-      String mystring(yy);
-      buttons += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleStaticCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+    if (var == "EFFECTS_PLACEHOLDER") {
+
+        String buttons4 = "";
+
+        int num = playlistInitialEffects[0].getPatternCount();
+
+        for (int i=0; i<num; i++) {
+
+            char* yy = playlistInitialEffects[0].getItemName(i);
+            bool isEnabled = playlistInitialEffects[0].getItemEnabled(i);
+
+            String mystring(yy);
+
+            buttons4 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleEffectCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+            
+        }
+
+        return buttons4;
+
     }
-    return buttons;
-  }
 
+    if (var == "AUDIO_PLACEHOLDER") {
 
-//patternsAudio[0].listPatterns();
+        String buttons3 = "";
+        int num = playlistAudio[0].getPatternCount();
 
+        for (int i=0; i<num; i++) {
 
+            char* yy = playlistAudio[0].getItemName(i);
+            bool isEnabled = playlistAudio[0].getItemEnabled(i);
 
-  return String();
+            String mystring(yy);
+
+            buttons3 += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleAudioCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+            
+        }
+
+        return buttons3;
+    }
+
+    if (var == "STATIC_PLACEHOLDER") {
+
+        String buttons = "";
+        int num = playlistStatic[0].getPatternCount();
+
+        for (int i=0; i<num; i++) {
+
+            char* yy = playlistStatic[0].getItemName(i);
+            bool isEnabled = playlistStatic[0].getItemEnabled(i);
+
+            String mystring(yy);
+            
+            buttons += "<h5>" + mystring + "</h5><label class=\"switch\"><input type=\"checkbox\" onchange=\"toggleStaticCheckbox(this)\" id=\"" + i + "\" " + optionState(isEnabled) + "><span class=\"slider\"></span></label>";
+            
+        }
+
+        return buttons;
+
+    }
+
+    //patternsAudio[0].listPatterns();
+
+    return String();
+
 }
-
 
 const String test = "";
 
 // replaces placeholder with bitmaps from spiffs
-String bitmapProcessor(const String& var){
+//
+String bitmapProcessor(const String& var) {
   
-  //effects.OldGenerateBase64EncodedBitmap();
-  effects.GenerateBitmap();
+    //effects.OldGenerateBase64EncodedBitmap();
 
-  if(var == "BITMAPPLACEHOLDER"){
-    String buttons = "";
-    //buttons += "<p><img width='256' height='256' src='data:image/png;base64," + effects.base64EncodedBmp + "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+    effects.GenerateBitmap();
 
-    buttons += "<p>Dynamic: <img width='256' height='256' src='data:image/bmp;base64,";
-    //buttons +=  effects.base64EncodedBmp;
-    //for (int i=0;i<800;i++) {   // 16458
-    //  buttons += (char)bmpData[i];
-    //}
-    buttons +=  "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+    if (var == "BITMAPPLACEHOLDER") {
 
-    //WORKING ->>  buttons += "<p><img src='data:image/png;base64," + effects.base64EncodedBmp + "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+        String buttons = "";
+        //buttons += "<p><img width='256' height='256' src='data:image/png;base64," + effects.base64EncodedBmp + "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+
+        buttons += "<p>Dynamic: <img width='256' height='256' src='data:image/bmp;base64,";
+        //buttons +=  effects.base64EncodedBmp;
+        //for (int i=0;i<800;i++) {   // 16458
+        //  buttons += (char)bmpData[i];
+        //}
+        buttons +=  "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+
+        //WORKING ->>  buttons += "<p><img src='data:image/png;base64," + effects.base64EncodedBmp + "' alt='Aurora Drop Bitmap Dynamic' /></p>";
+
+        //return buttons;
+        return String();
+        
+    }
+
     return String();
-    //return buttons;
-  }
-  return String();
+
 }
 
-
-
 void checkWifiStatus() {
+
     if (WiFi.status() == WL_CONNECTED && !wifiConnected) {
-      wifiConnected = true;
-      wifiMessage = 1000;                // when non zero, displays connected info for x renders
-      Serial.println(WiFi.localIP());
 
-#ifdef VERNO
-      // get version info from git repository and flash message if there is an update
-      HTTPClient http;
-      
-      String serverName = "https://raw.githubusercontent.com/";
-      String serverPath = serverName + "uklooney/AuroraDrop/main/Version.txt";
-      
-      // Your Domain name with URL path or IP address with path
-      http.begin(serverPath.c_str());
-      
-      // Send HTTP GET request
-      int httpResponseCode = http.GET();
-      
-      if (httpResponseCode>0) {
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
-        String payload = http.getString();
-        Serial.println(payload);
-        if (payload != VERNO) {
-          newVersionAvailable = 1500;        // when non zero, displays
-        }
-      }
-      else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
-      }
-#endif
+        wifiConnected = true;
+        wifiMessage = 1000;                // when non zero, displays connected info for x renders
+        Serial.println(WiFi.localIP());
 
-      // set route for root web page
-      server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/html", index_html, processor);
-      });
+        // set route for root web page
+        //
+        server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
 
-      // set route for rendered bitmap web page
-      server.on("/bitmap", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send_P(200, "text/html", bitmap_html, bitmapProcessor);
-      });
+            request->send_P(200, "text/html", index_html, processor);
+            
+        });
 
-      // set route for only test bitmap image
-      server.on("/test.bmp", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(SPIFFS, "/test.bmp", "image/bmp");
-      });
+        // set route for rendered bitmap web page
+        //
+        server.on("/bitmap", HTTP_GET, [](AsyncWebServerRequest *request) {
 
-      // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
-      server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        String inputMessage1;
-        String inputMessage2;
-        // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
-        if (request->hasParam(PARAM_INPUT_OPTION) && request->hasParam(PARAM_INPUT_STATE)) {
-          inputMessage1 = request->getParam(PARAM_INPUT_OPTION)->value();
-          inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
-          
-          //digitalWrite(inputMessage1.toInt(), inputMessage2.toInt());
-          Serial.print(inputMessage1.toInt());
-          Serial.print(",");
-          Serial.println(inputMessage2.toInt());
-          switch (inputMessage1.toInt()) {
-            case 1:
-              option1Diagnostics = inputMessage2.toInt();
-              break;
-            case 2:
-              option2LockFps = inputMessage2.toInt();
-              break;
-            case 3:
-              option3ShowRenderTime = inputMessage2.toInt();
-              break;
-            case 4:
-              option4PauseCycling = inputMessage2.toInt();
-              break;
-            case 5:
-              option5LianLi120Mode = inputMessage2.toInt();
-              break;
-            case 6:
-              option6DisableInitialEffects = inputMessage2.toInt();
-              break;
-            case 7:
-              option7DisableAudio = inputMessage2.toInt();
-              break;
-            case 8:
-              option8DisableStatic = inputMessage2.toInt();
-              break;
-            case 9:
-              option9DisableFinalEffects = inputMessage2.toInt();
-              break;
-            case 10:
-              option10DisableCaleidoEffects = inputMessage2.toInt();
-              break;
-          }
-        }
+            request->send_P(200, "text/html", bitmap_html, bitmapProcessor);
 
-        // audio patterns enable/disable
-        if (request->hasParam(PARAM_INPUT_EFFECTS) && request->hasParam(PARAM_INPUT_STATE)) {
-          inputMessage1 = request->getParam(PARAM_INPUT_EFFECTS)->value();
-          inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
-          // enable/disable chosen pattern in each playlist
-          for (int i = 0; i < MAX_PLAYLISTS_EFFECT; i++) {
-            playlistInitialEffects[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
-          }
-        }
+        });
 
-        // audio patterns enable/disable
-        if (request->hasParam(PARAM_INPUT_AUDIO) && request->hasParam(PARAM_INPUT_STATE)) {
-          inputMessage1 = request->getParam(PARAM_INPUT_AUDIO)->value();
-          inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
-          // enable/disable chosen pattern in each playlist
-          for (int i = 0; i < MAX_PLAYLISTS_AUDIO; i++) {
-            playlistAudio[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
-          }
-        }
+        // set route for only test bitmap image
+        //
+        server.on("/test.bmp", HTTP_GET, [](AsyncWebServerRequest *request) {
+
+            request->send(SPIFFS, "/test.bmp", "image/bmp");
+
+        });
+
+        // Send a GET request to <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+        //
+        server.on("/update", HTTP_GET, [] (AsyncWebServerRequest *request) {
+
+            String inputMessage1;
+            String inputMessage2;
+
+            // GET input1 value on <ESP_IP>/update?output=<inputMessage1>&state=<inputMessage2>
+
+            if (request->hasParam(PARAM_INPUT_OPTION) && request->hasParam(PARAM_INPUT_STATE)) {
+
+                inputMessage1 = request->getParam(PARAM_INPUT_OPTION)->value();
+                inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
+                
+                Serial.print(inputMessage1.toInt());
+                Serial.print(",");
+                Serial.println(inputMessage2.toInt());
+
+                switch (inputMessage1.toInt()) {
+
+                    case 1:
+                        option1Diagnostics = inputMessage2.toInt();
+                    break;
+
+                    case 2:
+                        option2LockFps = inputMessage2.toInt();
+                    break;
+
+                    case 3:
+                        option3ShowRenderTime = inputMessage2.toInt();
+                    break;
+
+                    case 4:
+                        option4PauseCycling = inputMessage2.toInt();
+                    break;
+
+                    case 5:
+                        option5LianLi120Mode = inputMessage2.toInt();
+                    break;
+
+                    case 6:
+                        option6DisableInitialEffects = inputMessage2.toInt();
+                    break;
+
+                    case 7:
+                        option7DisableAudio = inputMessage2.toInt();
+                    break;
+
+                    case 8:
+                        option8DisableStatic = inputMessage2.toInt();
+                    break;
+
+                    case 9:
+                        option9DisableFinalEffects = inputMessage2.toInt();
+                    break;
+                    
+                    case 10:
+                        option10DisableCaleidoEffects = inputMessage2.toInt();
+                    break;
+
+                }
+
+            }
+
+            // audio patterns enable/disable
+            //
+            if (request->hasParam(PARAM_INPUT_EFFECTS) && request->hasParam(PARAM_INPUT_STATE)) {
+
+                inputMessage1 = request->getParam(PARAM_INPUT_EFFECTS)->value();
+                inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
+
+                // enable/disable chosen pattern in each playlist
+                //
+                for (int i = 0; i < MAX_PLAYLISTS_EFFECT; i++) {
+
+                    playlistInitialEffects[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
+
+                }
+
+            }
+
+            // audio patterns enable/disable
+            //
+            if (request->hasParam(PARAM_INPUT_AUDIO) && request->hasParam(PARAM_INPUT_STATE)) {
+
+                inputMessage1 = request->getParam(PARAM_INPUT_AUDIO)->value();
+                inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
+
+                // enable/disable chosen pattern in each playlist
+                //
+                for (int i = 0; i < MAX_PLAYLISTS_AUDIO; i++) {
+
+                    playlistAudio[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
+
+                }
+
+            }
+
+            // static patterns enable/disable
+            //
+            if (request->hasParam(PARAM_INPUT_STATIC) && request->hasParam(PARAM_INPUT_STATE)) {
+                
+                inputMessage1 = request->getParam(PARAM_INPUT_STATIC)->value();
+                inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
+
+                // enable/disable chosen pattern in each playlist
+                //
+                for (int i = 0; i < MAX_PLAYLISTS_STATIC; i++) {
+
+                    playlistStatic[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
+
+                }
+
+            }
+
+            // number of simultaneous palylists 
+            //
+            if (request->hasParam(PARAM_INPUT_PLAYLISTS) && request->hasParam(PARAM_INPUT_STATE)) {
+
+                inputMessage1 = request->getParam(PARAM_INPUT_PLAYLISTS)->value();
+                inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
+
+                switch (inputMessage1.toInt()) {
+
+                    case 1:
+                        maxPlaylistsInitialEffect = inputMessage2.toInt();
+                    break;
+
+                    case 2:
+                        maxPlaylistsAudio = inputMessage2.toInt();
+                    break;
+
+                    case 3:
+                        maxPlaylistsStatic = inputMessage2.toInt();
+                    break;
+
+                }
+
+            }
+
+            //else {
+            //  inputMessage1 = "No message sent";
+            //  inputMessage2 = "No message sent";
+            //}
 
 
-        // static patterns enable/disable
-        if (request->hasParam(PARAM_INPUT_STATIC) && request->hasParam(PARAM_INPUT_STATE)) {
-          inputMessage1 = request->getParam(PARAM_INPUT_STATIC)->value();
-          inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
-          // enable/disable chosen pattern in each playlist
-          for (int i = 0; i < MAX_PLAYLISTS_STATIC; i++) {
-            playlistStatic[i].setItemEnabled(inputMessage1.toInt(), inputMessage2.toInt());
-          }
-        }
+            Serial.print("Option: ");
+            Serial.print(inputMessage1);
+            Serial.print(" - Set to: ");
+            Serial.println(inputMessage2);
 
-        // number of simultaneous palylists 
-        if (request->hasParam(PARAM_INPUT_PLAYLISTS) && request->hasParam(PARAM_INPUT_STATE)) {
-          inputMessage1 = request->getParam(PARAM_INPUT_PLAYLISTS)->value();
-          inputMessage2 = request->getParam(PARAM_INPUT_STATE)->value();
-          switch (inputMessage1.toInt()) {
-            case 1:
-              maxPlaylistsInitialEffect = inputMessage2.toInt();
-              break;
-            case 2:
-              maxPlaylistsAudio = inputMessage2.toInt();
-              break;
-            case 3:
-              maxPlaylistsStatic = inputMessage2.toInt();
-              break;
-          }
-        }
+            request->send(200, "text/plain", "OK");
+            
+        });
 
-        //else {
-        //  inputMessage1 = "No message sent";
-        //  inputMessage2 = "No message sent";
-        //}
+        // Start server
+        server.begin();    
+        Serial.println("Server begun");
 
-
-        Serial.print("Option: ");
-        Serial.print(inputMessage1);
-        Serial.print(" - Set to: ");
-        Serial.println(inputMessage2);
-        request->send(200, "text/plain", "OK");
-      });
-
-      // Start server
-      server.begin();    
     }
 
 }

@@ -24,9 +24,13 @@
 #define Playlist_H
 
 class Playlist : public Drawable {
+
 public:
+
     virtual bool isPlaylist() {
+
         return true;
+
     }
     
     boolean isCurrentItemFinished = true;
@@ -34,6 +38,7 @@ public:
     virtual void move(int step, uint8_t _pattern) = 0;
     virtual void moveRandom(int step, uint8_t pattern) = 0;
     virtual int getCurrentIndex();
+    
 };
 
 #endif

@@ -24,31 +24,34 @@
 #define PatternAudioTemplate_H
 
 class PatternAudioTemplate : public Drawable {
-  private:
 
+    private:
 
-  public:
+    public:
+
     PatternAudioTemplate() {
-      name = (char *)"Template";
-      id = "T";
+        
+        name = (char *)"Template";
+        id = "T";
+    
     }
-
 
     // ------------------ start -------------------
+    //
     void start(uint8_t _pattern) {
-      
+    
+        // do things
 
     }
-
 
     // --------------------- draw frame -------------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
+        // do things
+        
+        return 0;
 
-
-      return 0;
     }
-
 
 };
 

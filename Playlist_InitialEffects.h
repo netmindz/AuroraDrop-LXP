@@ -41,12 +41,12 @@ class Playlist_InitialEffects : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 10;
+    const static int PATTERN_COUNT = 9;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
-      &effectTestBlur2d,
+      // &effectTestBlur2d,
       &effectSpiralStream1,
       &effectStream1,
       &effectMove,
@@ -71,7 +71,7 @@ class Playlist_InitialEffects : public Playlist {
       }
       shuffleItems();
       this->currentItem = items[0];
-      for (int i=0; i < maxPlaylistsInitialEffect; i++) 
+      for (int i=0; i < CountPlaylistsInitialEffect; i++) 
       {
       this->currentItem->start(i); 
       }

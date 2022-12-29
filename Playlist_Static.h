@@ -1,14 +1,8 @@
 #ifndef Platlist_Static_H
 #define Platlist_Static_H
 
-//#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
-
-
-//#include "Vector.h"
-//#include "Boid.h"
-//#include "Attractor.h"
-
 // these are work in progress
+//
 #include "PatternsStatic\PatternStatic_A_Worms.h"
 #include "PatternsStatic\PatternStatic_M_SpiralLines.h"
 #include "PatternsStatic\PatternStatic_M_Flock.h"
@@ -19,7 +13,8 @@
 #include "PatternsStatic\PatternStatic_X_SimpleStars.h"
 #include "PatternsStatic\PatternStatic_X_Swirl.h"
 
-// theses are all just proof of concept from aurora demo,
+// theses are all just proof of concept from aurora demo
+//
 #include "PatternsOther\PatternTest.h"
 #include "PatternsOther\PatternXIncrementalDrift.h"
 #include "PatternsOther\PatternXSpiro.h"
@@ -86,22 +81,26 @@ class Platlist_Static : public Playlist {
     };
 
   public:
+
     Platlist_Static() {
-      // add the items to the shuffledItems array
-      for (int a = 0; a < PATTERN_COUNT; a++) {
-        shuffledItems[a] = items[a];
-      }
 
-      shuffleItems();
+        // add the items to the shuffledItems array
 
-      this->currentItem = items[0];
+        for (int a = 0; a < PATTERN_COUNT; a++) {
+        
+            shuffledItems[a] = items[a];
+        
+        }
 
-      for (int i=0; i < maxPlaylistsStatic; i++) 
-      {
-      this->currentItem->start(i); 
-      }
+        shuffleItems();
 
+        this->currentItem = items[0];
 
+        for (int i=0; i < CountPlaylistsStatic; i++) {
+
+            this->currentItem->start(i); 
+
+        }
 
     }
 
