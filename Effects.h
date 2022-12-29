@@ -259,41 +259,6 @@ class Effects {
 
     }
   
-    
-    /*
-    void CircleStream(uint8_t value) {
-        DimAll(value); ShowFrame();
-
-        for (uint8_t offset = 0; offset < MATRIX_CENTER_X; offset++) {
-        boolean hasprev = false;
-        uint16_t prevxy = 0;
-
-        for (uint8_t theta = 0; theta < 255; theta++) {
-            uint8_t x = mapcos8(theta, offset, (MATRIX_WIDTH - 1) - offset);
-            uint8_t y = mapsin8(theta, offset, (MATRIX_HEIGHT - 1) - offset);
-
-            uint16_t xy = XY(x, y);
-
-            if (hasprev) {
-            leds[prevxy] += leds[xy];
-            }
-
-            prevxy = xy;
-            hasprev = true;
-        }
-        }
-
-        for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
-        for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
-            uint16_t xy = XY(x, y);
-            leds[xy] = leds2[xy];
-            leds[xy].nscale8(value);
-            leds2[xy].nscale8(value);
-        }
-        }
-    }
-    */
-
     // palettes
     //
     static const int paletteCount = 10;
@@ -348,12 +313,6 @@ class Effects {
     }
 
     void loadPalette(int index) {
-
-        // override for testing
-        //
-        //setupYellowBluePalette();
-        //currentPaletteName = (char *)"YellowBlue";
-        //return;
 
         paletteIndex = index;
 
