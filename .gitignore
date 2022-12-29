@@ -3,3 +3,5 @@
 debug.cfg
 ServerDiagnostics.h.off
 esp32.svd
+debug_custom.json
+debug_custom.json
