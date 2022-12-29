@@ -43,29 +43,23 @@ The audio input is accomplished with the INMP441 microphone. Commonly available 
 * RGB LED on ESP32-S3-DevKitM-1 to do basic frames-per-second monitoring
 * Removal of webserver and networking code
 
-### Suggested Simple Hardware Solution
-   
- * ESP32 I2S Matrix Shield (tested with v2.0.6)
- * https://github.com/witnessmenow/ESP32-i2s-Matrix-Shield
- * https://www.youtube.com/watch?v=ZiR93TmSyE0
-
 ### Libraries
 
  * FastLED
- * https://github.com/FastLED/FastLED
+    * https://github.com/FastLED/FastLED
 
  * ESP32 HUB75 LED MATRIX PANEL DMA Display
- * https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
+    * https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
 
  * Adafruit GFX Library
- * https://github.com/adafruit/Adafruit-GFX-Library
+    * https://github.com/adafruit/Adafruit-GFX-Library
 
  * ArduinoFFT
- *  https://github.com/kosme/arduinoFFT
+    * https://github.com/kosme/arduinoFFT
 
  * Adafruit NeoPixel
- * https://github.com/adafruit/Adafruit_NeoPixel
- * (This is ONLY for the ESP onboard RGB LED because I'm super lazy.)
+    * https://github.com/adafruit/Adafruit_NeoPixel
+    * (This is ONLY used for the ESP32-S# devkit onboard RGB LED because I'm super lazy.)
  
 ### Based on
 
