@@ -1,7 +1,5 @@
 # AuroraDrop LXP v1.0.0
 
-THIS HAS JUST BEEN FORKED. CURRENTLY NO MODIFIED CODE HAS BEEN UPLOADED YET. (It's done, it's just not committed!)
-
 RGB Matrix Audio Visualiser for ESP32
 
 Forked from AuaoraDrop by uklooney, based on the FastLED Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic.
@@ -31,7 +29,7 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32
 
 The board was selected because the HUB75 driver has optimizations for the ESP32-S3 which makes it faster, and the DevKitM1 (`not` C1) board has a VERY advantageous pin arrangement that can be used to directly attach to the HUB75 connector (with some pin header bending!)
 
-The audio input is accomplished with the INMP441 microphone. Commonly available circular breakouts have the needed resistor and capacitor on the PCB.
+The audio input is accomplished with the INMP441 microphone. Commonly available circular breakout boards have the needed resistor and capacitor on the breakout.
 
 ## Latest Updates
 
