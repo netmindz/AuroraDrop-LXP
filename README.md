@@ -19,6 +19,10 @@ Major goals of this fork are:
 
 I suggest using the original AuroraDrop project for details on wiring and if you have other needs past HUB75+INMP441 integrations.
 
+Future work will integrate ArduinoAudioKit to make it easier to abstract audio inputs (and audio functions) and make it less reliant on a very specific microphone.
+
+* https://github.com/pschatzmann/arduino-audio-tools/
+
 ## Hardware Recommendations
 
 This code has been tested with up to two 64x64 pixel HUB74 "E" panels in horizontal mode. Also works fine with up to two 64x32 panels. More than two 64x64 panels is currently unstable, but two 64x64 panels sits nicely on a small shelf and looks impressive. 
