@@ -19,7 +19,7 @@ Major goals of this fork are:
 
 I suggest using the original AuroraDrop project for details on wiring and if you have other needs past HUB75+INMP441 integrations.
 
-Future work will integrate [ArduinoAudioKit](https://github.com/pschatzmann/arduino-audio-tools/) to make it easier to abstract audio inputs (and audio functions) and make it less reliant on a very specific microphone.
+Future work will investigate integrating [ArduinoAudioKit](https://github.com/pschatzmann/arduino-audio-tools/) to make it easier to abstract audio inputs (and audio functions) and make it less reliant on a very specific microphone.
 
 * https://github.com/pschatzmann/arduino-audio-tools/
 
