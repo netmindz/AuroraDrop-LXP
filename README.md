@@ -19,9 +19,11 @@ Major goals of this fork are:
 
 I suggest using the original AuroraDrop project for details on wiring and if you have other needs past HUB75+INMP441 integrations.
 
-Future work will integrate ArduinoAudioKit to make it easier to abstract audio inputs (and audio functions) and make it less reliant on a very specific microphone.
+Future work will integrate [ArduinoAudioKit](https://github.com/pschatzmann/arduino-audio-tools/) to make it easier to abstract audio inputs (and audio functions) and make it less reliant on a very specific microphone.
 
 * https://github.com/pschatzmann/arduino-audio-tools/
+
+...lots of testing needs to be done first tho.
 
 ## Hardware Recommendations
 
@@ -31,7 +33,7 @@ The recommended ESP32 target for the project is specificially the ESP32-S3-DevKi
 
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32s3/user-guide-devkitm-1.html
 
-The board was selected because the HUB75 driver has optimizations for the ESP32-S3 which makes it faster, and the DevKitM1 (`not` C1) board has a VERY advantageous pin arrangement that can be used to directly attach to the HUB75 connector (with some pin header bending!)
+The board was selected because the HUB75 driver has optimizations for the ESP32-S3 which makes it faster, and the ESP32-S3-DevKitM1 (**not** DevKitC1) board has a VERY advantageous pin arrangement that can be used to directly attach to the HUB75 connector (with some pin header bending!). It doesn't have PSRAM, but that doesn't seem to be as needed at the moment.
 
 The audio input is accomplished with the INMP441 microphone. Commonly available circular breakout boards have the needed resistor and capacitor on the breakout.
 
