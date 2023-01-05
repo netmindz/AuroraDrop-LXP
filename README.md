@@ -2,7 +2,7 @@
 
 RGB Matrix Audio Visualiser for ESP32
 
-Forked from AuaoraDrop by uklooney, based on the FastLED Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic.
+Forked from AuaoraDrop by uklooney, based on the FastLED Auroa Demo by Jason Coon, and using the ESP32-HUB75-MatrixPanel-I2S-DMA library by mrfaptastic. Audio reactive and I2S code from the WLED usermod "AudioReactive" - and some love from MoonModules WLED fork as well. 
 
 ## Introduction
 
@@ -38,7 +38,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 ## Latest Updates
 
 1.0.0
-*Imported much more robust audio reactive code from the WLED AudioReactive usermod
+* Imported much more robust audio reactive code from the WLED AudioReactive usermod
   * ...with some nice finishing touches from MoonModules' version of the same usermod (I <3 MoonModules)
 * Code cleanup
 * Automatic gain control (now courtesy of AudioReactive)
