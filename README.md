@@ -19,15 +19,9 @@ Major goals of this fork are:
 
 I suggest using the original AuroraDrop project for details on wiring and if you have other needs past HUB75+INMP441 integrations.
 
-Future work will investigate integrating [ArduinoAudioKit](https://github.com/pschatzmann/arduino-audio-tools/) to make it easier to abstract audio inputs (and audio functions) and make it less reliant on a very specific microphone.
-
-* https://github.com/pschatzmann/arduino-audio-tools/
-
-...lots of testing needs to be done first tho.
-
 ## Hardware Recommendations
 
-This code has been tested with up to two 64x64 pixel HUB74 "E" panels in horizontal mode. Also works fine with up to two 64x32 panels. More than two 64x64 panels is currently unstable, but two 64x64 panels sits nicely on a small shelf and looks impressive. 
+This code has been tested with up to two 64x64 pixel HUB74 "E" panels in a horizontal layout. Also works fine with up to two 64x32 panels. More than two 64x64 panels is currently unstable, but two 64x64 panels sits nicely on a small shelf and looks impressive. 
 
 The recommended ESP32 target for the project is specificially the ESP32-S3-DevKitM-1 board. 
 
@@ -37,12 +31,18 @@ The board was selected because the HUB75 driver has optimizations for the ESP32-
 
 The audio input is accomplished with the INMP441 microphone. Commonly available circular breakout boards have the needed resistor and capacitor on the breakout.
 
+**If you happen to wire this up on a breadboard, make sure to run a ground between the panel (or the panel PSU) and the ESP32 if you don't have one already.**
+
+The panels will work fine without a ground, but the I2S mic will become hilariously unstable and lead you down a rabbit hole for a week trying to figure out why the mic never seems like it's capturing real audio data. 
+
 ## Latest Updates
 
 1.0.0
+*Imported much more robust audio reactive code from the WLED AudioReactive usermod
+  * ...with some nice finishing touches from MoonModules' version of the same usermod (I <3 MoonModules)
 * Code cleanup
-* Automatic gain control
-* I2S code modernizarion for new ESP32 APIs
+* Automatic gain control (now courtesy of AudioReactive)
+* I2S code modernizarion for new ESP32 APIs (now courtest of AudioReactive)
 * Basic BPM detection
 * Removal of other hardware targets
 * Deactivation of some very CPU intensive effects
