@@ -39,7 +39,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 
 1.0.0
 * Imported much more robust audio reactive code from the WLED AudioReactive usermod
-  * ...with some nice finishing touches from MoonModules' version of the same usermod (I :heart: MoonModules)
+  * ...with some nice finishing touches from MoonModules' version of the same usermod ( I :heart: [MoonModules](https://github.com/MoonModules/WLED) )
 * Code cleanup
 * Automatic gain control (now courtesy of AudioReactive)
 * I2S code modernizarion for new ESP32 APIs (now courtesy of AudioReactive)
@@ -60,25 +60,29 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
  * Adafruit GFX Library
     * https://github.com/adafruit/Adafruit-GFX-Library
 
- * ArduinoFFT
-    * https://github.com/kosme/arduinoFFT
+ * ArduinoFFT - "develop" branch
+    * https://github.com/kosme/arduinoFFT/tree/develop
+    * You'll need to download this as a zip or check it out directly with git.
 
  * Adafruit NeoPixel
     * https://github.com/adafruit/Adafruit_NeoPixel
     * (This is ONLY used for the ESP32-S# devkit onboard RGB LED because I'm super lazy.)
+    * TODO: Not add an extra library just to control one LED.
  
 ### Based on
 
  Lots, including...
 
-* AuroraDrop, obviously: https://github.com/uklooney/AuroraDrop/
+ * AuroraDrop, obviously: https://github.com/uklooney/AuroraDrop/
 
+ * WLED usermod "AudioReactive": https://github.com/MoonModules/WLED/tree/mdev/usermods/audioreactive
+ 
  * Aurora: https://github.com/pixelmatix/aurora
    * Copyright (c) 2014 Jason Coon
 
  * ESP32-HUB75-MatrixPanel-I2S-DMA and Examples: https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
    * Copyright (c) 2021 mrfaptastic
- 
+   
  * Portions of this code are adapted from "Flocking" in "The Nature of Code" by Daniel Shiffman: http://natureofcode.com/
    * Copyright (c) 2014 Daniel Shiffman
    * http://www.shiffman.net
