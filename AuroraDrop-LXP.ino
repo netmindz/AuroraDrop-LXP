@@ -20,25 +20,13 @@
 // == START basic user configuration ===============================================================
 // =================================================================================================
 
-// #define USE_HUB75
-
 #define PANEL_WIDTH 64
 #define PANEL_HEIGHT 64               
 #define PANELS_NUMBER 2
 
-//#define USE_WIFI
-const char* ssid = "nwtworkname";
-const char* password = "networkpassword";
-
-// #define USE_INMP441_MICROPHONE
-
-// #define DEBUG 1
-
-// #include <SPIFFS.h>
-
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 
-// #define PRODUCTION_BOARD
+#define PRODUCTION_BOARD
 
 #ifdef PRODUCTION_BOARD
 
@@ -65,8 +53,8 @@ const char* password = "networkpassword";
     // INMP441 Pins
     //
     #define I2S_WS  6
-    #define I2S_SD  8
     #define I2S_SCK 7
+    #define I2S_SD  8
 
     // ESP32-S3 Devkit C/M have these
     //
@@ -228,9 +216,9 @@ void setup() {
     Serial.println("Starting HUB75 Display Test...");
 
     dma_display = new MatrixPanel_I2S_DMA(mxconfig);
-    
-    dma_display->setBrightness8(128);    //0-255   // 150 is good for me
+
     dma_display->begin();
+    dma_display->setPanelBrightness(10);    //0-255   // 150 is good for me
     dma_display->fillScreenRGB888(255,0,0);
     delay(150);
     dma_display->fillScreenRGB888(0,255,0);
@@ -452,7 +440,7 @@ void loop() {
                     Serial.print("Changing audio pattern to: ");
                     Serial.println(playlistAudio[i].getCurrentPatternName());
 
-                    Serial.printf("Gain: %f\n", gain);
+                    Serial.printf("Gain: %f\n", sampleGain);
 
                     playlistAudio[i].ms_previous = millis();
                     playlistAudio[i].fps_timer = millis();
