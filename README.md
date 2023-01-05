@@ -42,7 +42,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
   * ...with some nice finishing touches from MoonModules' version of the same usermod (I <3 MoonModules)
 * Code cleanup
 * Automatic gain control (now courtesy of AudioReactive)
-* I2S code modernizarion for new ESP32 APIs (now courtest of AudioReactive)
+* I2S code modernizarion for new ESP32 APIs (now courtesy of AudioReactive)
 * Basic BPM detection
 * Removal of other hardware targets
 * Deactivation of some very CPU intensive effects
