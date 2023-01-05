@@ -39,7 +39,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 
 1.0.0
 * Imported much more robust audio reactive code from the WLED AudioReactive usermod
-  * ...with some nice finishing touches from MoonModules' version of the same usermod (I <3 MoonModules)
+  * ...with some nice finishing touches from MoonModules' version of the same usermod (I :heart: MoonModules)
 * Code cleanup
 * Automatic gain control (now courtesy of AudioReactive)
 * I2S code modernizarion for new ESP32 APIs (now courtesy of AudioReactive)
