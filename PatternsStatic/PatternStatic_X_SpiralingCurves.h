@@ -18,7 +18,7 @@ private:
 
   public:
     PatternStaticSpiralingCurves() {
-      name = (char *)" Spiraling Curves";
+      name = (char *)"Spiraling Curves";
       id = "T";
       enabled = true;
     }

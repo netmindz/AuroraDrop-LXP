@@ -24,6 +24,8 @@
 #define PANEL_HEIGHT 64               
 #define PANELS_NUMBER 2
 
+int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridded with the ADC value if BRIGHT_PIN is defined - otherwise it stays here.
+
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 
 #define PRODUCTION_BOARD
@@ -59,6 +61,10 @@
     // ESP32-S3 Devkit C/M have these
     //
     #define ONBOARD_RGB_LED 48
+
+    // Brightness ADC pin
+    //
+    #define BRIGHT_PIN 1
 
 #else
 
@@ -126,7 +132,7 @@ FFTData fftData;
 #define MAX_PLAYLISTS_EFFECT 2                   // bluring/fading/sweeping effects
 #define MAX_PLAYLISTS_AUDIO 2                    // audio re-active effects
 #define MAX_PLAYLISTS_STATIC 2                   // standard non-audio animations inc. boids etc.
-#define MAX_PLAYLISTS_FINAL_EFFECT 0             // I dunno if this does a thing or not.
+#define MAX_PLAYLISTS_FINAL_EFFECT 0             // This just adds another "initial effect" layer. Not really needed.
 
 // (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
 //
@@ -184,6 +190,8 @@ void setup() {
     Serial.begin(115200);
     delay(1000);
 
+    Serial.printf("ESP32 IDF version: %s\n",IDF_VER);
+
     #ifdef ONBOARD_RGB_LED
 
         pixels.begin();
@@ -218,7 +226,7 @@ void setup() {
     dma_display = new MatrixPanel_I2S_DMA(mxconfig);
 
     dma_display->begin();
-    dma_display->setPanelBrightness(10);    //0-255   // 150 is good for me
+    dma_display->setBrightness8(GLOBAL_BRIGHTNESS); 
     dma_display->fillScreenRGB888(255,0,0);
     delay(150);
     dma_display->fillScreenRGB888(0,255,0);
@@ -259,12 +267,17 @@ void setup() {
         playlistInitialEffects[i].ms_previous = millis();
         playlistInitialEffects[i].fps_timer = millis();
 
+        // TESTING: enable all the effects
+        for (uint8_t j=0; j < playlistInitialEffects[i].getPatternCount(); j++) {
+            playlistInitialEffects[i].setItemEnabled(j, 1);
+        }
+
     }
 
     // initialise all the audio effects patterns
     //
     for (uint8_t i=0; i < MAX_PLAYLISTS_AUDIO; i++) {
-
+        
         playlistAudio[i].default_fps = 90;
         playlistAudio[i].pattern_fps = 90;
         playlistAudio[i].ms_animation_max_duration = animation_duration;
@@ -279,6 +292,11 @@ void setup() {
         playlistAudio[i].start(i);
         playlistAudio[i].ms_previous = millis();
         playlistAudio[i].fps_timer = millis();
+
+        // TESTING: enable all the effects
+        for (uint8_t j=0; j < playlistAudio[i].getPatternCount(); j++) {
+            playlistAudio[i].setItemEnabled(j, 1);
+        }
 
     }
 
@@ -300,6 +318,11 @@ void setup() {
         playlistStatic[i].start(i);
         playlistStatic[i].ms_previous = millis();
         playlistStatic[i].fps_timer = millis();
+
+        // TESTING: enable all the effects
+        for (uint8_t j=0; j < playlistStatic[i].getPatternCount(); j++) {
+            playlistStatic[i].setItemEnabled(j, 1);
+        }
 
     }
 
@@ -323,13 +346,45 @@ void setup() {
         playlistFinalEffects[i].ms_previous = millis();
         playlistFinalEffects[i].fps_timer = millis();
 
+        // TESTING: enable all the effects
+        for (uint8_t j=0; j < playlistFinalEffects[i].getPatternCount(); j++) {
+            playlistFinalEffects[i].setItemEnabled(j, 1);
+        }
+
     }
 
     Xlast_render_ms = millis();
 
+    #ifdef BRIGHT_PIN
+
+        analogReadResolution(8);
+
+        GLOBAL_BRIGHTNESS = analogRead(BRIGHT_PIN);
+    
+    #endif
+
 }
 
 void loop() {
+
+    #ifdef BRIGHT_PIN
+    
+        GLOBAL_BRIGHTNESS = (GLOBAL_BRIGHTNESS * 0.9) + (analogRead(BRIGHT_PIN) * 0.1);
+    
+        if (GLOBAL_BRIGHTNESS < 2) {
+
+            GLOBAL_BRIGHTNESS = 0;
+
+        }
+
+        if (GLOBAL_BRIGHTNESS == 0) {
+            
+            delay(500);
+
+            return;
+        }
+        
+    #endif
 
     start_render_ms = millis();
 
@@ -441,6 +496,7 @@ void loop() {
                     Serial.println(playlistAudio[i].getCurrentPatternName());
 
                     Serial.printf("Gain: %f\n", sampleGain);
+                    Serial.printf("Brightness: %d\n", GLOBAL_BRIGHTNESS);
 
                     playlistAudio[i].ms_previous = millis();
                     playlistAudio[i].fps_timer = millis();
@@ -511,7 +567,7 @@ void loop() {
                     playlistStatic[i].ms_animation_max_duration = animation_duration;
                     playlistStatic[i].start(i);  
 
-                    Serial.print("Changing statix pattern to: ");
+                    Serial.print("Changing static pattern to: ");
                     Serial.println(playlistStatic[i].getCurrentPatternName());
 
                     playlistStatic[i].ms_previous = millis();

@@ -31,7 +31,7 @@ class Playlist_InitialEffects : public Playlist {
     PatternEffectSimplexNoise effectSimplexNoise;
     PatternEffectDimAll effectDimAll;
     PatternEffectMunch effectMunch;
-    //PatternEffectLife effectLife;   // memory :(
+    PatternEffectLife effectLife;   // memory :(
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -42,24 +42,24 @@ class Playlist_InitialEffects : public Playlist {
 
     }
 
-    const static int PATTERN_COUNT = 9;
+    const static int PATTERN_COUNT = 8;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
         
-        // &effectTestBlur2d,
+        &effectTestBlur2d,
         &effectSpiralStream1,
         &effectStream1,
         &effectMove,
-        &effectElectricMandella,   // plasma effect
+        // &effectElectricMandella,   // crashes // plasma effect
         &effectPlasma,
-        &effectSimplexNoise,
+        // &effectSimplexNoise,
         &effectMunch,
         &effectMinimal,
-        &effectDimAll,
+        // &effectDimAll,                  // works fine, just isn't amazing.
         // memory hungry, uncomment only one
-        //&effectLife,
+        &effectLife,
 
     };
 
@@ -106,9 +106,13 @@ class Playlist_InitialEffects : public Playlist {
 
     void setItemEnabled(int _id, int value) {
 
-        items[_id]->setEnabled((bool)value);
+        if (getItemEnabled(_id) != value) {
 
-        Serial.print("pattern id "); Serial.print(id); Serial.print(" changed to "); Serial.println(value);
+            Serial.printf("Pattern '%s' changed from %d to %d\n",getItemName(_id),getItemEnabled(_id),value);
+
+        }
+        
+        items[_id]->setEnabled((bool)value);
 
     }
 

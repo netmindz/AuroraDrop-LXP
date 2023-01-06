@@ -84,14 +84,14 @@ class Playlist_Audio : public Playlist {
         
     }
 
-    const static int PATTERN_COUNT = 18;
+    const static int PATTERN_COUNT = 20;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
 
-        // &audioAngles,
-        // &audioRotatingWave,
+        // &audioAngles,               // I just don't like it
+        // &audioRotatingWave,         // crashes
         &audioCircularWave,
         &audioDotsSingle,                   // dancing/rolling dots
         &audioRotatingSpectrum,
@@ -108,22 +108,22 @@ class Playlist_Audio : public Playlist {
 
         // working initial proof of concept
         &audioSpectrumPeakBars,                    // 16 lines
-        // &audioSpectrum2,      // to sort
+        &audioSpectrum2,      // to sort
         &audioDiagonalSpectrum,   // to tidy
-        &audioTriangles,                    // triangles
+        &audioTriangles,                    // triangles - very visually "loud"
         &audioSpectrumCircle,     // spectrum lines from centre out, rotating around 360 degrees
         &patternAuroraDrop,
 
-        &patternTest,
+        // &patternTest,
         &patternTestSpectrum,
 
-        //&audioAurora,
-        //&audioWaveSingle,   // doing
-        //&canvasTest,
-        //&audioCircles,      // messing
-        //&audioLines,
-        //&testCircles,
-        //&testSpectrum,
+        &audioAurora,
+        // &audioWaveSingle,   // not overly interesting
+        // &canvasTest,
+        &audioCircles,      // messing
+        // &audioLines,        // not overly interesting
+        // &testCircles,
+        // &testSpectrum,
 
     };
 
@@ -174,13 +174,13 @@ class Playlist_Audio : public Playlist {
 
     void setItemEnabled(int _id, int value) {
 
-        //items[_id]->enabled == (bool)value;
-        items[_id]->setEnabled((bool)value);
+        if (getItemEnabled(_id) != value) {
 
-        Serial.print("pattern id "); 
-        Serial.print(id); 
-        Serial.print(" changed to "); 
-        Serial.println(value);
+            Serial.printf("Pattern '%s' changed from %d to %d\n",getItemName(_id),getItemEnabled(_id),value);
+
+        }
+
+        items[_id]->setEnabled((bool)value);
 
     }
 

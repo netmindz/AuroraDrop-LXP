@@ -211,7 +211,7 @@ class Effects {
 
     void ShowFrame() {
 
-        dma_display->setPanelBrightness(10);  
+        dma_display->setBrightness8(GLOBAL_BRIGHTNESS);  
         
         #if (FASTLED_VERSION >= 3001000)
         nblendPaletteTowardPalette(currentPalette, targetPalette, 24);   // was commented out

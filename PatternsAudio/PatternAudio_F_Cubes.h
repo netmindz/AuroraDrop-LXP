@@ -219,8 +219,9 @@ class PatternAudioCubes : public Drawable {
       cube[c].AngySpeed = beatcos8(5, 1, 10) / 100.0f;
 
       // AuroraDrop
-      byte audio = fftData.specData8[c];
-      if (audio > 127) audio = 127;
+      // map(value, fromLow, fromHigh, toLow, toHigh)
+      byte audio = map(fftResult[0], 0, 255, 1, 100);    // LXP bass bin, slower moving - it's very cool... so why have it so jumpy?
+      // if (audio > 180) audio = 180;
       cube[c].zCamera = 255 - audio;
 
 

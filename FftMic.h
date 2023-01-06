@@ -8,7 +8,10 @@
  * processing.
  */
 
-float effects_scale = 3;
+// The final scale factor for samples driving the AuroraDrop effects.
+// Sometimes there's "too much" on the screen if you approach 1.00
+//
+float effects_scale = 0.5f;     
 
 #include <driver/i2s.h>
 
@@ -35,25 +38,33 @@ constexpr int BLOCK_SIZE = 128;
     // https://github.com/espressif/esp-idf/issues/6625  I2S: left/right channels are swapped for read (IDFGH-4826)
 
     #ifdef I2S_USE_RIGHT_CHANNEL
+
         #define I2S_MIC_CHANNEL I2S_CHANNEL_FMT_ONLY_LEFT
         #define I2S_MIC_CHANNEL_TEXT "right channel only (work-around swapped channel bug in IDF 4.4)."
         #define I2S_PDM_MIC_CHANNEL I2S_CHANNEL_FMT_ONLY_RIGHT
         #define I2S_PDM_MIC_CHANNEL_TEXT "right channel only"
+
     #else
+
         #define I2S_MIC_CHANNEL I2S_CHANNEL_FMT_ONLY_RIGHT
         #define I2S_MIC_CHANNEL_TEXT "left channel only (work-around swapped channel bug in IDF 4.4)."
         #define I2S_PDM_MIC_CHANNEL I2S_CHANNEL_FMT_ONLY_LEFT
         #define I2S_PDM_MIC_CHANNEL_TEXT "left channel only."
+
     #endif
 
 #else
 
     #ifdef I2S_USE_RIGHT_CHANNEL
+
         #define I2S_MIC_CHANNEL I2S_CHANNEL_FMT_ONLY_RIGHT
         #define I2S_MIC_CHANNEL_TEXT "right channel only."
+
     #else
+
         #define I2S_MIC_CHANNEL I2S_CHANNEL_FMT_ONLY_LEFT
         #define I2S_MIC_CHANNEL_TEXT "left channel only."
+
     #endif
 
     #define I2S_PDM_MIC_CHANNEL I2S_MIC_CHANNEL
@@ -73,14 +84,14 @@ int8_t _myADCchannel = 0x0F;
 // globals
 static uint8_t inputLevel = 128;              // UI slider value
 #ifndef SR_SQUELCH
-  uint8_t soundSquelch = 10;                  // squelch value for volume reactive routines (config value)
+    uint8_t soundSquelch = 10;                  // squelch value for volume reactive routines (config value)
 #else
-  uint8_t soundSquelch = SR_SQUELCH;          // squelch value for volume reactive routines (config value)
+    uint8_t soundSquelch = SR_SQUELCH;          // squelch value for volume reactive routines (config value)
 #endif
 #ifndef SR_GAIN
-  uint8_t sampleGain = 1;                    // sample gain (config value)
+    uint8_t sampleGain = 1;                    // sample gain (config value)
 #else
-  uint8_t sampleGain = SR_GAIN;               // sample gain (config value)
+    uint8_t sampleGain = SR_GAIN;               // sample gain (config value)
 #endif
 static uint8_t soundAgc = 1;                  // Automagic gain control: 0 - none, 1 - normal, 2 - vivid, 3 - lazy (config value)
 static uint8_t audioSyncEnabled = 0;          // bit field: bit 0 - send, bit 1 - receive (config value)
@@ -89,9 +100,9 @@ static bool udpSyncConnected = false;         // UDP connection status -> true i
 // user settable parameters for limitSoundDynamics()
 static bool limiterOn = true;                 // bool: enable / disable dynamics limiter
 static uint16_t attackTime =  30;             // int: attack time in milliseconds. Default 0.08sec
-static uint16_t decayTime = 2000;             // int: decay time in milliseconds.  Default 1.40sec
+static uint16_t decayTime = 1100;             // int: decay time in milliseconds.  Default 1.40sec
 // user settable options for FFTResult scaling
-static uint8_t FFTScalingMode = 3;            // 0 none; 1 optimized logarithmic; 2 optimized linear; 3 optimized sqare root
+static uint8_t FFTScalingMode = 3;            // 0 none; 1 optimized logarithmic ("Loudness"); 2 optimized linear ("Amplitude"); 3 optimized sqare root ("Energy")
 
 // 
 // AGC presets
@@ -130,7 +141,6 @@ static unsigned long timeOfPeak = 0; // time of last sample peak detection.
 static void detectSamplePeak(void);  // peak detection function (needs scaled FFT reasults in vReal[])
 static void autoResetPeak(void);     // peak auto-reset function
 
-
 ////////////////////
 // Begin FFT Code //
 ////////////////////
@@ -165,15 +175,15 @@ static uint8_t fftResult[NUM_GEQ_CHANNELS]= {0};// Our calculated freq. channel 
 static uint8_t AD_fftResult[NUM_GEQ_CHANNELS]= {0}; // AuroraDrop needs one faster, but leave the original one alone.
 
 #if defined(WLED_DEBUG) || defined(SR_DEBUG)
-static uint64_t fftTime = 0;
-static uint64_t sampleTime = 0;
+    static uint64_t fftTime = 0;
+    static uint64_t sampleTime = 0;
 #endif
 
 // FFT Task variables (filtering and post-processing)
 static float   fftCalc[NUM_GEQ_CHANNELS] = {0.0f};                    // Try and normalize fftBin values to a max of 4096, so that 4096/16 = 256.
 static float   fftAvg[NUM_GEQ_CHANNELS] = {0.0f};                     // Calculated frequency channel results, with smoothing (used if dynamics limiter is ON)
 #ifdef SR_DEBUG
-static float   fftResultMax[NUM_GEQ_CHANNELS] = {0.0f};               // A table used for testing to determine how our post-processing is working.
+    static float   fftResultMax[NUM_GEQ_CHANNELS] = {0.0f};               // A table used for testing to determine how our post-processing is working.
 #endif
 
 // audio source parameters and constant
@@ -197,25 +207,38 @@ constexpr uint16_t samplesFFT_2 = 256;          // meaningfull part of FFT resul
 // These are the input and output vectors.  Input vectors receive computed results from FFT.
 static float vReal[samplesFFT] = {0.0f};       // FFT sample inputs / freq output -  these are our raw result bins
 static float vImag[samplesFFT] = {0.0f};       // imaginary parts
+
 #ifdef UM_AUDIOREACTIVE_USE_NEW_FFT
-static float windowWeighingFactors[samplesFFT] = {0.0f};
+
+    static float windowWeighingFactors[samplesFFT] = {0.0f};
+
 #endif
 
 // Create FFT object
+//
 #ifdef UM_AUDIOREACTIVE_USE_NEW_FFT
-// lib_deps += https://github.com/kosme/arduinoFFT#develop @ 1.9.2
-#define FFT_SPEED_OVER_PRECISION     // enables use of reciprocals (1/x etc), and an a few other speedups
-#define FFT_SQRT_APPROXIMATION       // enables "quake3" style inverse sqrt
-#define sqrt(x) sqrtf(x)             // little hack that reduces FFT time by 50% on ESP32 (as alternative to FFT_SQRT_APPROXIMATION)
+
+    // lib_deps += https://github.com/kosme/arduinoFFT#develop @ 1.9.2
+    #define FFT_SPEED_OVER_PRECISION     // enables use of reciprocals (1/x etc), and an a few other speedups
+    #define FFT_SQRT_APPROXIMATION       // enables "quake3" style inverse sqrt
+    #define sqrt(x) sqrtf(x)             // little hack that reduces FFT time by 50% on ESP32 (as alternative to FFT_SQRT_APPROXIMATION)
+
 #else
-// lib_deps += https://github.com/blazoncek/arduinoFFT.git
+
+    // lib_deps += https://github.com/blazoncek/arduinoFFT.git
+
 #endif
+
 #include <arduinoFFT.h>
 
 #ifdef UM_AUDIOREACTIVE_USE_NEW_FFT
-static ArduinoFFT<float> FFT = ArduinoFFT<float>( vReal, vImag, samplesFFT, SAMPLE_RATE, windowWeighingFactors);
+
+    static ArduinoFFT<float> FFT = ArduinoFFT<float>( vReal, vImag, samplesFFT, SAMPLE_RATE, windowWeighingFactors);
+
 #else
-static arduinoFFT FFT = arduinoFFT(vReal, vImag, samplesFFT, SAMPLE_RATE);
+
+    static arduinoFFT FFT = arduinoFFT(vReal, vImag, samplesFFT, SAMPLE_RATE);
+
 #endif
 
 // Helper functions
@@ -566,7 +589,7 @@ static void postProcessFFTResults(bool noiseGateOpen, int numberOfChannels) { //
 
         float currentResult;
 
-        if(limiterOn == true) {
+        if (limiterOn == true) {
 
             currentResult = fftAvg[i];
         
@@ -656,8 +679,7 @@ static void postProcessFFTResults(bool noiseGateOpen, int numberOfChannels) { //
 
 }
 
-// post-processing and filtering of MIC sample (micDataReal) from FFTcode()
-void getSample() {
+void getSample() { // post-processing and filtering of MIC sample (micDataReal) from FFTcode()
 
     float    sampleAdj;           // Gain adjusted sample value
     float    tmpSample;           // An interim sample variable used for calculatioins.
@@ -772,8 +794,8 @@ void getSample() {
     }
 
     sampleAvg = ((sampleAvg * 15.0f) + sampleAdj) / 16.0f;   // Smooth it out over the last 16 samples.
-    sampleAvg = fabsf(sampleAvg);      
-                          // make sure we have a positive value
+    sampleAvg = fabsf(sampleAvg); // make sure we have a positive value
+
 } // getSample()
 
 void agcAvg(unsigned long the_time) {
@@ -1063,55 +1085,116 @@ void FFTcode( void * pvParameters) {
 
         unsigned long t_now = millis();      // remember current time
         int userloopDelay = int(t_now - lastUMRun);
-        if (lastUMRun == 0) userloopDelay=0; // startup - don't have valid data from last run.
+        
+        if (lastUMRun == 0) {
+            
+            userloopDelay=0; // startup - don't have valid data from last run.
+
+        }
 
         // run filters, and repeat in case of loop delays (hick-up compensation)
-        if (userloopDelay <2) userloopDelay = 0;      // minor glitch, no problem
-        if (userloopDelay >200) userloopDelay = 200;  // limit number of filter re-runs  
+        //
+        if (userloopDelay <2) {
+            
+            userloopDelay = 0;      // minor glitch, no problem
+        
+        }
+
+        if (userloopDelay >200) {
+            
+            userloopDelay = 200;  // limit number of filter re-runs  
+        
+        }
+        
         do {
-        getSample();                        // run microphone sampling filters
-        agcAvg(t_now - userloopDelay);      // Calculated the PI adjusted value as sampleAvg
-        userloopDelay -= 2;                 // advance "simulated time" by 2ms
+
+            getSample();                        // run microphone sampling filters
+            agcAvg(t_now - userloopDelay);      // Calculated the PI adjusted value as sampleAvg
+            userloopDelay -= 2;                 // advance "simulated time" by 2ms
+
         } while (userloopDelay > 0);
+        
         lastUMRun = t_now;                    // update time keeping
 
         // update samples for effects (raw, smooth) 
+        //
         volumeSmth = (soundAgc) ? sampleAgc   : sampleAvg;
         volumeRaw  = (soundAgc) ? rawSampleAgc: sampleRaw;
+
         // update FFTMagnitude, taking into account AGC amplification
+        //
         my_magnitude = FFT_Magnitude; // / 16.0f, 8.0f, 4.0f done in effects
-        if (soundAgc) my_magnitude *= multAgc;
-        if (volumeSmth < 1 ) my_magnitude = 0.001f;  // noise gate closed - mute
+
+        if (soundAgc) {
+            
+            my_magnitude *= multAgc;
+        
+        }
+        
+        if (volumeSmth < 1 ) {
+            
+            my_magnitude = 0.001f;  // noise gate closed - mute
+
+        }
 
         limitSampleDynamics();
 
         autoResetPeak();          // auto-reset sample peak after strip minShowDelay
-        if (!udpSyncConnected) udpSamplePeak = false;  // reset UDP samplePeak while UDP is unconnected
+
+        if (!udpSyncConnected) {
+            
+            udpSamplePeak = false;  // reset UDP samplePeak while UDP is unconnected
+
+        }
 
         // connectUDPSoundSync();  // ensure we have a connection - if needed
 
         // UDP Microphone Sync  - receive mode
+
         // if ((audioSyncEnabled & 0x02) && udpSyncConnected) {
-        // // Only run the audio listener code if we're in Receive mode
-        // static float syncVolumeSmth = 0;
-        // bool have_new_sample = false;
-        // if (millis() - lastTime > delayMs) {
-        // have_new_sample = receiveAudioData();
-        // if (have_new_sample) last_UDPTime = millis();
-        // lastTime = millis();
-        // }
-        // if (have_new_sample) syncVolumeSmth = volumeSmth;   // remember received sample
-        // else volumeSmth = syncVolumeSmth;                   // restore originally received sample for next run of dynamics limiter
-        // limitSampleDynamics();                              // run dynamics limiter on received volumeSmth, to hide jumps and hickups
+            
+        //     // Only run the audio listener code if we're in Receive mode
+
+        //     static float syncVolumeSmth = 0;
+        //     bool have_new_sample = false;
+            
+        //     if (millis() - lastTime > delayMs) {
+
+        //         have_new_sample = receiveAudioData();
+
+        //         if (have_new_sample) {
+                    
+        //             last_UDPTime = millis();
+                
+        //         } 
+                
+        //         lastTime = millis();
+
+        //     }
+
+        //     if (have_new_sample) {
+                
+        //         syncVolumeSmth = volumeSmth;   // remember received sample
+            
+        //     } else { 
+                
+        //         volumeSmth = syncVolumeSmth;                   // restore originally received sample for next run of dynamics limiter
+            
+        //     }
+
+        //     limitSampleDynamics();                              // run dynamics limiter on received volumeSmth, to hide jumps and hickups
+            
         // }
 
         size_t bytes_read = 0;        /* Counter variable to check if we actually got enough data */
         I2S_datatype newSamples[samples]; /* Intermediary sample storage */
+
         i2s_read(I2S_PORT, (void *)newSamples, sizeof(newSamples), &bytes_read, portMAX_DELAY);
 
         if (bytes_read != sizeof(newSamples)) {
 
             Serial.println("We didn't get the right amount of samples!");
+
             return;
 
         }
@@ -1123,9 +1206,13 @@ void FFTcode( void * pvParameters) {
             float currSample = 0.0f;
 
             #ifdef I2S_SAMPLE_DOWNSCALE_TO_16BIT
+
                 currSample = (float) newSamples[i] / 65536.0f;      // 32bit input -> 16bit; keeping lower 16bits as decimal places
+                
             #else
+
                 currSample = (float) newSamples[i];                 // 16bit input -> use as-is
+
             #endif
 
             vReal[i] = currSample;
@@ -1139,15 +1226,26 @@ void FFTcode( void * pvParameters) {
         if (useBandPassFilter) runMicFilter(samplesFFT, vReal);
 
         // find highest sample in the batch
+        //
         float maxSample = 0.0f;                         // max sample from FFT batch
 
         for (int i=0; i < samplesFFT; i++) {
 
             // set imaginary parts to 0
+            
             vImag[i] = 0;
-            // pick our  our current mic sample - we take the max value from all samples that go into FFT
-            if ((vReal[i] <= (INT16_MAX - 1024)) && (vReal[i] >= (INT16_MIN + 1024)))  //skip extreme values - normally these are artefacts
-            if (fabsf((float)vReal[i]) > maxSample) maxSample = fabsf((float)vReal[i]);
+            
+            // pick our current mic sample - we take the max value from all samples that go into FFT
+            
+            if ((vReal[i] <= (INT16_MAX - 1024)) && (vReal[i] >= (INT16_MIN + 1024))) {  //skip extreme values - normally these are artefacts
+            
+                if (fabsf((float)vReal[i]) > maxSample) {
+                    
+                    maxSample = fabsf((float)vReal[i]);
+
+                }
+
+            }
 
         }
 
@@ -1159,12 +1257,15 @@ void FFTcode( void * pvParameters) {
         if (sampleAvg > 0.25f) { 
 
             #ifdef UM_AUDIOREACTIVE_USE_NEW_FFT
+
                 FFT.dcRemoval();                                            // remove DC offset
                 FFT.windowing( FFTWindow::Flat_top, FFTDirection::Forward); // Weigh data using "Flat Top" function - better amplitude accuracy
                 //FFT.windowing(FFTWindow::Blackman_Harris, FFTDirection::Forward);  // Weigh data using "Blackman- Harris" window - sharp peaks due to excellent sideband rejection
                 FFT.compute( FFTDirection::Forward );                       // Compute FFT
                 FFT.complexToMagnitude();                                   // Compute magnitudes
+
             #else
+
                 FFT.DCRemoval(); // let FFT lib remove DC component, so we don't need to care about this in getSamples()
                 //FFT.Windowing( FFT_WIN_TYP_HAMMING, FFT_FORWARD );        // Weigh data - standard Hamming window
                 //FFT.Windowing( FFT_WIN_TYP_BLACKMAN, FFT_FORWARD );       // Blackman window - better side freq rejection
@@ -1172,12 +1273,17 @@ void FFTcode( void * pvParameters) {
                 FFT.Windowing( FFT_WIN_TYP_FLT_TOP, FFT_FORWARD );          // Flat Top Window - better amplitude accuracy
                 FFT.Compute( FFT_FORWARD );                             // Compute FFT
                 FFT.ComplexToMagnitude();                               // Compute magnitudes
+
             #endif
 
             #ifdef UM_AUDIOREACTIVE_USE_NEW_FFT
+
                 FFT.majorPeak(FFT_MajorPeak, FFT_Magnitude);                // let the effects know which freq was most dominant
+
             #else
+
                 FFT.MajorPeak(&FFT_MajorPeak, &FFT_Magnitude);              // let the effects know which freq was most dominant
+
             #endif
             
             FFT_MajorPeak = constrain(FFT_MajorPeak, 1.0f, 11025.0f);   // restrict value to range expected by effects
@@ -1205,11 +1311,14 @@ void FFTcode( void * pvParameters) {
             if (useBandPassFilter) {
 
                 // skip frequencies below 100hz
+                //
                 fftCalc[ 0] = 0.8f * fftAddAvg(3,4);
                 fftCalc[ 1] = 0.9f * fftAddAvg(4,5);
                 fftCalc[ 2] = fftAddAvg(5,6);
                 fftCalc[ 3] = fftAddAvg(6,7);
+
                 // don't use the last bins from 206 to 255. 
+                //
                 fftCalc[15] = fftAddAvg(165,205) * 0.75f;   // 40 7106 - 8828 high             -- with some damping
 
             } else {
@@ -1218,7 +1327,9 @@ void FFTcode( void * pvParameters) {
                 fftCalc[ 1] = fftAddAvg(2,3);               // 1    86 - 129  bass
                 fftCalc[ 2] = fftAddAvg(3,5);               // 2   129 - 216  bass
                 fftCalc[ 3] = fftAddAvg(5,7);               // 2   216 - 301  bass + midrange
+
                 // don't use the last bins from 216 to 255. They are usually contaminated by aliasing (aka noise) 
+                //
                 fftCalc[15] = fftAddAvg(165,215) * 0.70f;   // 50 7106 - 9259 high             -- with some damping
 
             }
@@ -1260,81 +1371,131 @@ void FFTcode( void * pvParameters) {
         autoResetPeak();
         detectSamplePeak();
 
-        for (int i=0; i < 16; i++) {
+        if (fabsf(sampleAvg) > 0.5f) { 
 
-            AD_fftResult[i] = constrain((int)fftCalc[i],0,254);
-        
-        }
+            for (int i=0; i < 16; i++) {
+
+                AD_fftResult[i] = constrain((int)fftCalc[i],0,254);
             
-        specDataMinVolume = AD_fftResult[0];
-        int specDataMaxVolume = 0;
-        totalVolume = 0;
-
-        for (uint8_t i = 0; i < 16; i++) {
-
-            totalVolume += AD_fftResult[i];
-
-            if (AD_fftResult[i] > specDataMaxVolume) {
+            }
                 
-                specDataMaxVolume = AD_fftResult[i];
+            specDataMinVolume = AD_fftResult[0];
+            int specDataMaxVolume = 0;
+            totalVolume = 0;
+
+            for (uint8_t i = 0; i < 16; i++) {
+
+                totalVolume += AD_fftResult[i];
+
+                if (AD_fftResult[i] > specDataMaxVolume) {
+                    
+                    specDataMaxVolume = AD_fftResult[i];
+
+                }
+
+                if (AD_fftResult[i] < specDataMinVolume) {
+                    
+                    specDataMinVolume = AD_fftResult[i];
+
+                }
 
             }
 
-            if (AD_fftResult[i] < specDataMinVolume) {
-                
-                specDataMinVolume = AD_fftResult[i];
+            /* 
+
+            This is the "meat" of what feeds the AuroraDrop animations
+
+            There's a nice "slow" filtered response in fftResult[0..15] that
+            I'm using to scale the overall waveforms - sorta like a graphic
+            EQ would do. We're taking the percentage of the sample based on the
+            closest "band" to the sample.
+
+            And then applying a modifier to the overall - because with
+            a lot of the patterns, "more" can be too much and overwhelms the 
+            display with huge waveforms.
+
+            ...so the "binscale" is the overall "how much" by band
+            ...and the "effect_scale" reduces the entire height evenly.
+
+            If you wanted to do a static scale, you could define an arrary of
+            floats similar to fftResultPink and use them instead - potentially
+            with more than 16 values.
+
+            My idea here was to use fftResult - which is nice and filtered and
+            updates slowly - to puncturate what the system thinks is the most 
+            interesting part of the sound currently.
+
+            */
+
+            for (int i=0;i<128;i++) {
+
+                float binscale = fftResult[i/8] / 256.0f;
+
+                if (binscale < 0.1) {
+                    
+                    binscale = 0.1f;
+                    
+                }
+
+                fftData.specData[i] = fftAddAvg(i*2,(i*2)+1) * binscale * effects_scale;
 
             }
 
-        }
+            for (int i=0;i<64;i++) {
 
-        for (int i=0;i<128;i++) {
+                float binscale = fftResult[i/4] / 256.0f;
 
-            float binscale = fftResult[i/8] / 256.0f;
+                if (binscale < 0.1) {
+                    
+                    binscale = 0.1f;
+                    
+                }
+                
+                fftData.specData64[i] = fftAddAvg(i*4,(i*4)+1) * binscale * effects_scale;
 
-            if (binscale < 0.1) binscale = 0.1f;
+            }
 
-            fftData.specData[i] = fftAddAvg(i*2,(i*2)+1) * binscale / effects_scale;
+            for (int i=0;i<32;i++) {
 
-        }
+                float binscale = fftResult[i/2] / 256.0f;
 
-        for (int i=0;i<64;i++) {
+                if (binscale < 0.1) {
+                    
+                    binscale = 0.1f;
+                    
+                }
 
-            float binscale = fftResult[i/4] / 256.0f;
+                fftData.specData32[i] = fftAddAvg(i*8,(i*8)+1) * binscale * effects_scale;
 
-            if (binscale < 0.1) binscale = 0.1f;
-            
-            fftData.specData64[i] = fftAddAvg(i*4,(i*4)+1) * binscale / effects_scale;
+            }
 
-        }
+            for (int i=0;i<16;i++) {
 
-        for (int i=0;i<32;i++) {
+                float binscale = fftResult[i] / 256.0f;
 
-            float binscale = fftResult[i/2] / 256.0f;
+                if (binscale < 0.1) {
+                    
+                    binscale = 0.1f;
+                    
+                }
 
-            if (binscale < 0.1) binscale = 0.1f;
+                fftData.specData16[i] = fftAddAvg(i*16,(i*16)+1) * binscale * effects_scale;
 
-            fftData.specData32[i] = fftAddAvg(i*8,(i*8)+1) * binscale / effects_scale;
+            }
 
-        }
+            for (int i=0;i<8;i++) {
 
-        for (int i=0;i<16;i++) {
+                float binscale = fftResult[i*2] / 256.0f;
 
-            float binscale = fftResult[i] / 256.0f;
+                if (binscale < 0.1) {
+                    
+                    binscale = 0.1f;
+                    
+                }
 
-            if (binscale < 0.1) binscale = 0.1f;
+                fftData.specData8[i] = fftAddAvg(i*32,(i*32)+1) * binscale * effects_scale;
 
-            fftData.specData16[i] = fftAddAvg(i*16,(i*16)+1) * binscale / effects_scale;
-
-        }
-
-        for (int i=0;i<8;i++) {
-
-            float binscale = fftResult[i*2] / 256.0f;
-
-            if (binscale < 0.1) binscale = 0.1f;
-
-            fftData.specData8[i] = fftAddAvg(i*32,(i*32)+1) * binscale / effects_scale;
+            }
 
         }
 
@@ -1429,7 +1590,7 @@ void setupAudio() {
     }
 
     Serial.println("I2S driver installed.");
-    delay(500);
+    delay(1000);
 
     // Test to see if we have a digital microphone installed or not.
 

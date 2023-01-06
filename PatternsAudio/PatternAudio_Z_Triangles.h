@@ -71,23 +71,39 @@ class PatternAudioTriangles : public Drawable {
 
     // triangle
     int x1,y1,x2,y2,x3,y3;
-    x1 = fftData.specData[0] / 3;
-    y1 = fftData.specData[20] / 3;
-    x2 = fftData.specData[40] / 3;
-    y2 = fftData.specData[60] / 3;
-    x3 = fftData.specData[80] / 3;
-    y3 = fftData.specData[90] / 3;
+    // x1 = fftData.specData[0] / 3;
+    // y1 = fftData.specData[20] / 3;
+    // x2 = fftData.specData[40] / 3;
+    // y2 = fftData.specData[60] / 3;
+    // x3 = fftData.specData[80] / 3;
+    // y3 = fftData.specData[90] / 3;
+
+    x1 = fftResult[2] / 4;
+    y1 = fftResult[4] / 4;
+    x2 = fftResult[6] / 4;
+    y2 = fftResult[8] / 4;
+    x3 = fftResult[10] / 4;
+    y3 = fftResult[12] / 4;
+
     effects.BresenhamLine(x1, y1, x2, y2, effects.ColorFromCurrentPalette(color1,200)); //  dma_display->color444(15, 0, 0)); // red
     effects.BresenhamLine(x2, y2, x3, y3, effects.ColorFromCurrentPalette(color1,200)); // green
     effects.BresenhamLine(x3, y3, x1, y1, effects.ColorFromCurrentPalette(color1,200)); // green
 
     // second triangle
-    x1 = fftData.specData[5] / 3;
-    y1 = fftData.specData[25] / 3;
-    x2 = fftData.specData[45] / 3;
-    y2 = fftData.specData[65] / 3;
-    x3 = fftData.specData[85] / 3;
-    y3 = fftData.specData[95] / 3;
+    // x1 = fftData.specData[5] / 3;
+    // y1 = fftData.specData[25] / 3;
+    // x2 = fftData.specData[45] / 3;
+    // y2 = fftData.specData[65] / 3;
+    // x3 = fftData.specData[85] / 3;
+    // y3 = fftData.specData[95] / 3;
+
+    x1 = fftResult[3] / 4;
+    y1 = fftResult[5] / 4;
+    x2 = fftResult[7] / 4;
+    y2 = fftResult[9] / 4;
+    x3 = fftResult[11] / 4;
+    y3 = fftResult[13] / 4;
+
     effects.BresenhamLine(x1, y1, x2, y2, effects.ColorFromCurrentPalette(color2,200)); //  dma_display->color444(15, 0, 0)); // red
     effects.BresenhamLine(x2, y2, x3, y3, effects.ColorFromCurrentPalette(color2,200)); // green
     effects.BresenhamLine(x3, y3, x1, y1, effects.ColorFromCurrentPalette(color2,200)); // green

@@ -22,7 +22,7 @@
 #include "PatternsOther\PatternXRadar.h"
 #include "PatternsOther\PatternXWave.h"
 #include "PatternsStatic\PatternStatic_X_SpiralingCurves.h"
-//#include "PatternStatic_L_LianLi120.h"
+// #include "PatternsStatic\PatternStatic_OLD_LianLiSL120.h"
 
 class Platlist_Static : public Playlist {
   private:
@@ -41,10 +41,10 @@ class Platlist_Static : public Playlist {
     PatternSpin spin;
     PatternStaticBounce staticBounce;
     PatternRadar radar;
-    PatternWave wave;
+    PatternWave wave; 
     PatternStaticSpiralingCurves spiralingCurves;
     PatternStaticSwirl staticSwirl;
-    //PatternStaticLianLi120 staticLianLi;
+    // PatternStaticLianLi120 staticLianLi;
     int currentIndex = 0;
     Drawable* currentItem;
 
@@ -52,29 +52,28 @@ class Platlist_Static : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 12;
+    const static int PATTERN_COUNT = 11;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
 
-      //&staticLianLi,
+      // &staticLianLi,            // doesn't do anything interesting.
       &staticWorms,
-      &spiralLines,                  // spiraling lines
+      // &spiralLines,            // works, just not interesting
       &flock,
       &attract,
       &flowField,
       &staticBounce,
       &spiralingCurves,
       &staticSwirl,
-
-      &radar,
-      &wave,
+      // &radar,                       // works, just not interesting
+      // &wave,                    // works, just not interesting
       &incrementalDrift,
       &spiro,
-      //&staticSimpleStars,       // don't work
-      //&staticAtom,              // don't work
-      //&spin,                  // BAD freezes randomly
+      &staticSimpleStars,       // seems fine
+      &staticAtom,              // shows up as "Audio C - Tunnel (WIP)" - seems fine
+      // &spin,                  // BAD freezes randomly (LXP confirmed bad)
 
       //&patternTest,
 
@@ -121,9 +120,15 @@ class Platlist_Static : public Playlist {
     }
 
     void setItemEnabled(int _id, int value) {
-        //items[_id]->enabled == (bool)value;
+
+        if (getItemEnabled(_id) != value) {
+
+            Serial.printf("Pattern '%s' changed from %d to %d\n",getItemName(_id),getItemEnabled(_id),value);
+
+        }
+
         items[_id]->setEnabled((bool)value);
-        Serial.print("pattern id "); Serial.print(id); Serial.print(" changed to "); Serial.println(value);
+
     }
 
     bool getCurrentItemEnabled() {
