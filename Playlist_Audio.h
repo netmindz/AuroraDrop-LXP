@@ -1,5 +1,5 @@
-#ifndef Platlist_Audio_H
-#define Platlist_Audio_H
+#ifndef Playlist_Audio_H
+#define Playlist_Audio_H
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
@@ -18,6 +18,7 @@
 #include "PatternsAudio\PatternAudio_XS_8x8Squares.h"
 #include "PatternsAudio\PatternAudio_XT_BigSpark.h"
 #include "PatternsAudio\PatternAudio_XX_Aurora.h"
+#include "PatternsEffects\PatternEffect_XX_NOOP.h"
 
 // test patterns to integrate
 //
@@ -50,6 +51,7 @@ class Playlist_Audio : public Playlist {
     PatternAudio8x8Squares audio8x8Squares;
     PatternAudioBigSpark audioBigSpark;
     PatternAudioTorus audioTorus;
+    PatternEffectNOOP effectNOOP;
 
     // test
     //
@@ -90,40 +92,35 @@ class Playlist_Audio : public Playlist {
 
     Drawable* items[PATTERN_COUNT] = {
 
-        // &audioAngles,               // I just don't like it
-        // &audioRotatingWave,         // crashes
+        &effectNOOP,
         &audioCircularWave,
-        &audioDotsSingle,                   // dancing/rolling dots
+        &audioDotsSingle,            
         &audioRotatingSpectrum,
         &audioClassicSpectrum128,
         &audioCubes,
-
         &audio2dWaves,
-
         &audio2dGrid,
         &audio3dGrid,
         &audio8x8Squares,
         &audioBigSpark,
         &audioTorus,
-
-        // working initial proof of concept
-        &audioSpectrumPeakBars,                    // 16 lines
-        &audioSpectrum2,      // to sort
-        &audioDiagonalSpectrum,   // to tidy
-        &audioTriangles,                    // triangles - very visually "loud"
-        &audioSpectrumCircle,     // spectrum lines from centre out, rotating around 360 degrees
+        &audioSpectrumPeakBars,
+        &audioSpectrum2,
+        &audioDiagonalSpectrum,
+        &audioTriangles,          
+        &audioSpectrumCircle,
         &patternAuroraDrop,
-
-        // &patternTest,
         &patternTestSpectrum,
-
-        &audioAurora,
-        // &audioWaveSingle,   // not overly interesting
+        &audioCircles,                 
+        // &audioAurora,               // not overly interesting
+        // &audioWaveSingle,           // not overly interesting
         // &canvasTest,
-        &audioCircles,      // messing
-        // &audioLines,        // not overly interesting
+        // &audioLines,                // not overly interesting
+        // &audioAngles,               // I just don't like it
+        // &audioRotatingWave,         // crashes
         // &testCircles,
         // &testSpectrum,
+        // &patternTest,
 
     };
 

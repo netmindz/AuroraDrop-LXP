@@ -57,20 +57,9 @@ void UpdateDiagnosticsData() {
 
         }
 
-        dma_display->setCursor(40,56);
+        dma_display->setCursor(40,55);
         dma_display->print(actual_render_ms);
         dma_display->print("ms");
-
-        // BLINK BPM still testing bpm!
-        //
-        if (effects.beatSawOsci8[0] > 200) {
-
-            dma_display->drawPixelRGB888(MATRIX_WIDTH - 4, 2, 255, 255, 255);
-            dma_display->drawPixelRGB888(MATRIX_WIDTH - 3, 2, 255, 255, 255);
-            dma_display->drawPixelRGB888(MATRIX_WIDTH - 4, 3, 255, 255, 255);
-            dma_display->drawPixelRGB888(MATRIX_WIDTH - 3, 3, 255, 255, 255);
-        
-        }
         
     }
 
@@ -78,22 +67,54 @@ void UpdateDiagnosticsData() {
     //
     #ifdef USE_WIFI 
 
-    if (wifiMessage > 0) {
+        if (wifiMessage > 0) {
 
-        wifiMessage--;
+            wifiMessage--;
 
-        dma_display->setTextSize(1);
-        dma_display->setTextColor(WHITE, BLUE);
-        dma_display->setCursor(0,8);
-        dma_display->print(WiFi.localIP());
+            dma_display->setTextSize(1);
+            dma_display->setTextColor(WHITE, BLUE);
+            dma_display->setCursor(0,8);
+            dma_display->print(WiFi.localIP());
 
-    }
+        }
 
     #endif
 
     // ---------------------- DIAGNOSTICS -------------------------
 
     if (option1Diagnostics) {
+
+        for (uint8_t i=0; i < 16; i++) {
+
+            uint8_t height = map8(fftResult[i],0,32);
+            
+            dma_display->drawFastVLine(0+(i*4)+0, 0, height, BLUE);
+            dma_display->drawFastVLine(0+(i*4)+1, 0, height, BLUE);
+            dma_display->drawFastVLine(0+(i*4)+2, 0, height, BLUE);
+            dma_display->drawFastVLine(0+(i*4)+3, 0, height, BLUE);
+
+        }
+
+        // audio spectrum - what a mess
+        //
+        for (uint8_t i=0; i < MATRIX_WIDTH; i++) {
+
+            uint8_t height = map8(fftData.specData[i],0,32);
+            
+            dma_display->drawFastVLine(i, MATRIX_HEIGHT-32, height, GREEN);
+
+        }
+
+        for (uint8_t i=0; i < 16; i++) {
+
+            uint8_t height = map8(fftData.specData16[i],0,32);
+            
+            dma_display->drawFastVLine(64+(i*4)+0, 0, height, GREEN);
+            dma_display->drawFastVLine(64+(i*4)+1, 0, height, GREEN);
+            dma_display->drawFastVLine(64+(i*4)+2, 0, height, GREEN);
+            dma_display->drawFastVLine(64+(i*4)+3, 0, height, GREEN);
+
+        }
 
         dma_display->setTextSize(1);
         dma_display->setTextColor(WHITE);
@@ -102,11 +123,11 @@ void UpdateDiagnosticsData() {
         dma_display->print("ms");
 
         // actual fps
-        //dma_display->setCursor(2,46);
-        //dma_display->print(actual_fps);
-        //dma_display->print("fps");
+        dma_display->setCursor(2,46);
+        dma_display->print("G ");
+        dma_display->print(multAgc);
 
-        dma_display->setCursor(2,56);
+        dma_display->setCursor(2,55);
         dma_display->print(fftData.bpm);
         dma_display->print("bpm");
 
@@ -115,7 +136,6 @@ void UpdateDiagnosticsData() {
             dma_display->setTextColor(WHITE);
             dma_display->setCursor(2,2+(i*10));
             dma_display->print(playlistInitialEffects[i].getCurrentPatternId());
-            dma_display->setTextColor(BLUE);
 
             if (playlistInitialEffects[i].render_ms > 10) {
                 
@@ -130,8 +150,7 @@ void UpdateDiagnosticsData() {
             }
 
             dma_display->print(playlistInitialEffects[i].render_ms);
-            //dma_display->print(patternsInitEffects[i].fps_last);
-            
+
         }
 
         for (uint8_t i=0; i < CountPlaylistsAudio; i++) {
@@ -139,7 +158,6 @@ void UpdateDiagnosticsData() {
             dma_display->setTextColor(WHITE);
             dma_display->setCursor(22,2+(i*10));
             dma_display->print(playlistAudio[i].getCurrentPatternId());      
-            dma_display->setTextColor(BLUE);
 
             if (playlistAudio[i].render_ms > 10) {
                 
@@ -154,7 +172,6 @@ void UpdateDiagnosticsData() {
             }
 
             dma_display->print(playlistAudio[i].render_ms);
-            //dma_display->print(patternsAudio[i].fps_last);
 
         }
     
@@ -163,7 +180,6 @@ void UpdateDiagnosticsData() {
             dma_display->setTextColor(WHITE);
             dma_display->setCursor(42,2+(i*10));
             dma_display->print(playlistStatic[i].getCurrentPatternId());      
-            dma_display->setTextColor(BLUE);
 
             if (playlistStatic[i].render_ms > 10) {
                 
@@ -176,7 +192,6 @@ void UpdateDiagnosticsData() {
             }
 
             dma_display->print(playlistStatic[i].render_ms);
-            //dma_display->print(patternsStatic[i].fps_last);
             
         }
 
@@ -202,26 +217,22 @@ void UpdateDiagnosticsData() {
         
         }
 
-        // audio spectrum - what a mess
+        // BLINK BPM still testing bpm! (paint last so it's over top)
         //
-        for (uint8_t i=0; i < MATRIX_WIDTH; i++) {
+        if (effects.beatSawOsci8[0] > 200) {
 
-            uint8_t height = map8(fftData.specData[i],0,32);
-            
-            dma_display->drawFastVLine(i, MATRIX_HEIGHT-32, height, GREEN);
-
+            dma_display->drawPixelRGB888(MATRIX_WIDTH - 4, 2, 255, 255, 255);
+            dma_display->drawPixelRGB888(MATRIX_WIDTH - 3, 2, 255, 255, 255);
+            dma_display->drawPixelRGB888(MATRIX_WIDTH - 4, 3, 255, 255, 255);
+            dma_display->drawPixelRGB888(MATRIX_WIDTH - 3, 3, 255, 255, 255);
+        
         }
 
-        for (uint8_t i=0; i < 16; i++) {
+        #ifdef DEDICATION
 
-            uint8_t height = map8(fftResult[i],0,32);
-            
-            dma_display->drawFastVLine(i+(i*4)+0, 0, height, GREEN);
-            dma_display->drawFastVLine(i+(i*4)+1, 0, height, GREEN);
-            dma_display->drawFastVLine(i+(i*4)+2, 0, height, GREEN);
-            dma_display->drawFastVLine(i+(i*4)+3, 0, height, GREEN);
+            #include "dedication.h"
 
-        }
+        #endif
 
     }
 

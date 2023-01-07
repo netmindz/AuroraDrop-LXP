@@ -1,26 +1,26 @@
-#ifndef Playlist_InitialEffects_H
-#define Playlist_InitialEffects_H
+#ifndef Playlist_FinalEffects_H
+#define Playlist_FinalEffects_H
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 //#include "Vector.h"
 
-#include "PatternsEffects\PatternEffect_A_TestBlur2d.h"
-#include "PatternsEffects\PatternEffect_B_SpiralStream1.h"
-#include "PatternsEffects\PatternEffect_C_Stream1.h"
-#include "PatternsEffects\PatternEffect_D_Move.h"
-// #include "PatternsEffects\PatternEffect_E_Minimal.h"
+#include "PatternsEffects\PatternEffect_X_ElectricMandala.h"
+#include "PatternsEffects\PatternEffect_XX_Plasma.h"
+#include "PatternsEffects\PatternEffect_X_Munch.h"
+#include "PatternsEffects\PatternEffect_X_DimAll.h"
+#include "PatternsEffects\PatternEffect_X2_Life.h"
 #include "PatternsEffects\PatternEffect_XX_NOOP.h"
 
-class Playlist_InitialEffects : public Playlist {
+class Playlist_FinalEffects : public Playlist {
 
     private:
 
-    PatternEffectSpiralStream1 effectSpiralStream1;
-    PatternEffectTestBlur2d effectTestBlur2d;
-    PatternEffectStream1 effectStream1;
-    PatternEffectMove effectMove;
-    // PatternEffectMinimal effectMinimal;
+    PatternEffectElectricMandala effectElectricMandella;
+    PatternEffectPlasma effectPlasma;
+    PatternEffectDimAll effectDimAll;
+    PatternEffectMunch effectMunch;
+    PatternEffectLife effectLife;
     PatternEffectNOOP effectNOOP;
 
     int currentIndex = 0;
@@ -37,19 +37,24 @@ class Playlist_InitialEffects : public Playlist {
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
+
+        &effectPlasma,
+        &effectMunch,
+        &effectLife,                  // sometimes introduces minor pauses
+        &effectNOOP,                  // does nothing, intentionally.
+        &effectNOOP,                  // does nothing, intentionally.
+
+        // &effectElectricMandella,   // uses the noise memory and seems to overrun it.
+        // &effectSimplexNoise,       // uses the noise memory and seems to overrun it.
         
-        &effectTestBlur2d,
-        &effectSpiralStream1,
-        &effectStream1,
-        &effectMove,
-        // &effectMinimal,
-        &effectNOOP,
+        // SimplesNoise and ElectricMandella are the only things using "noise" functions and memory
+        // and both crash. Sometimes EM will run for a few passes before crashing the entire thing.
 
     };
 
     public:
 
-    Playlist_InitialEffects() {
+    Playlist_FinalEffects() {
 
         // add the items to the shuffledItems array
         //

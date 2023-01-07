@@ -1,5 +1,5 @@
-#ifndef Platlist_Static_H
-#define Platlist_Static_H
+#ifndef Playlist_Static_H
+#define Playlist_Static_H
 
 // these are work in progress
 //
@@ -23,6 +23,7 @@
 #include "PatternsOther\PatternXWave.h"
 #include "PatternsStatic\PatternStatic_X_SpiralingCurves.h"
 // #include "PatternsStatic\PatternStatic_OLD_LianLiSL120.h"
+#include "PatternsEffects\PatternEffect_XX_NOOP.h"
 
 class Platlist_Static : public Playlist {
   private:
@@ -30,7 +31,6 @@ class Platlist_Static : public Playlist {
     PatternStaticWorms staticWorms;
     PatternStaticSimpleStars staticSimpleStars;
     PatternStaticAtom staticAtom;
-
     PatternTest patternTest;
     PatternSpiralLines spiralLines;
     PatternIncrementalDrift incrementalDrift;
@@ -44,7 +44,8 @@ class Platlist_Static : public Playlist {
     PatternWave wave; 
     PatternStaticSpiralingCurves spiralingCurves;
     PatternStaticSwirl staticSwirl;
-    // PatternStaticLianLi120 staticLianLi;
+    PatternEffectNOOP effectNOOP;
+
     int currentIndex = 0;
     Drawable* currentItem;
 
@@ -58,24 +59,23 @@ class Platlist_Static : public Playlist {
 
     Drawable* items[PATTERN_COUNT] = {
 
-      // &staticLianLi,            // doesn't do anything interesting.
-      &staticWorms,
-      // &spiralLines,            // works, just not interesting
-      &flock,
-      &attract,
-      &flowField,
-      &staticBounce,
-      &spiralingCurves,
-      &staticSwirl,
-      // &radar,                       // works, just not interesting
-      // &wave,                    // works, just not interesting
-      &incrementalDrift,
-      &spiro,
-      &staticSimpleStars,       // seems fine
-      &staticAtom,              // shows up as "Audio C - Tunnel (WIP)" - seems fine
-      // &spin,                  // BAD freezes randomly (LXP confirmed bad)
-
-      //&patternTest,
+        &effectNOOP,
+        &staticWorms,
+        &staticSimpleStars,
+        &staticAtom,              // shows up as "Audio C - Tunnel (WIP)"
+        &flock,
+        &attract,
+        &flowField,
+        &staticBounce,
+        &spiralingCurves,
+        &staticSwirl,
+        &incrementalDrift,
+        // &spiralLines,          // works, just not interesting
+        // &radar,                // works, just not interesting
+        // &wave,                 // works, just not interesting
+        // &spiro,                // works, just not interesting
+        // &staticLianLi,         // works, just not interesting
+        // &spin,                 // BAD freezes randomly (LXP confirmed bad)
 
     };
 

@@ -8,12 +8,6 @@
  * processing.
  */
 
-// The final scale factor for samples driving the AuroraDrop effects.
-// Sometimes there's "too much" on the screen if you approach 1.00
-//
-
-float effects_scale = 0.15f;
-
 void automatic_binner(int steps, byte binarray[], int binstart=3, int binend=205);
 
 #include <driver/i2s.h>
@@ -101,7 +95,7 @@ static uint8_t audioSyncEnabled = 0;          // bit field: bit 0 - send, bit 1 
 static bool udpSyncConnected = false;         // UDP connection status -> true if connected to multicast group
 
 // user settable parameters for limitSoundDynamics()
-static bool limiterOn = true;                 // bool: enable / disable dynamics limiter
+static bool limiterOn = false;                 // bool: enable / disable dynamics limiter
 static uint16_t attackTime =  30;             // int: attack time in milliseconds. Default 0.08sec
 static uint16_t decayTime = 1100;             // int: decay time in milliseconds.  Default 1.40sec
 // user settable options for FFTResult scaling
@@ -167,10 +161,6 @@ static TaskHandle_t FFT_Task = nullptr;
 //
 static float fftResultPink[NUM_GEQ_CHANNELS] = { 2.38f, 2.18f, 2.07f, 1.70f, 1.70f, 1.70f, 1.70f, 1.70f, 1.70f, 1.70f, 1.70f, 1.70f, 1.95f, 1.70f, 2.13f, 2.47f };
 
-// TroyHacks from room tone on the INMP441:
-//
-// static float fftResultPink[NUM_GEQ_CHANNELS] = { 2.15f, 2.48f, 2.74f, 2.64f, 2.08f, 1.00f, 1.64f, 2.41f, 4.22f, 1.61f, 2.05f, 1.86f, 2.36f, 2.69f, 3.17f, 3.12f };
-
 // globals and FFT Output variables shared with animations
 static float FFT_MajorPeak = 1.0f;              // FFT: strongest (peak) frequency
 static float FFT_Magnitude = 0.0f;              // FFT: volume (magnitude) of peak frequency
@@ -204,7 +194,7 @@ constexpr uint16_t samplesFFT = 512;            // Samples in an FFT batch - Thi
 constexpr uint16_t samplesFFT_2 = 256;          // meaningfull part of FFT results - only the "lower half" contains useful information.
 // the following are observed values, supported by a bit of "educated guessing"
 //#define FFT_DOWNSCALE 0.65f                   // 20kHz - downscaling factor for FFT results - "Flat-Top" window @20Khz, old freq channels 
-#define FFT_DOWNSCALE 0.46f                     // downscaling factor for FFT results - for "Flat-Top" window @22Khz, new freq channels
+#define FFT_DOWNSCALE 0.60f                     // downscaling factor for FFT results - for "Flat-Top" window @22Khz, new freq channels
 #define LOG_256  5.54517744f                    // log(256)
 
 // These are the input and output vectors.  Input vectors receive computed results from FFT.
@@ -270,31 +260,6 @@ static float fftAddAvg(int from, int to) {
 
 }
 
-// new "V2" audiosync struct - 40 Bytes
-struct audioSyncPacket {
-    char    header[6];      //  06 Bytes
-    float   sampleRaw;      //  04 Bytes  - either "sampleRaw" or "rawSampleAgc" depending on soundAgc setting
-    float   sampleSmth;     //  04 Bytes  - either "sampleAvg" or "sampleAgc" depending on soundAgc setting
-    uint8_t samplePeak;     //  01 Bytes  - 0 no peak; >=1 peak detected. In future, this will also provide peak Magnitude
-    uint8_t reserved1;      //  01 Bytes  - for future extensions - not used yet
-    uint8_t fftResult[16];  //  16 Bytes
-    float  FFT_Magnitude;   //  04 Bytes
-    float  FFT_MajorPeak;   //  04 Bytes
-};
-
-// old "V1" audiosync struct - 83 Bytes - for backwards compatibility
-struct audioSyncPacket_v1 {
-    char header[6];         //  06 Bytes
-    uint8_t myVals[32];     //  32 Bytes
-    int sampleAgc;          //  04 Bytes
-    int sampleRaw;          //  04 Bytes
-    float sampleAvg;        //  04 Bytes
-    bool samplePeak;        //  01 Bytes
-    uint8_t fftResult[16];  //  16 Bytes
-    double FFT_Magnitude;   //  08 Bytes
-    double FFT_MajorPeak;   //  08 Bytes
-};
-
 // set your config variables to their boot default value (this can also be done in readFromConfig() or a constructor if you prefer)
 bool     enabled = false;
 bool     initDone = false;
@@ -330,27 +295,13 @@ float maxSample5sec = 0.0f;        // max sample (after AGC) in last 5 seconds
 unsigned long sampleMaxTimer = 0;  // last time maxSample5sec was reset
 #define CYCLE_SAMPLEMAX 3500       // time window for merasuring
 
-// strings to reduce flash memory usage (used more than twice)
-// static const char _name[];
-// static const char _enabled[];
-// static const char _inputLvl[];
-// static const char _analogmic[];
-// static const char _digitalmic[];
-// static const char UDP_SYNC_HEADER[];
-// static const char UDP_SYNC_HEADER_v1[];
 ///////////////////////////////////
-
-// TaskHandle_t FFT_Task;
 
 int squelch = 2;    // was 0                       // Squelch, cuts out low level sounds
 float gain = 0;      // was 30                       // Gain, boosts input level*/
 float gain_max = 60; // after a certain point I think we're boosting room tone. :D
 
 uint16_t micData;                               // Analog input for FFT
-
-// double FFT_MajorPeak = 0;
-// double FFT_Magnitude = 0;
-uint16_t mAvg = 0;
 
 // These are the input and output vectors.  Input vectors receive computed results from FFT.
 //
@@ -360,13 +311,11 @@ double fftBin[samples];
 
 int specDataMinVolume = 128;
 int specDataMaxVolume = 0;
-int totalVolume = 0;
 float mean_int = 425.0; // just below 100 bpm in ms
 
 // BPM Test Stuff:
 //
 float magAvg = 64;
-int avgSampleCount = 1;
 float lastBeat = 0;  // time of last beat in millis()
 float bpm_interval = 480; // 125 BPM = 480ms
 float magThreshold = 1.5;
@@ -375,51 +324,6 @@ int animation_duration = 60000/120*16;
 double beatTime = 60.0 / 140 * 1000;
 //
 // END BPM STUFF
-
-double fftAvgCalc( int from, int to) {
-
-    int i = from;
-    double result = 0;
-
-    while ( i <= to) {
-
-        result += fftBin[i++];
-
-    }
-
-    return result / (abs(to-from)+1);
-
-}
-
-double fftResultAvg( int from, int to) {
-
-    int i = from;
-    double result = 0;
-
-    while ( i <= to) {
-
-        result += fftResult[i++];
-
-    }
-
-    return result / (abs(to-from)+1);
-
-}
-
-double fftAvgCalcReal( int from, int to) {
-
-    int i = from;
-    double result = 0;
-
-    while ( i <= to) {
-
-        result += vReal[i++];
-
-    }
-
-    return result / (abs(to-from)+1);
-
-}
 
 static void runMicFilter(uint16_t numSamples, float *sampleBuffer) {          // pre-filtering of raw samples (band-pass)
 
@@ -1076,18 +980,126 @@ static void autoResetPeak(void) {
 
 }
 
-void automatic_binner(int steps, byte binarray[], int binstart, int binend) {
+float AD_postProcessFFTResults(float mysample, int bin16map) { // post-processing and post-amp of GEQ channels
 
-    if (binstart == 0) binstart = 1; // keep from div by 0
+    if (FFTScalingMode > 0) {
+        
+        mysample *= FFT_DOWNSCALE;  // adjustment related to FFT windowing function
+
+    }
+
+    // Manual linear adjustment of gain using sampleGain adjustment for different input types.
+    //
+    mysample *= soundAgc ? multAgc : ((float)sampleGain/40.0f * (float)inputLevel/128.0f + 1.0f/16.0f); //apply gain, with inputLevel adjustment
+    
+    if (mysample < 0) {
+        
+        mysample = 0.0f;
+        
+    }
+
+    // constrain internal vars - just to be sure
+    //
+    float currentResult = constrain(mysample, 0.0f, 1023.0f);
+
+    // "i" would normally be 0..15
+    // we're just doing this to avoid reverse engineering
+    // what was done with the existing idea of 16 bins.
+    //
+    int i = bin16map;
+
+    switch (FFTScalingMode) {
+
+        case 1: // Logarithmic scaling
+            currentResult *= 0.42;                      // 42 is the answer ;-)
+            currentResult -= 8.0;                       // this skips the lowest row, giving some room for peaks
+
+            if (currentResult > 1.0) {
+                
+                currentResult = logf(currentResult); // log to base "e", which is the fastest log() function
+            
+            } else {
+                
+                currentResult = 0.0;                   // special handling, because log(1) = 0; log(0) = undefined
+            
+            }
+
+            currentResult *= 0.85f + (float(i)/18.0f);  // extra up-scaling for high frequencies
+            currentResult = mapf(currentResult, 0, LOG_256, 0, 255); // map [log(1) ... log(255)] to [0 ... 255]
+        break;
+
+        case 2: // Linear scaling
+            currentResult *= 0.30f;                     // needs a bit more damping, get stay below 255
+            currentResult -= 4.0;                       // giving a bit more room for peaks
+            
+            if (currentResult < 1.0f) {
+                
+                currentResult = 0.0f;
+
+            }
+
+            currentResult *= 0.85f + (float(i)/1.8f);   // extra up-scaling for high frequencies
+        break;
+
+        case 3: // square root scaling
+            currentResult *= 0.38f;
+            currentResult -= 6.0f;
+
+            if (currentResult > 1.0) {
+                
+                currentResult = sqrtf(currentResult);
+
+            } else { 
+                
+                currentResult = 0.0;                   // special handling, because sqrt(0) = undefined
+            
+            }
+
+            currentResult *= 0.85f + (float(i)/4.5f);   // extra up-scaling for high frequencies
+            currentResult = mapf(currentResult, 0.0, 16.0, 0.0, 255.0); // map [sqrt(1) ... sqrt(256)] to [0 ... 255]
+        break;
+
+        case 0:
+        default: // no scaling - leave freq bins as-is
+            currentResult -= 4; // just a bit more room for peaks
+        break;
+
+    }
+
+    if (soundAgc > 0) {  // apply extra "GEQ Gain" if set by user
+
+        float post_gain = (float)inputLevel/128.0f;
+
+        if (post_gain < 1.0f) {
+            
+            post_gain = ((post_gain -1.0f) * 0.8f) +1.0f;
+        
+        }
+        
+        currentResult *= post_gain;
+    
+    }
+    
+    currentResult = constrain((int)currentResult, 0, 255);
+
+    return currentResult;
+    
+}
+
+void automatic_binner(int steps, byte binarray[], int binstart, int binend) {
 
     float freqstart = binstart * (SAMPLE_RATE / samplesFFT);
     float freqend = binend * (SAMPLE_RATE / samplesFFT);
+
+    if (freqstart < 1) {
+
+        freqstart = 1.0f; // stop from dividing by zero
+
+    }
+
     float freqstep = pow((freqend / freqstart),(1.0f/steps));
 
     float my_freqstart = freqstart;
-    
-    float bindamp_step = (2.0f + 0.5f) / steps; // a basic scaler to even things out.
-    float bindamp = 0.5f; // starts here and goes up linearly.
     
     for (int i=0;i<steps;i++) {
 
@@ -1096,9 +1108,14 @@ void automatic_binner(int steps, byte binarray[], int binstart, int binend) {
         int my_binstart = round(my_freqstart/(SAMPLE_RATE/samplesFFT));
         int my_binend   = round(my_freqend/(SAMPLE_RATE/samplesFFT));
 
-        binarray[i] = fftAddAvg(my_binstart, my_binend) * bindamp * effects_scale;
+        // using my own version of postProcessFFTResults that I made non-specifc to 16 bins
+        // but without faffing too much with the code, we give it a rough idea of which of
+        // the 16 bins it would be on so it can do extra calculations that were hard coded
+        // to expect being run in a loop of 0..15
 
-        bindamp += bindamp_step;
+        int bin16map = map(my_binstart,binstart,binend,0,15);
+
+        binarray[i] = AD_postProcessFFTResults(fftAddAvg(my_binstart, my_binend),bin16map);
 
         my_freqstart = my_freqend;
 
@@ -1182,45 +1199,6 @@ void FFTcode( void * pvParameters) {
 
         }
 
-        // connectUDPSoundSync();  // ensure we have a connection - if needed
-
-        // UDP Microphone Sync  - receive mode
-
-        // if ((audioSyncEnabled & 0x02) && udpSyncConnected) {
-            
-        //     // Only run the audio listener code if we're in Receive mode
-
-        //     static float syncVolumeSmth = 0;
-        //     bool have_new_sample = false;
-            
-        //     if (millis() - lastTime > delayMs) {
-
-        //         have_new_sample = receiveAudioData();
-
-        //         if (have_new_sample) {
-                    
-        //             last_UDPTime = millis();
-                
-        //         } 
-                
-        //         lastTime = millis();
-
-        //     }
-
-        //     if (have_new_sample) {
-                
-        //         syncVolumeSmth = volumeSmth;   // remember received sample
-            
-        //     } else { 
-                
-        //         volumeSmth = syncVolumeSmth;                   // restore originally received sample for next run of dynamics limiter
-            
-        //     }
-
-        //     limitSampleDynamics();                              // run dynamics limiter on received volumeSmth, to hide jumps and hickups
-            
-        // }
-
         size_t bytes_read = 0;        /* Counter variable to check if we actually got enough data */
         I2S_datatype newSamples[samples]; /* Intermediary sample storage */
 
@@ -1251,7 +1229,6 @@ void FFTcode( void * pvParameters) {
             #endif
 
             vReal[i] = currSample;
-            // vReal[i]  *= _sampleScale;                              // scale samples
 
         }
 
@@ -1418,50 +1395,40 @@ void FFTcode( void * pvParameters) {
         autoResetPeak();
         detectSamplePeak();
 
-        if (fabsf(sampleAvg) > 0.5f) { 
+        for (int i=0; i < 16; i++) {
 
-            for (int i=0; i < 16; i++) {
-
-                // AD_fftResult[i] = constrain((int)fftCalc[i],0,254);
-                AD_fftResult[i] = map(fftCalc[i],0,1024,0,255);
+            AD_fftResult[i] = map(fftCalc[i],0,1024,0,255);
+        
+        }
             
-            }
+        specDataMinVolume = AD_fftResult[0];
+        specDataMaxVolume = 0;
+
+        for (uint8_t i = 0; i < 16; i++) {
+
+            if (AD_fftResult[i] > specDataMaxVolume) {
                 
-            specDataMinVolume = AD_fftResult[0];
-            specDataMaxVolume = 0;
-            totalVolume = 0;
-
-            for (uint8_t i = 0; i < 16; i++) {
-
-                totalVolume += AD_fftResult[i];
-
-                if (AD_fftResult[i] > specDataMaxVolume) {
-                    
-                    specDataMaxVolume = AD_fftResult[i];
-
-                }
-
-                if (AD_fftResult[i] < specDataMinVolume) {
-                    
-                    specDataMinVolume = AD_fftResult[i];
-
-                }
+                specDataMaxVolume = AD_fftResult[i];
 
             }
+
+            if (AD_fftResult[i] < specDataMinVolume) {
+                
+                specDataMinVolume = AD_fftResult[i];
+
+            }
+
+        }
+
+        if (fabsf(sampleAvg) > 0.5f) { 
 
             /* 
 
             This is the "meat" of what feeds the AuroraDrop animations
 
-            The "effect_scale" reduces the entire height evenly.
-
-            I'm applying a modifier to the overall - because with
-            a lot of the patterns, "more" can be too much and overwhelms the 
-            display with huge waveforms.
-
             autommatic_binner() applies the same logic from how the original
             sixteen FFT result bins were created - minus some of the extra 
-            manual adjustments. Really smooths out these result sets it seems.
+            manual adjustments. Really smooths out these results it seems.
 
             */
 
@@ -1475,7 +1442,7 @@ void FFTcode( void * pvParameters) {
 
         // BPM inspiration: https://github.com/blaz-r/ESP32-music-beat-sync/blob/main/src/ESP32-music-beat-sync.cpp
         // It's not currently "great" but it figures it out within a two BPM window.
-        //
+
         magAvg = magAvg * 0.99 + AD_fftResult[0] * 0.01;
 
         if (millis()-lastBeat > beatTime && AD_fftResult[0]/magAvg > magThreshold) {
@@ -1506,6 +1473,10 @@ void FFTcode( void * pvParameters) {
 
 void setupAudio() {
 
+    // This is all inspired from the WLED AudioReactive usermod
+    // but I removed all the "works for everything" logic so it 
+    // just inits an INMP441 mic (and similar I2S mics, maybe)
+
     Serial.println("INMP441 Audio setup...");
     esp_err_t err;
 
@@ -1527,12 +1498,9 @@ void setupAudio() {
         .bck_io_num = I2S_SCK,      // SCK
         .ws_io_num = I2S_WS,        // WS
         .data_out_num = I2S_PIN_NO_CHANGE,         // not used (only for speakers)
-        .data_in_num = I2S_SD       // SD .... and depending on the underlying ESP32-IDF, LR may be swapped
+        .data_in_num = I2S_SD       // SD .... and depending on the underlying ESP32-IDF, LR may be swapped - like v4.4.3
     };
 
-    // Configuring the I2S driver and pins.
-    // This function must be called before any I2S driver read/write operations.
-    //
     err = i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
 
     if (err != ESP_OK) {
@@ -1551,9 +1519,6 @@ void setupAudio() {
 
     }
 
-    // err = i2s_set_clk(I2S_PORT, SAMPLE_RATE*2, I2S_BITS_PER_SAMPLE_32BIT, I2S_CHANNEL_MONO);
-    // err = i2s_set_clk(I2S_PORT, SAMPLE_RATE, I2S_BITS_PER_SAMPLE_32BIT, I2S_CHANNEL_MONO);
-
     err = i2s_set_clk(I2S_PORT, SAMPLE_RATE, I2S_SAMPLE_RESOLUTION, I2S_CHANNEL_MONO);  // set bit clocks. Also takes care of MCLK routing if needed.
 
     if (err != ESP_OK) {
@@ -1564,9 +1529,10 @@ void setupAudio() {
     }
 
     Serial.println("I2S driver installed.");
-    delay(1000);
 
-    // Test to see if we have a digital microphone installed or not.
+    delay(1000); //give everything a second to get going.
+
+    // Test to see if we have a working INMP441 I2S microphone or not.
 
     float mean = 0.0;
     size_t bytesRead = 0;

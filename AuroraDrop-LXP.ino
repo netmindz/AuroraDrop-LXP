@@ -66,6 +66,16 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
     //
     #define BRIGHT_PIN 1
 
+    // Quick definition for debug pin, optional
+    // Boot button is often 0 and LOW
+    //
+    #define PIN_FOR_DEBUG_MODE 0
+    #define PIN_FOR_DEBUG_MODE_STATE LOW
+
+    // Show personal dedication on debug screen - don't use this
+    //
+    #define DEDICATION
+
 #else
 
     #pragma message("HUB75 - Testbed Board Pinout")
@@ -99,7 +109,22 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
 
     // ESP32-S3 Devkit C/M have these
     //
-    #define ONBOARD_RGB_LED 48
+    // #define ONBOARD_RGB_LED 48
+
+    // Brightness ADC pin
+    //
+    // #define BRIGHT_PIN 1
+
+    // Quick definition for debug pin, optional
+    // Boot button is often 0 and LOW
+    //
+    // #define PIN_FOR_DEBUG_MODE 0
+    // #define PIN_FOR_DEBUG_MODE_STATE LOW
+
+    // Show dedication on debug screen
+    //
+    // #define DEDICATION
+
 
 #endif
 
@@ -130,9 +155,9 @@ FFTData fftData;
 //
 //#define MAX_PATTERNS_AMBIENT_BACKGROUND 1      // not used yet? useful? plasma effects?
 #define MAX_PLAYLISTS_EFFECT 2                   // bluring/fading/sweeping effects
-#define MAX_PLAYLISTS_AUDIO 2                    // audio re-active effects
+#define MAX_PLAYLISTS_AUDIO 2                    // audio reactive effects
 #define MAX_PLAYLISTS_STATIC 2                   // standard non-audio animations inc. boids etc.
-#define MAX_PLAYLISTS_FINAL_EFFECT 0             // This just adds another "initial effect" layer. Not really needed.
+#define MAX_PLAYLISTS_FINAL_EFFECT 1             // This just adds another "initial effect" layer. Not really needed.
 
 // (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
 //
@@ -166,13 +191,14 @@ Effects effects;
 #include "Attractor.h"
 
 #include "Playlist_InitialEffects.h"
+#include "Playlist_FinalEffects.h"
 #include "Playlist_Audio.h"
 #include "Playlist_Static.h"
 
 Playlist_InitialEffects playlistInitialEffects[MAX_PLAYLISTS_EFFECT];
 Playlist_Audio playlistAudio[MAX_PLAYLISTS_AUDIO];
 Platlist_Static playlistStatic[MAX_PLAYLISTS_STATIC];
-Playlist_InitialEffects playlistFinalEffects[MAX_PLAYLISTS_EFFECT];
+Playlist_FinalEffects playlistFinalEffects[MAX_PLAYLISTS_EFFECT];
 
 // TODO: sort? useful or not
 static uint8_t PatternsAudioMainEffectCount = 0;
@@ -386,9 +412,27 @@ void loop() {
         
     #endif
 
-    start_render_ms = millis();
+    #ifdef PIN_FOR_DEBUG_MODE
+    
+        if (digitalRead(PIN_FOR_DEBUG_MODE) == PIN_FOR_DEBUG_MODE_STATE) {
 
-    UpdateDiagnosticsData();
+            if (option1Diagnostics == false) {
+
+                option1Diagnostics = true;
+
+            } else {
+
+                option1Diagnostics = false;
+                
+            }
+
+            delay(500); // simple debounce
+
+        }
+
+    #endif
+    
+    start_render_ms = millis();
 
     // check here if we are ready to render the next frame or not
     //
@@ -405,32 +449,32 @@ void loop() {
     PatternsAudioCaleidoscopeCount = 0;
     PatternsAudioBluringCount = 0;
 
-    // -------------- loop through, and apply each of the initial effects patterns ----------------
+    // says "final" but is now background effects - rendered first (and the back)
     //
-    if (!option6DisableInitialEffects) {
+    if (!option9DisableFinalEffects) {
 
-        for (uint8_t i=0; i < CountPlaylistsInitialEffect; i++) {
+        for (uint8_t i=0; i < CountPlaylistsFinalEffect; i++) {
 
-            // -------- start next animation if max duration reached --------
+            // #-------- start next animation if maxduration reached --------#
             //
-            if ( (millis() - playlistInitialEffects[i].ms_previous) > playlistInitialEffects[i].ms_animation_max_duration) {
+            if ( (millis() - playlistFinalEffects[i].ms_previous) > playlistFinalEffects[i].ms_animation_max_duration) {
 
                 if (!option4PauseCycling) {
 
-                    playlistInitialEffects[i].stop();      
+                    playlistFinalEffects[i].stop();
 
                     do {
-                        playlistInitialEffects[i].moveRandom(1, i);
-                    } while (!playlistInitialEffects[i].getCurrentItemEnabled());
+                        playlistFinalEffects[i].moveRandom(1, i);
+                    } while (!playlistFinalEffects[i].getCurrentItemEnabled());
 
-                    playlistInitialEffects[i].ms_animation_max_duration = animation_duration;
-                    playlistInitialEffects[i].start(i); 
+                    playlistFinalEffects[i].ms_animation_max_duration = animation_duration;
+                    playlistFinalEffects[i].start(i);  
 
-                    Serial.print("Changing initial effects pattern to: ");
-                    Serial.println(playlistInitialEffects[i].getCurrentPatternName());
+                    Serial.print("Changing final effect pattern to: ");
+                    Serial.println(playlistFinalEffects[i].getCurrentPatternName());
 
-                    playlistInitialEffects[i].ms_previous = millis();
-                    playlistInitialEffects[i].fps_timer = millis();
+                    playlistFinalEffects[i].ms_previous = millis();
+                    playlistFinalEffects[i].fps_timer = millis();
 
                 }
 
@@ -438,36 +482,34 @@ void loop() {
 
             // -------- draw the next frame if fps timer dictates so --------
             //
-            if ( 1000 / playlistInitialEffects[i].pattern_fps + playlistInitialEffects[i].last_frame < millis()) {
+            if (1000 / playlistFinalEffects[i].pattern_fps + playlistFinalEffects[i].last_frame < millis()) {
 
-                playlistInitialEffects[i].last_frame = millis();
-                playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].drawFrame(i, CountPlaylistsInitialEffect);
+                playlistFinalEffects[i].last_frame = millis();
+                playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].drawFrame(i, CountPlaylistsFinalEffect);
 
-                if (!playlistInitialEffects[i].pattern_fps) {
+                if (!playlistFinalEffects[i].pattern_fps) {
 
-                    playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].default_fps;
+                    playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].default_fps;
 
                 }
 
-                ++playlistInitialEffects[i].fps;
-                playlistInitialEffects[i].render_ms = millis() - playlistInitialEffects[i].last_frame;
+                ++playlistFinalEffects[i].fps;
+                playlistFinalEffects[i].render_ms = millis() - playlistStatic[i].last_frame;
 
             }
 
-            // ----- every 1000ms update fps and timer
-            //
-            if (playlistInitialEffects[i].fps_timer + 1000 < millis()) {
+            if (playlistFinalEffects[i].fps_timer + 1000 < millis()){
 
-                playlistInitialEffects[i].fps_timer = millis();
-                playlistInitialEffects[i].fps_last = playlistInitialEffects[i].fps;
+                playlistFinalEffects[i].fps_timer = millis();
+                playlistFinalEffects[i].fps_last = playlistFinalEffects[i].fps;
 
-                actual_fps = playlistInitialEffects[i].fps;
+                actual_fps = playlistFinalEffects[i].fps;
 
-                playlistInitialEffects[i].fps = 0;
+                playlistFinalEffects[i].fps = 0;
 
             }
 
-        }
+        }   
 
     }
 
@@ -612,32 +654,32 @@ void loop() {
 
     }
 
-    // apply final set of effects
+    // -------------- loop through, and apply each of the initial effects patterns ----------------
     //
-    if (!option9DisableFinalEffects) {
+    if (!option6DisableInitialEffects) {
 
-        for (uint8_t i=0; i < CountPlaylistsFinalEffect; i++) {
+        for (uint8_t i=0; i < CountPlaylistsInitialEffect; i++) {
 
-            // #-------- start next animation if maxduration reached --------#
+            // -------- start next animation if max duration reached --------
             //
-            if ( (millis() - playlistFinalEffects[i].ms_previous) > playlistFinalEffects[i].ms_animation_max_duration) {
+            if ( (millis() - playlistInitialEffects[i].ms_previous) > playlistInitialEffects[i].ms_animation_max_duration) {
 
                 if (!option4PauseCycling) {
 
-                    playlistFinalEffects[i].stop();
+                    playlistInitialEffects[i].stop();      
 
                     do {
-                        playlistFinalEffects[i].moveRandom(1, i);
-                    } while (!playlistFinalEffects[i].getCurrentItemEnabled());
+                        playlistInitialEffects[i].moveRandom(1, i);
+                    } while (!playlistInitialEffects[i].getCurrentItemEnabled());
 
-                    playlistFinalEffects[i].ms_animation_max_duration = animation_duration;
-                    playlistFinalEffects[i].start(i);  
+                    playlistInitialEffects[i].ms_animation_max_duration = animation_duration;
+                    playlistInitialEffects[i].start(i); 
 
-                    Serial.print("Changing final effect pattern to: ");
-                    Serial.println(playlistFinalEffects[i].getCurrentPatternName());
+                    Serial.print("Changing initial effects pattern to: ");
+                    Serial.println(playlistInitialEffects[i].getCurrentPatternName());
 
-                    playlistFinalEffects[i].ms_previous = millis();
-                    playlistFinalEffects[i].fps_timer = millis();
+                    playlistInitialEffects[i].ms_previous = millis();
+                    playlistInitialEffects[i].fps_timer = millis();
 
                 }
 
@@ -645,34 +687,36 @@ void loop() {
 
             // -------- draw the next frame if fps timer dictates so --------
             //
-            if (1000 / playlistFinalEffects[i].pattern_fps + playlistFinalEffects[i].last_frame < millis()) {
+            if ( 1000 / playlistInitialEffects[i].pattern_fps + playlistInitialEffects[i].last_frame < millis()) {
 
-                playlistFinalEffects[i].last_frame = millis();
-                playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].drawFrame(i, CountPlaylistsFinalEffect);
+                playlistInitialEffects[i].last_frame = millis();
+                playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].drawFrame(i, CountPlaylistsInitialEffect);
 
-                if (!playlistFinalEffects[i].pattern_fps) {
+                if (!playlistInitialEffects[i].pattern_fps) {
 
-                    playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].default_fps;
+                    playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].default_fps;
 
                 }
 
-                ++playlistFinalEffects[i].fps;
-                playlistFinalEffects[i].render_ms = millis() - playlistStatic[i].last_frame;
+                ++playlistInitialEffects[i].fps;
+                playlistInitialEffects[i].render_ms = millis() - playlistInitialEffects[i].last_frame;
 
             }
 
-            if (playlistFinalEffects[i].fps_timer + 1000 < millis()){
+            // ----- every 1000ms update fps and timer
+            //
+            if (playlistInitialEffects[i].fps_timer + 1000 < millis()) {
 
-                playlistFinalEffects[i].fps_timer = millis();
-                playlistFinalEffects[i].fps_last = playlistFinalEffects[i].fps;
+                playlistInitialEffects[i].fps_timer = millis();
+                playlistInitialEffects[i].fps_last = playlistInitialEffects[i].fps;
 
-                actual_fps = playlistFinalEffects[i].fps;
+                actual_fps = playlistInitialEffects[i].fps;
 
-                playlistFinalEffects[i].fps = 0;
+                playlistInitialEffects[i].fps = 0;
 
             }
 
-        }   
+        }
 
     }
 
@@ -680,15 +724,14 @@ void loop() {
 
     actual_render_ms = millis() - start_render_ms;
 
-    if (option5LianLi120Mode) {
-
-        effects.ShowLianLi120();
-
-    }
-
     effects.ShowFrame();
 
     total_render_ms = millis() - start_render_ms;
+
+    UpdateDiagnosticsData(); // put this at the end so it paints over everything else.
+
+    // Serial.print("RAM: ");
+    // Serial.println(ESP.getFreeHeap());
 
 }
 
