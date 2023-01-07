@@ -49,6 +49,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 * Deactivation of some very CPU intensive effects
 * RGB LED on ESP32-S3-DevKitM-1 to do basic frames-per-second monitoring
 * Removal of webserver and networking code
+* Added a generic "NOOP" effect so we can do nothing, intentionally.
 
 ### Libraries
 
