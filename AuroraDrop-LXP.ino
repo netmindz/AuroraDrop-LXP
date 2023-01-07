@@ -72,9 +72,9 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
     #define PIN_FOR_DEBUG_MODE 0
     #define PIN_FOR_DEBUG_MODE_STATE LOW
 
-    // Show personal dedication on debug screen - don't use this
+    // Show personalized dedication on debug screen - don't use this
     //
-    #define DEDICATION
+    // #define DEDICATION
 
 #else
 
