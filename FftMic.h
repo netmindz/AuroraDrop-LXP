@@ -11,7 +11,10 @@
 // The final scale factor for samples driving the AuroraDrop effects.
 // Sometimes there's "too much" on the screen if you approach 1.00
 //
-float effects_scale = 0.5f;     
+
+float effects_scale = 0.15f;
+
+void automatic_binner(int steps, byte binarray[], int binstart=3, int binend=205);
 
 #include <driver/i2s.h>
 
@@ -187,11 +190,11 @@ static float   fftAvg[NUM_GEQ_CHANNELS] = {0.0f};                     // Calcula
 #endif
 
 // audio source parameters and constant
-constexpr SRate_t SAMPLE_RATE = 22050;        // Base sample rate in Hz - 22Khz is a standard rate. Physical sample time -> 23ms
+constexpr SRate_t SAMPLE_RATE = 22050;          // Base sample rate in Hz - 22Khz is a standard rate. Physical sample time -> 23ms
 //constexpr SRate_t SAMPLE_RATE = 16000;        // 16kHz - use if FFTtask takes more than 20ms. Physical sample time -> 32ms
 //constexpr SRate_t SAMPLE_RATE = 20480;        // Base sample rate in Hz - 20Khz is experimental.    Physical sample time -> 25ms
 //constexpr SRate_t SAMPLE_RATE = 10240;        // Base sample rate in Hz - previous default.         Physical sample time -> 50ms
-#define FFT_MIN_CYCLE 21                      // minimum time before FFT task is repeated. Use with 22Khz sampling
+#define FFT_MIN_CYCLE 21                        // minimum time before FFT task is repeated. Use with 22Khz sampling
 //#define FFT_MIN_CYCLE 30                      // Use with 16Khz sampling
 //#define FFT_MIN_CYCLE 23                      // minimum time before FFT task is repeated. Use with 20Khz sampling
 //#define FFT_MIN_CYCLE 46                      // minimum time before FFT task is repeated. Use with 10Khz sampling
@@ -200,9 +203,9 @@ constexpr SRate_t SAMPLE_RATE = 22050;        // Base sample rate in Hz - 22Khz 
 constexpr uint16_t samplesFFT = 512;            // Samples in an FFT batch - This value MUST ALWAYS be a power of 2
 constexpr uint16_t samplesFFT_2 = 256;          // meaningfull part of FFT results - only the "lower half" contains useful information.
 // the following are observed values, supported by a bit of "educated guessing"
-//#define FFT_DOWNSCALE 0.65f                             // 20kHz - downscaling factor for FFT results - "Flat-Top" window @20Khz, old freq channels 
-#define FFT_DOWNSCALE 0.46f                             // downscaling factor for FFT results - for "Flat-Top" window @22Khz, new freq channels
-#define LOG_256  5.54517744f                            // log(256)
+//#define FFT_DOWNSCALE 0.65f                   // 20kHz - downscaling factor for FFT results - "Flat-Top" window @20Khz, old freq channels 
+#define FFT_DOWNSCALE 0.46f                     // downscaling factor for FFT results - for "Flat-Top" window @22Khz, new freq channels
+#define LOG_256  5.54517744f                    // log(256)
 
 // These are the input and output vectors.  Input vectors receive computed results from FFT.
 static float vReal[samplesFFT] = {0.0f};       // FFT sample inputs / freq output -  these are our raw result bins
@@ -244,13 +247,15 @@ static float vImag[samplesFFT] = {0.0f};       // imaginary parts
 // Helper functions
 
 // float version of map()
+//
 static float mapf(float x, float in_min, float in_max, float out_min, float out_max) {
 
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 
 }
 
-// compute average of several FFT resut bins
+// compute average of several FFT result bins
+//
 static float fftAddAvg(int from, int to) {
 
     float result = 0.0f;
@@ -1071,6 +1076,36 @@ static void autoResetPeak(void) {
 
 }
 
+void automatic_binner(int steps, byte binarray[], int binstart, int binend) {
+
+    if (binstart == 0) binstart = 1; // keep from div by 0
+
+    float freqstart = binstart * (SAMPLE_RATE / samplesFFT);
+    float freqend = binend * (SAMPLE_RATE / samplesFFT);
+    float freqstep = pow((freqend / freqstart),(1.0f/steps));
+
+    float my_freqstart = freqstart;
+    
+    float bindamp_step = (2.0f + 0.5f) / steps; // a basic scaler to even things out.
+    float bindamp = 0.5f; // starts here and goes up linearly.
+    
+    for (int i=0;i<steps;i++) {
+
+        float my_freqend = my_freqstart * freqstep;
+
+        int my_binstart = round(my_freqstart/(SAMPLE_RATE/samplesFFT));
+        int my_binend   = round(my_freqend/(SAMPLE_RATE/samplesFFT));
+
+        binarray[i] = fftAddAvg(my_binstart, my_binend) * bindamp * effects_scale;
+
+        bindamp += bindamp_step;
+
+        my_freqstart = my_freqend;
+
+    }
+
+}
+
 // FFT main code - goes into its own task on its own core
 //
 void FFTcode( void * pvParameters) {
@@ -1306,6 +1341,18 @@ void FFTcode( void * pvParameters) {
 
         if (fabsf(sampleAvg) > 0.5f) { 
             
+            /*
+            * This FFT post processing is a DIY endeavour. What we really need is someone with sound engineering expertise to do a 
+            * great job here AND most importantly, that the animations look GREAT as a result.
+            *
+            * Andrew's updated mapping of 256 bins down to the 16 result bins with Sample Freq = 10240, samplesFFT = 512 and some overlap.
+            * Based on testing, the lowest/Start frequency is 60 Hz (with bin 3) and a highest/End frequency of 5120 Hz in bin 255.
+            * Now, Take the 60Hz and multiply by 1.320367784 to get the next frequency and so on until the end. Then detetermine the bins.
+            * End frequency = Start frequency * multiplier ^ 16
+            * Multiplier = (End frequency/ Start frequency) ^ 1/16
+            * Multiplier = 1.320367784
+            */   
+
             /* new mapping, optimized for 22050 Hz by softhack007 */
             
             if (useBandPassFilter) {
@@ -1375,12 +1422,13 @@ void FFTcode( void * pvParameters) {
 
             for (int i=0; i < 16; i++) {
 
-                AD_fftResult[i] = constrain((int)fftCalc[i],0,254);
+                // AD_fftResult[i] = constrain((int)fftCalc[i],0,254);
+                AD_fftResult[i] = map(fftCalc[i],0,1024,0,255);
             
             }
                 
             specDataMinVolume = AD_fftResult[0];
-            int specDataMaxVolume = 0;
+            specDataMaxVolume = 0;
             totalVolume = 0;
 
             for (uint8_t i = 0; i < 16; i++) {
@@ -1405,97 +1453,23 @@ void FFTcode( void * pvParameters) {
 
             This is the "meat" of what feeds the AuroraDrop animations
 
-            There's a nice "slow" filtered response in fftResult[0..15] that
-            I'm using to scale the overall waveforms - sorta like a graphic
-            EQ would do. We're taking the percentage of the sample based on the
-            closest "band" to the sample.
+            The "effect_scale" reduces the entire height evenly.
 
-            And then applying a modifier to the overall - because with
+            I'm applying a modifier to the overall - because with
             a lot of the patterns, "more" can be too much and overwhelms the 
             display with huge waveforms.
 
-            ...so the "binscale" is the overall "how much" by band
-            ...and the "effect_scale" reduces the entire height evenly.
-
-            If you wanted to do a static scale, you could define an arrary of
-            floats similar to fftResultPink and use them instead - potentially
-            with more than 16 values.
-
-            My idea here was to use fftResult - which is nice and filtered and
-            updates slowly - to puncturate what the system thinks is the most 
-            interesting part of the sound currently.
+            autommatic_binner() applies the same logic from how the original
+            sixteen FFT result bins were created - minus some of the extra 
+            manual adjustments. Really smooths out these result sets it seems.
 
             */
 
-            for (int i=0;i<128;i++) {
-
-                float binscale = fftResult[i/8] / 256.0f;
-
-                if (binscale < 0.1) {
-                    
-                    binscale = 0.1f;
-                    
-                }
-
-                fftData.specData[i] = fftAddAvg(i*2,(i*2)+1) * binscale * effects_scale;
-
-            }
-
-            for (int i=0;i<64;i++) {
-
-                float binscale = fftResult[i/4] / 256.0f;
-
-                if (binscale < 0.1) {
-                    
-                    binscale = 0.1f;
-                    
-                }
-                
-                fftData.specData64[i] = fftAddAvg(i*4,(i*4)+1) * binscale * effects_scale;
-
-            }
-
-            for (int i=0;i<32;i++) {
-
-                float binscale = fftResult[i/2] / 256.0f;
-
-                if (binscale < 0.1) {
-                    
-                    binscale = 0.1f;
-                    
-                }
-
-                fftData.specData32[i] = fftAddAvg(i*8,(i*8)+1) * binscale * effects_scale;
-
-            }
-
-            for (int i=0;i<16;i++) {
-
-                float binscale = fftResult[i] / 256.0f;
-
-                if (binscale < 0.1) {
-                    
-                    binscale = 0.1f;
-                    
-                }
-
-                fftData.specData16[i] = fftAddAvg(i*16,(i*16)+1) * binscale * effects_scale;
-
-            }
-
-            for (int i=0;i<8;i++) {
-
-                float binscale = fftResult[i*2] / 256.0f;
-
-                if (binscale < 0.1) {
-                    
-                    binscale = 0.1f;
-                    
-                }
-
-                fftData.specData8[i] = fftAddAvg(i*32,(i*32)+1) * binscale * effects_scale;
-
-            }
+            automatic_binner(128,fftData.specData);
+            automatic_binner(64,fftData.specData64);
+            automatic_binner(32,fftData.specData32);
+            automatic_binner(16,fftData.specData16);
+            automatic_binner(8,fftData.specData8);
 
         }
 

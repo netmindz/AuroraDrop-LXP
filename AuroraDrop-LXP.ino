@@ -24,7 +24,7 @@
 #define PANEL_HEIGHT 64               
 #define PANELS_NUMBER 2
 
-int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridded with the ADC value if BRIGHT_PIN is defined - otherwise it stays here.
+int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC value if BRIGHT_PIN is defined - otherwise it stays here.
 
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 
@@ -495,7 +495,7 @@ void loop() {
                     Serial.print("Changing audio pattern to: ");
                     Serial.println(playlistAudio[i].getCurrentPatternName());
 
-                    Serial.printf("Gain: %f\n", sampleGain);
+                    Serial.printf("multAgc: %f\n", multAgc);
                     Serial.printf("Brightness: %d\n", GLOBAL_BRIGHTNESS);
 
                     playlistAudio[i].ms_previous = millis();
