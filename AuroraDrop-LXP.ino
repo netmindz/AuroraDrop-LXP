@@ -669,7 +669,7 @@ void loop() {
                     playlistInitialEffects[i].ms_animation_max_duration = animation_duration;
                     playlistInitialEffects[i].start(i); 
 
-                    Serial.print("Changing foreground effects pattern to: ");
+                    Serial.print("Changing foreground effect pattern to: ");
                     Serial.println(playlistInitialEffects[i].getCurrentPatternName());
 
                     playlistInitialEffects[i].ms_previous = millis();

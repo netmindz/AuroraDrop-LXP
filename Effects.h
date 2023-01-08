@@ -121,8 +121,8 @@ uint32_t noise_z;
 uint32_t noise_scale_x;
 uint32_t noise_scale_y;
 
-//uint8_t noise[MATRIX_WIDTH][MATRIX_HEIGHT];
-uint8_t **noise = nullptr;  // we will allocate mem later
+uint8_t noise[MATRIX_WIDTH][MATRIX_HEIGHT];
+// uint8_t **noise = nullptr;  // we will allocate mem later
 uint8_t noisesmoothing;
 
 class Effects {
@@ -139,7 +139,7 @@ class Effects {
     CRGB *canvasH2;    // half width canvas no.2
     CRGB *canvasQ;    // quarter
 
-    Effects(){
+    Effects() {
 
         // we do dynamic allocation for leds buffer, otherwise esp32 toolchain can't link static arrays of such a big size for 256+ matrixes
         //
@@ -152,13 +152,13 @@ class Effects {
         // allocate mem for noise effect
         // (there should be some guards for malloc errors eventually)
         //
-        noise = (uint8_t **)malloc(MATRIX_WIDTH * sizeof(uint8_t *));
+        // noise = (uint8_t **)malloc(MATRIX_WIDTH * sizeof(uint8_t *));
 
-        for (int i = 0; i < MATRIX_WIDTH; ++i) {
+        // for (int i = 0; i < MATRIX_WIDTH; ++i) {
 
-            noise[i] = (uint8_t *)malloc(MATRIX_HEIGHT * sizeof(uint8_t));
+        //     noise[i] = (uint8_t *)malloc(MATRIX_HEIGHT * sizeof(uint8_t));
 
-        }
+        // }
 
         ClearFrame();
 

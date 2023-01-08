@@ -48,14 +48,19 @@ private:
     // --------------------- draw frame -------------------------
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
-#if FASTLED_VERSION >= 3001000
-      // a new parameter set every 15 seconds
-      EVERY_N_SECONDS(15) {
-        noise_x = random16();
-        noise_y = random16();
-        noise_z = random16();
-      }
-#endif
+      #if FASTLED_VERSION >= 3001000
+
+        // a new parameter set every 15 seconds
+
+        EVERY_N_SECONDS(15) {
+
+          noise_x = random16();
+          noise_y = random16();
+          noise_z = random16();
+
+        }
+
+      #endif
 
       uint32_t speed = 100;
 
@@ -72,25 +77,31 @@ private:
 
 
       return 0;
+      
     }
 
-     // show just one layer
-    void ShowNoiseLayer(byte layer, byte colorrepeat, byte colorshift) {
-      for (uint16_t i = 0; i < MATRIX_WIDTH; i++) {
-        for (uint16_t j = 0; j < MATRIX_HEIGHT; j++) {
+    // show just one layer
+  void ShowNoiseLayer(byte layer, byte colorrepeat, byte colorshift) {
 
-          uint8_t color = noise[i][j];
+    for (uint16_t i = 0; i < MATRIX_WIDTH; i++) {
 
-          uint8_t bri = color;
+      for (uint16_t j = 0; j < MATRIX_HEIGHT; j++) {
 
-          // assign a color depending on the actual palette
-          CRGB pixel = ColorFromPalette(effects.currentPalette, colorrepeat * (color + colorshift), bri);
 
-          effects.leds[XY16(i, j)] = pixel;
-        }
+        uint8_t color = noise[i][j];
+
+        uint8_t bri = color;
+
+        // assign a color depending on the actual palette
+        CRGB pixel = ColorFromPalette(effects.currentPalette, colorrepeat * (color + colorshift), bri);
+
+        effects.leds[XY16(i, j)] = pixel;
+
       }
+
     }
 
+  }
 
 };
 

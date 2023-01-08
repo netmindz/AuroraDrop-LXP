@@ -28,9 +28,12 @@
 #define PatternEffectElectricMandala_H
 
 class PatternEffectElectricMandala : public Drawable {
+
   private:
 
     // The coordinates for 16-bit noise spaces.
+    #define NUM_LAYERS 1
+
     // used for the random based animations
     int16_t dx;
     int16_t dy;
@@ -40,18 +43,14 @@ class PatternEffectElectricMandala : public Drawable {
 
   public:
     PatternEffectElectricMandala() {
+
       name = (char *)"Electric Mandala";
       id = "X";
       enabled = false;
+
     }
 
     void start(uint8_t _pattern) {
-
-      effects.NoiseVariablesSetup();
-
-    }
-
-    unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
       // set to reasonable values to avoid a black out
       noisesmoothing = 200;
@@ -59,43 +58,56 @@ class PatternEffectElectricMandala : public Drawable {
       // just any free input pin
       //random16_add_entropy(analogRead(18));
 
+      // fill coordinates with random values
+      // set zoom levels
+      noise_x = random16();
+      noise_y = random16();
+      noise_z = random16();
+      noise_scale_x = 6000;
+      noise_scale_y = 6000;
+
       // for the random movement
       dx = random8();
-      dy = random8();
+      dy = random16(2000) - 1000;
       dz = random8();
       dsx = random8();
       dsy = random8();
-      noise_scale_x = random16(1000);
-      noise_scale_y = random16(1000);
-
-      // #if FASTLED_VERSION >= 3001000
-      //       // a new parameter set every 15 seconds
-      //       EVERY_N_SECONDS(15) {
-      //         dx = random8();
-      //         dy = random8();
-      //         dz = random8();
-      //         dsx = random8();
-      //         dsy = random8();
-      //         noise_scale_x = random16(6000);
-      //         noise_scale_y = random16(6000);
-      //       }
-      // #endif
-
-      noise_y += dy;
-      noise_x += dx;
-      noise_z += dz;
-
-      effects.FillNoise();
-      ShowNoiseLayer(0, 1, 0);
-
-      effects.Caleidoscope3();
-      effects.Caleidoscope1();
-
-      //effects.ShowFrame();
-
-      return 0;    // should be 30fps
 
     }
+
+  unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
+
+    #if FASTLED_VERSION >= 3001000
+          // a new parameter set every 15 seconds
+          EVERY_N_SECONDS(15) {
+            //SetupRandomPalette3();
+            dy = random16(500) - 250; // random16(2000) - 1000 is pretty fast but works fine, too
+            dx = random16(500) - 250;
+            dz = random16(500) - 250;
+            noise_scale_x = random16(10000) + 2000;
+            noise_scale_y = random16(10000) + 2000;
+          }
+    #endif
+
+    noise_y += dy;
+    noise_x += dx;
+    noise_z += dz;
+
+    effects.FillNoise();
+    ShowNoiseLayer(0, 1, 0);
+
+    effects.Caleidoscope3();
+    effects.Caleidoscope1();
+
+    // effects.RandomCaleidoscope();
+    // effects.RandomCaleidoscope();
+    // effects.RandomCaleidoscope();
+
+    //effects.ShowFrame();
+
+    return 0;    // should be 30fps
+
+  }
 
     // show just one layer
     void ShowNoiseLayer(byte layer, byte colorrepeat, byte colorshift) {
@@ -111,7 +123,7 @@ class PatternEffectElectricMandala : public Drawable {
           // assign a color depending on the actual palette
           CRGB pixel = ColorFromPalette(effects.currentPalette, colorrepeat * (color + colorshift), bri);
 
-          effects.leds[XY(i, j)] = pixel;
+          effects.leds[XY16(i, j)] = pixel;
 
         }
 

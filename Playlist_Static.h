@@ -53,7 +53,7 @@ class Platlist_Static : public Playlist {
       return currentIndex;
     }
 
-    const static int PATTERN_COUNT = 11;
+    const static int PATTERN_COUNT = 8;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -62,19 +62,20 @@ class Platlist_Static : public Playlist {
         &effectNOOP,
         &staticWorms,
         &staticSimpleStars,
-        &staticAtom,              // shows up as "Audio C - Tunnel (WIP)"
         &flock,
         &attract,
-        &flowField,
         &staticBounce,
         &spiralingCurves,
         &staticSwirl,
-        &incrementalDrift,
+
+        // &flowField,            // works, just not interesting
+        // &incrementalDrift,     // works, just not interesting
         // &spiralLines,          // works, just not interesting
         // &radar,                // works, just not interesting
         // &wave,                 // works, just not interesting
         // &spiro,                // works, just not interesting
         // &staticLianLi,         // works, just not interesting
+        // &staticAtom,           // works, just not interesting
         // &spin,                 // BAD freezes randomly (LXP confirmed bad)
 
     };

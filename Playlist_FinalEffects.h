@@ -11,6 +11,7 @@
 #include "PatternsEffects\PatternEffect_X_DimAll.h"
 #include "PatternsEffects\PatternEffect_X2_Life.h"
 #include "PatternsEffects\PatternEffect_XX_NOOP.h"
+#include "PatternsEffects\PatternEffect_XX_SimplexNoise.h"
 
 class Playlist_FinalEffects : public Playlist {
 
@@ -22,8 +23,10 @@ class Playlist_FinalEffects : public Playlist {
     PatternEffectMunch effectMunch;
     PatternEffectLife effectLife;
     PatternEffectNOOP effectNOOP;
+    PatternEffectSimplexNoise effectSimplexNoise;
 
     int currentIndex = 0;
+
     Drawable* currentItem;
 
     int getCurrentIndex() {
@@ -32,7 +35,7 @@ class Playlist_FinalEffects : public Playlist {
 
     }
 
-    const static int PATTERN_COUNT = 5;
+    const static int PATTERN_COUNT = 7;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
@@ -41,14 +44,11 @@ class Playlist_FinalEffects : public Playlist {
         &effectPlasma,
         &effectMunch,
         &effectLife,                  // sometimes introduces minor pauses
+        &effectElectricMandella,   
+        &effectSimplexNoise,      
         &effectNOOP,                  // does nothing, intentionally.
         &effectNOOP,                  // does nothing, intentionally.
-
-        // &effectElectricMandella,   // uses the noise memory and seems to overrun it.
-        // &effectSimplexNoise,       // uses the noise memory and seems to overrun it.
-        
-        // SimplesNoise and ElectricMandella are the only things using "noise" functions and memory
-        // and both crash. Sometimes EM will run for a few passes before crashing the entire thing.
+        // &effectDimAll,             // not really useful to dim nothing as it's at the back of the stack now.
 
     };
 
