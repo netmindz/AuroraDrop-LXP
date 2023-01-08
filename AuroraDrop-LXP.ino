@@ -121,11 +121,6 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
     // #define PIN_FOR_DEBUG_MODE 0
     // #define PIN_FOR_DEBUG_MODE_STATE LOW
 
-    // Show dedication on debug screen
-    //
-    // #define DEDICATION
-
-
 #endif
 
 #ifdef ONBOARD_RGB_LED
@@ -157,15 +152,14 @@ FFTData fftData;
 #define MAX_PLAYLISTS_EFFECT 2                   // bluring/fading/sweeping effects
 #define MAX_PLAYLISTS_AUDIO 2                    // audio reactive effects
 #define MAX_PLAYLISTS_STATIC 2                   // standard non-audio animations inc. boids etc.
-#define MAX_PLAYLISTS_FINAL_EFFECT 1             // This just adds another "initial effect" layer. Not really needed.
+#define MAX_PLAYLISTS_FINAL_EFFECT 1             // Background effect. Leave it at 1.
 
 // (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
 //
-//static uint8_t maxPatternAmbient = 0;                                    // not implemented yet! for plasma effects, backgrounds, etc.
-static uint8_t CountPlaylistsInitialEffect = MAX_PLAYLISTS_EFFECT;         // <------- 1 or 2 is reasonable
+static uint8_t CountPlaylistsInitialEffect = MAX_PLAYLISTS_EFFECT;         // <------- 1 or 2 - Foreground effect 
 static uint8_t CountPlaylistsAudio = MAX_PLAYLISTS_AUDIO;                  // <------- 2 or 3
 static uint8_t CountPlaylistsStatic = MAX_PLAYLISTS_STATIC;                // <------- 2 or 3
-static uint8_t CountPlaylistsFinalEffect = MAX_PLAYLISTS_FINAL_EFFECT;     // not used yet! you can try it, but can have a big impact on rendered output at the moment
+static uint8_t CountPlaylistsFinalEffect = MAX_PLAYLISTS_FINAL_EFFECT;     // This is now the farthest back effects, background of the entire frame.
 
 // diagnostic options, these can be set via web interface when enabled
 //
@@ -352,8 +346,8 @@ void setup() {
 
     }
 
-    // NOT CURRENTLY USED
-    // initialise all the final effects patterns
+    // It says "final" but this is now "background" - farthest back "layer"
+    // TODO: change the variable names to reflect this.
     //
     for (uint8_t i=0; i < CountPlaylistsFinalEffect; i++) {
 
@@ -470,7 +464,7 @@ void loop() {
                     playlistFinalEffects[i].ms_animation_max_duration = animation_duration;
                     playlistFinalEffects[i].start(i);  
 
-                    Serial.print("Changing final effect pattern to: ");
+                    Serial.print("Changing background effect pattern to: ");
                     Serial.println(playlistFinalEffects[i].getCurrentPatternName());
 
                     playlistFinalEffects[i].ms_previous = millis();
@@ -654,7 +648,7 @@ void loop() {
 
     }
 
-    // -------------- loop through, and apply each of the initial effects patterns ----------------
+    // This is the most foreground effect(s). This allows blurs over the entire rendered frame, for example 
     //
     if (!option6DisableInitialEffects) {
 
@@ -675,7 +669,7 @@ void loop() {
                     playlistInitialEffects[i].ms_animation_max_duration = animation_duration;
                     playlistInitialEffects[i].start(i); 
 
-                    Serial.print("Changing initial effects pattern to: ");
+                    Serial.print("Changing foreground effects pattern to: ");
                     Serial.println(playlistInitialEffects[i].getCurrentPatternName());
 
                     playlistInitialEffects[i].ms_previous = millis();

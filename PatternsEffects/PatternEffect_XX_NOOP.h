@@ -25,8 +25,6 @@ public:
 
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
-        delay(1); // just take 1ms to do nothing.
-
         return 0;
 
     }

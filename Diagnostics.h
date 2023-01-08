@@ -95,8 +95,6 @@ void UpdateDiagnosticsData() {
 
         }
 
-        // audio spectrum - what a mess
-        //
         for (uint8_t i=0; i < MATRIX_WIDTH; i++) {
 
             uint8_t height = map8(fftData.specData[i],0,32);
