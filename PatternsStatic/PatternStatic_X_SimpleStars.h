@@ -32,7 +32,7 @@ class PatternStaticSimpleStars : public Drawable {
 
   public:
     PatternStaticSimpleStars() {
-      name = (char *)"Static X - Simple Stars";
+      name = (char *)"Simple Stars";
       id = (char *)"X";
       enabled = false;
     }

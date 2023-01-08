@@ -141,38 +141,62 @@ MatrixPanel_I2S_DMA *dma_display = nullptr;
 #define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
 
-#include "FftData.h"
-FFTData fftData;
-
-#include "FftMic.h"
-
-// fixed maximums here for memory allocation, these must be >= variables used below
-//
-//#define MAX_PATTERNS_AMBIENT_BACKGROUND 1      // not used yet? useful? plasma effects?
-#define MAX_PLAYLISTS_EFFECT 2                   // bluring/fading/sweeping effects
-#define MAX_PLAYLISTS_AUDIO 2                    // audio reactive effects
-#define MAX_PLAYLISTS_STATIC 2                   // standard non-audio animations inc. boids etc.
-#define MAX_PLAYLISTS_FINAL_EFFECT 1             // Background effect. Leave it at 1.
-
-// (in future) limits may be applied in real-time by logic on how many patterns are being looped simultaneously, change these for quick testing
-//
-static uint8_t CountPlaylistsInitialEffect = MAX_PLAYLISTS_EFFECT;         // <------- 1 or 2 - Foreground effect 
-static uint8_t CountPlaylistsAudio = MAX_PLAYLISTS_AUDIO;                  // <------- 2 or 3
-static uint8_t CountPlaylistsStatic = MAX_PLAYLISTS_STATIC;                // <------- 2 or 3
-static uint8_t CountPlaylistsFinalEffect = MAX_PLAYLISTS_FINAL_EFFECT;     // This is now the farthest back effects, background of the entire frame.
-
 // diagnostic options, these can be set via web interface when enabled
 //
 bool option1Diagnostics = false;
 bool option2LockFps = false;
 bool option3ShowRenderTime = false;
 bool option4PauseCycling = false;
-bool option5LianLi120Mode = false;
-bool option6DisableInitialEffects = false;
+bool option5ShowEffectsStack = false;
+bool option6DisableForeground = false;
 bool option7DisableAudio = false;
 bool option8DisableStatic = false;
-bool option9DisableFinalEffects = false;        // not used
+bool option9DisableBackground = false;
 bool option10DisableCaleidoEffects = false;
+
+class FFTData{
+
+    // this class holds some data, but nothing calls its functions...
+    // ... and a lot of things are defined and never used, so paired down significantly.
+    // ... mostly this is here to avoid many edits to remove the references to 
+    //     this class.
+
+    public:
+    
+    #define BINS 128        
+
+    uint16_t bpm = 120;    // for testing currently, not fully implemented yet by most test patterns
+
+    byte specDataMaxVolume;
+    byte specDataMinVolume;
+
+    byte specData8[8];
+    byte specData16[16];
+    byte specData32[32];
+    byte specData64[64];
+    byte specData[128];
+
+    bool noAudio = true;
+
+};
+
+FFTData fftData;
+
+#include "FftMic.h"
+
+// fixed maximums here for memory allocation, these must be >= variables used below
+//
+#define MAX_PLAYLISTS_BACKGROUND 1               // Background effect. Leave it at 1.
+#define MAX_PLAYLISTS_AUDIO 2                    // audio reactive effects
+#define MAX_PLAYLISTS_STATIC 2                   // standard non-audio animations inc. boids etc.
+#define MAX_PLAYLISTS_FOREGROUND 2               // bluring/fading/sweeping effects
+//
+// ...this is also the order the effects are layered - with "FOREGROUND" on top
+
+static uint8_t CountPlaylistsBackground = MAX_PLAYLISTS_BACKGROUND;        // This is now the farthest back effects, background of the entire frame.
+static uint8_t CountPlaylistsAudio = MAX_PLAYLISTS_AUDIO;                  // <------- 2 or 3
+static uint8_t CountPlaylistsStatic = MAX_PLAYLISTS_STATIC;                // <------- 2 or 3
+static uint8_t CountPlaylistsForeground = MAX_PLAYLISTS_FOREGROUND;        // <------- 1 or 2 - Foreground effect 
 
 #include "Geometry.h"
 #include "Effects.h"
@@ -184,17 +208,18 @@ Effects effects;
 #include "Boid.h"
 #include "Attractor.h"
 
-#include "Playlist_InitialEffects.h"
-#include "Playlist_FinalEffects.h"
+#include "Playlist_Foreground.h"
+#include "Playlist_Background.h"
 #include "Playlist_Audio.h"
 #include "Playlist_Static.h"
 
-Playlist_InitialEffects playlistInitialEffects[MAX_PLAYLISTS_EFFECT];
+Playlist_Background playlistBackground[MAX_PLAYLISTS_BACKGROUND];
 Playlist_Audio playlistAudio[MAX_PLAYLISTS_AUDIO];
 Platlist_Static playlistStatic[MAX_PLAYLISTS_STATIC];
-Playlist_FinalEffects playlistFinalEffects[MAX_PLAYLISTS_EFFECT];
+Playlist_Foreground playlistForeground[MAX_PLAYLISTS_FOREGROUND];
 
-// TODO: sort? useful or not
+// TODO: sort? useful or not - I don't know if this does anything...
+//
 static uint8_t PatternsAudioMainEffectCount = 0;
 static uint8_t PatternsAudioBackdropCount = 0;
 static uint8_t PatternsAudioCaleidoscopeCount = 0;
@@ -270,26 +295,26 @@ void setup() {
 
     // initialise all the initial effects patterns
     //
-    for (uint8_t i=0; i < MAX_PLAYLISTS_EFFECT; i++) {
+    for (uint8_t i=0; i < MAX_PLAYLISTS_FOREGROUND; i++) {
 
-        playlistInitialEffects[i].default_fps = 90;
-        playlistInitialEffects[i].pattern_fps = 90;
-        playlistInitialEffects[i].ms_animation_max_duration = animation_duration;
+        playlistForeground[i].default_fps = 90;
+        playlistForeground[i].pattern_fps = 90;
+        playlistForeground[i].ms_animation_max_duration = animation_duration;
 
         do {
-            playlistInitialEffects[i].moveRandom(1, i);
-        } while (!playlistInitialEffects[i].getCurrentItemEnabled());
+            playlistForeground[i].moveRandom(1, i);
+        } while (!playlistForeground[i].getCurrentItemEnabled());
 
-        Serial.print("Starting with intitial effects pattern: ");
-        Serial.println(playlistInitialEffects[i].getCurrentPatternName());
+        Serial.print("Starting with foreground pattern: ");
+        Serial.println(playlistForeground[i].getCurrentPatternName());
 
-        playlistInitialEffects[i].start(i);
-        playlistInitialEffects[i].ms_previous = millis();
-        playlistInitialEffects[i].fps_timer = millis();
+        playlistForeground[i].start(i);
+        playlistForeground[i].ms_previous = millis();
+        playlistForeground[i].fps_timer = millis();
 
         // TESTING: enable all the effects
-        for (uint8_t j=0; j < playlistInitialEffects[i].getPatternCount(); j++) {
-            playlistInitialEffects[i].setItemEnabled(j, 1);
+        for (uint8_t j=0; j < playlistForeground[i].getPatternCount(); j++) {
+            playlistForeground[i].setItemEnabled(j, 1);
         }
 
     }
@@ -349,26 +374,26 @@ void setup() {
     // It says "final" but this is now "background" - farthest back "layer"
     // TODO: change the variable names to reflect this.
     //
-    for (uint8_t i=0; i < CountPlaylistsFinalEffect; i++) {
+    for (uint8_t i=0; i < MAX_PLAYLISTS_BACKGROUND; i++) {
 
-        playlistFinalEffects[i].default_fps = 90;
-        playlistFinalEffects[i].pattern_fps = 90;
-        playlistFinalEffects[i].ms_animation_max_duration = animation_duration;
+        playlistBackground[i].default_fps = 90;
+        playlistBackground[i].pattern_fps = 90;
+        playlistBackground[i].ms_animation_max_duration = animation_duration;
 
         do {
-            playlistFinalEffects[i].moveRandom(1, i);
-        } while (!playlistFinalEffects[i].getCurrentItemEnabled());
+            playlistBackground[i].moveRandom(1, i);
+        } while (!playlistBackground[i].getCurrentItemEnabled());
 
         Serial.print("Starting with intitial effects pattern: ");
-        Serial.println(playlistFinalEffects[i].getCurrentPatternName());
+        Serial.println(playlistBackground[i].getCurrentPatternName());
 
-        playlistFinalEffects[i].start(i);
-        playlistFinalEffects[i].ms_previous = millis();
-        playlistFinalEffects[i].fps_timer = millis();
+        playlistBackground[i].start(i);
+        playlistBackground[i].ms_previous = millis();
+        playlistBackground[i].fps_timer = millis();
 
         // TESTING: enable all the effects
-        for (uint8_t j=0; j < playlistFinalEffects[i].getPatternCount(); j++) {
-            playlistFinalEffects[i].setItemEnabled(j, 1);
+        for (uint8_t j=0; j < playlistBackground[i].getPatternCount(); j++) {
+            playlistBackground[i].setItemEnabled(j, 1);
         }
 
     }
@@ -410,14 +435,21 @@ void loop() {
     
         if (digitalRead(PIN_FOR_DEBUG_MODE) == PIN_FOR_DEBUG_MODE_STATE) {
 
-            if (option1Diagnostics == false) {
+            if (option1Diagnostics == false && option5ShowEffectsStack == false) {
 
                 option1Diagnostics = true;
+                option5ShowEffectsStack = false;
 
+            } else if (option1Diagnostics == true && option5ShowEffectsStack == false) {
+
+                option1Diagnostics = false;
+                option5ShowEffectsStack = true;
+                
             } else {
 
                 option1Diagnostics = false;
-                
+                option5ShowEffectsStack = false;
+
             }
 
             delay(500); // simple debounce
@@ -434,7 +466,7 @@ void loop() {
 
     Xlast_render_ms = millis();
 
-    if (CountPlaylistsInitialEffect==0 || option6DisableInitialEffects) effects.DimAll(230);       // if we have no effects enabled, dim screen by small amount (e.g. during testing)
+    if (CountPlaylistsForeground==0 || option6DisableForeground) effects.DimAll(230);       // if we have no effects enabled, dim screen by small amount (e.g. during testing)
 
     // clear counters/flags for psuedo randomness workings inside pattern setup and drawing
     //
@@ -445,30 +477,30 @@ void loop() {
 
     // says "final" but is now background effects - rendered first (and the back)
     //
-    if (!option9DisableFinalEffects) {
+    if (!option9DisableBackground) {
 
-        for (uint8_t i=0; i < CountPlaylistsFinalEffect; i++) {
+        for (uint8_t i=0; i < CountPlaylistsBackground; i++) {
 
             // #-------- start next animation if maxduration reached --------#
             //
-            if ( (millis() - playlistFinalEffects[i].ms_previous) > playlistFinalEffects[i].ms_animation_max_duration) {
+            if ( (millis() - playlistBackground[i].ms_previous) > playlistBackground[i].ms_animation_max_duration) {
 
                 if (!option4PauseCycling) {
 
-                    playlistFinalEffects[i].stop();
+                    playlistBackground[i].stop();
 
                     do {
-                        playlistFinalEffects[i].moveRandom(1, i);
-                    } while (!playlistFinalEffects[i].getCurrentItemEnabled());
+                        playlistBackground[i].moveRandom(1, i);
+                    } while (!playlistBackground[i].getCurrentItemEnabled());
 
-                    playlistFinalEffects[i].ms_animation_max_duration = animation_duration;
-                    playlistFinalEffects[i].start(i);  
+                    playlistBackground[i].ms_animation_max_duration = animation_duration;
+                    playlistBackground[i].start(i);  
 
                     Serial.print("Changing background effect pattern to: ");
-                    Serial.println(playlistFinalEffects[i].getCurrentPatternName());
+                    Serial.println(playlistBackground[i].getCurrentPatternName());
 
-                    playlistFinalEffects[i].ms_previous = millis();
-                    playlistFinalEffects[i].fps_timer = millis();
+                    playlistBackground[i].ms_previous = millis();
+                    playlistBackground[i].fps_timer = millis();
 
                 }
 
@@ -476,30 +508,30 @@ void loop() {
 
             // -------- draw the next frame if fps timer dictates so --------
             //
-            if (1000 / playlistFinalEffects[i].pattern_fps + playlistFinalEffects[i].last_frame < millis()) {
+            if (1000 / playlistBackground[i].pattern_fps + playlistBackground[i].last_frame < millis()) {
 
-                playlistFinalEffects[i].last_frame = millis();
-                playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].drawFrame(i, CountPlaylistsFinalEffect);
+                playlistBackground[i].last_frame = millis();
+                playlistBackground[i].pattern_fps = playlistBackground[i].drawFrame(i, CountPlaylistsBackground);
 
-                if (!playlistFinalEffects[i].pattern_fps) {
+                if (!playlistBackground[i].pattern_fps) {
 
-                    playlistFinalEffects[i].pattern_fps = playlistFinalEffects[i].default_fps;
+                    playlistBackground[i].pattern_fps = playlistBackground[i].default_fps;
 
                 }
 
-                ++playlistFinalEffects[i].fps;
-                playlistFinalEffects[i].render_ms = millis() - playlistStatic[i].last_frame;
+                ++playlistBackground[i].fps;
+                playlistBackground[i].render_ms = millis() - playlistStatic[i].last_frame; // FIXME
 
             }
 
-            if (playlistFinalEffects[i].fps_timer + 1000 < millis()){
+            if (playlistBackground[i].fps_timer + 1000 < millis()){
 
-                playlistFinalEffects[i].fps_timer = millis();
-                playlistFinalEffects[i].fps_last = playlistFinalEffects[i].fps;
+                playlistBackground[i].fps_timer = millis();
+                playlistBackground[i].fps_last = playlistBackground[i].fps;
 
-                actual_fps = playlistFinalEffects[i].fps;
+                actual_fps = playlistBackground[i].fps;
 
-                playlistFinalEffects[i].fps = 0;
+                playlistBackground[i].fps = 0;
 
             }
 
@@ -650,30 +682,30 @@ void loop() {
 
     // This is the most foreground effect(s). This allows blurs over the entire rendered frame, for example 
     //
-    if (!option6DisableInitialEffects) {
+    if (!option6DisableForeground) {
 
-        for (uint8_t i=0; i < CountPlaylistsInitialEffect; i++) {
+        for (uint8_t i=0; i < CountPlaylistsForeground; i++) {
 
             // -------- start next animation if max duration reached --------
             //
-            if ( (millis() - playlistInitialEffects[i].ms_previous) > playlistInitialEffects[i].ms_animation_max_duration) {
+            if ( (millis() - playlistForeground[i].ms_previous) > playlistForeground[i].ms_animation_max_duration) {
 
                 if (!option4PauseCycling) {
 
-                    playlistInitialEffects[i].stop();      
+                    playlistForeground[i].stop();      
 
                     do {
-                        playlistInitialEffects[i].moveRandom(1, i);
-                    } while (!playlistInitialEffects[i].getCurrentItemEnabled());
+                        playlistForeground[i].moveRandom(1, i);
+                    } while (!playlistForeground[i].getCurrentItemEnabled());
 
-                    playlistInitialEffects[i].ms_animation_max_duration = animation_duration;
-                    playlistInitialEffects[i].start(i); 
+                    playlistForeground[i].ms_animation_max_duration = animation_duration;
+                    playlistForeground[i].start(i); 
 
                     Serial.print("Changing foreground effect pattern to: ");
-                    Serial.println(playlistInitialEffects[i].getCurrentPatternName());
+                    Serial.println(playlistForeground[i].getCurrentPatternName());
 
-                    playlistInitialEffects[i].ms_previous = millis();
-                    playlistInitialEffects[i].fps_timer = millis();
+                    playlistForeground[i].ms_previous = millis();
+                    playlistForeground[i].fps_timer = millis();
 
                 }
 
@@ -681,32 +713,32 @@ void loop() {
 
             // -------- draw the next frame if fps timer dictates so --------
             //
-            if ( 1000 / playlistInitialEffects[i].pattern_fps + playlistInitialEffects[i].last_frame < millis()) {
+            if ( 1000 / playlistForeground[i].pattern_fps + playlistForeground[i].last_frame < millis()) {
 
-                playlistInitialEffects[i].last_frame = millis();
-                playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].drawFrame(i, CountPlaylistsInitialEffect);
+                playlistForeground[i].last_frame = millis();
+                playlistForeground[i].pattern_fps = playlistForeground[i].drawFrame(i, CountPlaylistsForeground);
 
-                if (!playlistInitialEffects[i].pattern_fps) {
+                if (!playlistForeground[i].pattern_fps) {
 
-                    playlistInitialEffects[i].pattern_fps = playlistInitialEffects[i].default_fps;
+                    playlistForeground[i].pattern_fps = playlistForeground[i].default_fps;
 
                 }
 
-                ++playlistInitialEffects[i].fps;
-                playlistInitialEffects[i].render_ms = millis() - playlistInitialEffects[i].last_frame;
+                ++playlistForeground[i].fps;
+                playlistForeground[i].render_ms = millis() - playlistForeground[i].last_frame;
 
             }
 
             // ----- every 1000ms update fps and timer
             //
-            if (playlistInitialEffects[i].fps_timer + 1000 < millis()) {
+            if (playlistForeground[i].fps_timer + 1000 < millis()) {
 
-                playlistInitialEffects[i].fps_timer = millis();
-                playlistInitialEffects[i].fps_last = playlistInitialEffects[i].fps;
+                playlistForeground[i].fps_timer = millis();
+                playlistForeground[i].fps_last = playlistForeground[i].fps;
 
-                actual_fps = playlistInitialEffects[i].fps;
+                actual_fps = playlistForeground[i].fps;
 
-                playlistInitialEffects[i].fps = 0;
+                playlistForeground[i].fps = 0;
 
             }
 

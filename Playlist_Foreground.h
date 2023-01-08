@@ -1,32 +1,31 @@
-#ifndef Playlist_FinalEffects_H
-#define Playlist_FinalEffects_H
+#ifndef Playlist_InitialEffects_H
+#define Playlist_InitialEffects_H
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 //#include "Vector.h"
 
-#include "PatternsEffects\PatternEffect_X_ElectricMandala.h"
-#include "PatternsEffects\PatternEffect_XX_Plasma.h"
-#include "PatternsEffects\PatternEffect_X_Munch.h"
-#include "PatternsEffects\PatternEffect_X_DimAll.h"
-#include "PatternsEffects\PatternEffect_X2_Life.h"
+#include "PatternsEffects\PatternEffect_A_TestBlur2d.h"
+#include "PatternsEffects\PatternEffect_B_SpiralStream1.h"
+#include "PatternsEffects\PatternEffect_C_Stream1.h"
+#include "PatternsEffects\PatternEffect_D_Move.h"
+// #include "PatternsEffects\PatternEffect_E_Minimal.h"
 #include "PatternsEffects\PatternEffect_XX_NOOP.h"
-#include "PatternsEffects\PatternEffect_XX_SimplexNoise.h"
+#include "PatternsEffects\PatternEffect_X_Munch.h"
 
-class Playlist_FinalEffects : public Playlist {
+class Playlist_Foreground : public Playlist {
 
     private:
 
-    PatternEffectElectricMandala effectElectricMandella;
-    PatternEffectPlasma effectPlasma;
-    PatternEffectDimAll effectDimAll;
+    PatternEffectSpiralStream1 effectSpiralStream1;
+    PatternEffectTestBlur2d effectTestBlur2d;
+    PatternEffectStream1 effectStream1;
+    PatternEffectMove effectMove;
     PatternEffectMunch effectMunch;
-    PatternEffectLife effectLife;
+    // PatternEffectMinimal effectMinimal;
     PatternEffectNOOP effectNOOP;
-    PatternEffectSimplexNoise effectSimplexNoise;
 
     int currentIndex = 0;
-
     Drawable* currentItem;
 
     int getCurrentIndex() {
@@ -35,26 +34,25 @@ class Playlist_FinalEffects : public Playlist {
 
     }
 
-    const static int PATTERN_COUNT = 7;
+    const static int PATTERN_COUNT = 6;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
-
-        &effectPlasma,
-        &effectMunch,
-        &effectLife,                  // sometimes introduces minor pauses
-        &effectElectricMandella,   
-        &effectSimplexNoise,      
-        &effectNOOP,                  // does nothing, intentionally.
-        &effectNOOP,                  // does nothing, intentionally.
-        // &effectDimAll,             // not really useful to dim nothing as it's at the back of the stack now.
+        
+        &effectTestBlur2d,
+        &effectSpiralStream1,
+        &effectStream1,
+        &effectMove,
+        &effectMunch,              // moved to foreground as it doesn't do anything to background
+        &effectNOOP,
+        // &effectMinimal,         // janky
 
     };
 
     public:
 
-    Playlist_FinalEffects() {
+    Playlist_Foreground() {
 
         // add the items to the shuffledItems array
         //
@@ -67,7 +65,7 @@ class Playlist_FinalEffects : public Playlist {
 
         this->currentItem = items[0];
 
-        for (int i=0; i < CountPlaylistsInitialEffect; i++) {
+        for (int i=0; i < CountPlaylistsForeground; i++) {
 
             this->currentItem->start(i); 
 

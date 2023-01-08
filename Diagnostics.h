@@ -80,6 +80,53 @@ void UpdateDiagnosticsData() {
 
     #endif
 
+    if (option5ShowEffectsStack) {
+
+        int startx = 2;
+        int starty = 2;
+        int yinc = 8;
+
+        dma_display->setTextSize(1);
+        dma_display->setTextColor(WHITE);
+
+        for (uint8_t i=0; i < CountPlaylistsBackground; i++) {
+
+            dma_display->setCursor(startx,starty);
+            dma_display->print(playlistBackground[i].getCurrentPatternName());
+
+            starty += yinc;
+
+        }
+
+        for (uint8_t i=0; i < CountPlaylistsAudio; i++) {
+
+            dma_display->setCursor(startx,starty);
+            dma_display->print(playlistAudio[i].getCurrentPatternName());
+
+            starty += yinc;
+            
+        }
+
+        for (uint8_t i=0; i < CountPlaylistsStatic; i++) {
+
+            dma_display->setCursor(startx,starty);
+            dma_display->print(playlistStatic[i].getCurrentPatternName());
+
+            starty += yinc;
+            
+        }
+
+        for (uint8_t i=0; i < CountPlaylistsForeground; i++) {
+
+            dma_display->setCursor(startx,starty);
+            dma_display->print(playlistForeground[i].getCurrentPatternName());
+
+            starty += yinc;
+            
+        }
+
+    }
+    
     // ---------------------- DIAGNOSTICS -------------------------
 
     if (option1Diagnostics) {
@@ -129,32 +176,32 @@ void UpdateDiagnosticsData() {
         dma_display->print(fftData.bpm);
         dma_display->print("bpm");
 
-        for (uint8_t i=0; i < CountPlaylistsInitialEffect; i++) {
+        for (uint8_t i=0; i < CountPlaylistsBackground; i++) {
 
             dma_display->setTextColor(WHITE);
-            dma_display->setCursor(2,2+(i*10));
-            dma_display->print(playlistInitialEffects[i].getCurrentPatternId());
+            dma_display->setCursor(2+(i*20),1);
+            dma_display->print(playlistBackground[i].getCurrentPatternId());
 
-            if (playlistInitialEffects[i].render_ms > 10) {
+            if (playlistBackground[i].render_ms > 10) {
                 
                 dma_display->setTextColor(YELLOW);
 
             }
 
-            if (playlistInitialEffects[i].render_ms > 15) {
+            if (playlistBackground[i].render_ms > 15) {
                 
                 dma_display->setTextColor(MAGENTA);
 
             }
 
-            dma_display->print(playlistInitialEffects[i].render_ms);
+            dma_display->print(playlistBackground[i].render_ms);
 
         }
 
         for (uint8_t i=0; i < CountPlaylistsAudio; i++) {
             
             dma_display->setTextColor(WHITE);
-            dma_display->setCursor(22,2+(i*10));
+            dma_display->setCursor(2+(i*20),1+8);
             dma_display->print(playlistAudio[i].getCurrentPatternId());      
 
             if (playlistAudio[i].render_ms > 10) {
@@ -172,11 +219,11 @@ void UpdateDiagnosticsData() {
             dma_display->print(playlistAudio[i].render_ms);
 
         }
-    
+
         for (uint8_t i=0; i < CountPlaylistsStatic; i++) {
 
             dma_display->setTextColor(WHITE);
-            dma_display->setCursor(42,2+(i*10));
+            dma_display->setCursor(2+(i*20),1+8+8);
             dma_display->print(playlistStatic[i].getCurrentPatternId());      
 
             if (playlistStatic[i].render_ms > 10) {
@@ -190,7 +237,29 @@ void UpdateDiagnosticsData() {
             }
 
             dma_display->print(playlistStatic[i].render_ms);
-            
+
+        }
+        
+        for (uint8_t i=0; i < CountPlaylistsForeground; i++) {
+
+            dma_display->setTextColor(WHITE);
+            dma_display->setCursor(2+(i*20),1+8+8+8);
+            dma_display->print(playlistForeground[i].getCurrentPatternId());
+
+            if (playlistForeground[i].render_ms > 10) {
+                
+                dma_display->setTextColor(YELLOW);
+
+            }
+
+            if (playlistForeground[i].render_ms > 15) {
+                
+                dma_display->setTextColor(MAGENTA);
+
+            }
+
+            dma_display->print(playlistForeground[i].render_ms);
+
         }
 
         for (uint8_t i=MATRIX_HEIGHT-10; i<MATRIX_HEIGHT-8; i++) {

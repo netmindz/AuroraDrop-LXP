@@ -12,7 +12,7 @@ public:
 
     PatternEffectNOOP() {
 
-      name = (char *)"Doing Nothing, Intentionally";
+      name = (char *)"Doing Nothing";
       id = "!";
       enabled = true;
 

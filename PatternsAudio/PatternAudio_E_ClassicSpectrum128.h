@@ -59,10 +59,10 @@ class PatternAudioClassicSpectrum128 : public Drawable {
           for (byte i = 0; i < MATRIX_WIDTH; i++) 
           {
             // treble on top, dim on peak, then full brightness on current
-            effects.BresLine(i, 0, i, fftData.specDataPeak[127-i] / audioScale, 255-(i*2), peakBrightness, NOBLEND);
+            // effects.BresLine(i, 0, i, fftData.specDataPeak[127-i] / audioScale, 255-(i*2), peakBrightness, NOBLEND);
             effects.BresLine(i, 0, i, fftData.specData[127-i] / audioScale, 255-(i*2), 255, LINEARBLEND);
             // bass on bottom, full brightness
-            effects.BresLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specDataPeak[i] / audioScale), i*2, peakBrightness, NOBLEND);
+            // effects.BresLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specDataPeak[i] / audioScale), i*2, peakBrightness, NOBLEND);
             effects.BresLine(i, MATRIX_WIDTH - 1, i, MATRIX_HEIGHT -(fftData.specData[i] / audioScale), i*2, 255, LINEARBLEND);
           }
           break;

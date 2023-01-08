@@ -318,7 +318,7 @@ float mean_int = 425.0; // just below 100 bpm in ms
 float magAvg = 64;
 float lastBeat = 0;  // time of last beat in millis()
 float bpm_interval = 480; // 125 BPM = 480ms
-float magThreshold = 1.5;
+float magThreshold = 1.3;
 float magThresholdAvg = magThreshold;
 int animation_duration = 60000/120*16;
 double beatTime = 60.0 / 140 * 1000;
@@ -1461,9 +1461,27 @@ void FFTcode( void * pvParameters) {
 
                 magThresholdAvg = magThresholdAvg * 0.9 + (AD_fftResult[0]/magAvg) * 0.1;
 
+                if (option1Diagnostics) {
+                    
+                    Serial.print("\tBEAT! Interval: ");
+                    Serial.print(bpm_interval);
+                    Serial.print("\tBPM: ");
+                    Serial.print(fftData.bpm);
+                    Serial.print("\tMeanInt: ");
+                    Serial.print(mean_int);
+                    Serial.print("\tThreshAvg: ");
+                    Serial.print(magThresholdAvg);
+                    Serial.print("\tCurThresh: ");
+                    Serial.print(AD_fftResult[0]/magAvg);
+                    Serial.print("\tStaticThresh: ");
+                    Serial.print(magThreshold);
+                    Serial.println();
+
+                }
+
             }
 
-        } // END BPM
+        }
         
         fftData.noAudio = false;
 
