@@ -9,9 +9,9 @@
 #include "PatternsEffects\PatternEffect_B_SpiralStream1.h"
 #include "PatternsEffects\PatternEffect_C_Stream1.h"
 #include "PatternsEffects\PatternEffect_D_Move.h"
-// #include "PatternsEffects\PatternEffect_E_Minimal.h"
 #include "PatternsEffects\PatternEffect_XX_NOOP.h"
 #include "PatternsEffects\PatternEffect_X_Munch.h"
+#include "PatternsOther\PatternEffect_T_TVStatic.h"
 
 class Playlist_Foreground : public Playlist {
 
@@ -22,8 +22,8 @@ class Playlist_Foreground : public Playlist {
     PatternEffectStream1 effectStream1;
     PatternEffectMove effectMove;
     PatternEffectMunch effectMunch;
-    // PatternEffectMinimal effectMinimal;
     PatternEffectNOOP effectNOOP;
+    PatternEffectTVStatic effectTVStatic;
 
     int currentIndex = 0;
     Drawable* currentItem;
@@ -34,19 +34,21 @@ class Playlist_Foreground : public Playlist {
 
     }
 
-    const static int PATTERN_COUNT = 6;
+    const static int PATTERN_COUNT = 8;
 
     Drawable* shuffledItems[PATTERN_COUNT];
 
     Drawable* items[PATTERN_COUNT] = {
         
         &effectTestBlur2d,
-        &effectSpiralStream1,
+        // &effectSpiralStream1,   // seems like a darker box moving across the screen. Wooo....
         &effectStream1,
         &effectMove,
         &effectMunch,              // moved to foreground as it doesn't do anything to background
         &effectNOOP,
-        // &effectMinimal,         // janky
+        &effectNOOP,
+        &effectNOOP,
+        &effectTVStatic,
 
     };
 

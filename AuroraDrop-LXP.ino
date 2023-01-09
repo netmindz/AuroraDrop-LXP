@@ -371,9 +371,6 @@ void setup() {
 
     }
 
-    // It says "final" but this is now "background" - farthest back "layer"
-    // TODO: change the variable names to reflect this.
-    //
     for (uint8_t i=0; i < MAX_PLAYLISTS_BACKGROUND; i++) {
 
         playlistBackground[i].default_fps = 90;

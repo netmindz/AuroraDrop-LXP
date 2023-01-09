@@ -30,7 +30,7 @@ private:
   public:
     PatternEffectDimAll() {
       name = (char *)"DimAll 32";
-      id = "X";
+      id = "D";
       enabled = false;
     }
 

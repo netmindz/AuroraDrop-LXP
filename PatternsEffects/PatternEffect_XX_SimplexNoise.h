@@ -30,7 +30,7 @@ private:
   public:
     PatternEffectSimplexNoise() {
       name = (char *)"Simplex Noise";
-      id = "T";
+      id = "N";
       enabled = false;
     }
 
