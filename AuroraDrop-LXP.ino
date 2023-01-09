@@ -7,12 +7,14 @@
 *
 *   Libraries needed:-
 *
-*   FastLED (tested with v3.4)
+*   FastLED (tested with v3.5)
 *   https://github.com/FastLED/FastLED
 *
-*   ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v2.0.6)
+*   ESP32 HUB75 LED MATRIX PANEL DMA Display (tested with v3.0.0)
 *   https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-I2S-DMA
 *
+*   ArduinoFFT - "develop" branch (Last commit Sept 26, 2022)
+*   https://github.com/kosme/arduinoFFT/tree/develop
 *
 */
 
@@ -60,7 +62,7 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
 
     // ESP32-S3 Devkit C/M have these
     //
-    #define ONBOARD_RGB_LED 48
+    #define ONBOARD_RGB_LED_PIN 48
 
     // Brightness ADC pin
     //
@@ -123,18 +125,18 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
 
 #endif
 
-#ifdef ONBOARD_RGB_LED
-
-    // If it's present and not initialized, it can behave randonly...
-
-    #include <Adafruit_NeoPixel.h>
-    Adafruit_NeoPixel pixels(1, ONBOARD_RGB_LED, NEO_GRB + NEO_KHZ800); // I use this as an FPS indicator in Diagnostics.h
-
-#endif
-
 MatrixPanel_I2S_DMA *dma_display = nullptr;
 
 #include <FastLED.h>
+
+#ifdef ONBOARD_RGB_LED_PIN
+
+    // If it's present and not initialized, it can behave randonly...
+
+    CRGB statusled[1];
+    CLEDController* statuscontroller = &FastLED.addLeds<NEOPIXEL, ONBOARD_RGB_LED_PIN>(statusled, 1);
+
+#endif
 
 #define MATRIX_WIDTH (PANEL_WIDTH * PANELS_NUMBER)          // works with 1x and 2x 632x64 and 64x32 panels in landscape
 #define MATRIX_HEIGHT (PANEL_HEIGHT)                        // doesn't seem to making "tall" portrait arrays - yet.
@@ -237,12 +239,10 @@ void setup() {
 
     Serial.printf("ESP32 IDF version: %s\n",IDF_VER);
 
-    #ifdef ONBOARD_RGB_LED
+    #ifdef ONBOARD_RGB_LED_PIN
 
-        pixels.begin();
-        pixels.setBrightness(10);
-        pixels.clear();
-        pixels.show();
+        statuscontroller->leds()[0] = CRGB::Purple;
+        statuscontroller->showLeds(10);
 
     #endif
 
@@ -264,7 +264,7 @@ void setup() {
     mxconfig.gpio.lat = LAT_PIN; 
     mxconfig.gpio.oe  =  OE_PIN;
     mxconfig.gpio.clk = CLK_PIN; 
-    mxconfig.driver = HUB75_I2S_CFG::FM6126A;         // my panels (with D or E pins) have needed this.
+    mxconfig.driver   = HUB75_I2S_CFG::FM6126A;         // my panels (with D or E pins) have needed this.
 
     Serial.println("Starting HUB75 Display Test...");
 
@@ -432,6 +432,8 @@ void loop() {
     
         if (digitalRead(PIN_FOR_DEBUG_MODE) == PIN_FOR_DEBUG_MODE_STATE) {
 
+            // OFF, Main Debug, Effects Stack List
+
             if (option1Diagnostics == false && option5ShowEffectsStack == false) {
 
                 option1Diagnostics = true;
@@ -472,7 +474,7 @@ void loop() {
     PatternsAudioCaleidoscopeCount = 0;
     PatternsAudioBluringCount = 0;
 
-    // says "final" but is now background effects - rendered first (and the back)
+    // Background effects - rendered first (and the back)
     //
     if (!option9DisableBackground) {
 
@@ -487,7 +489,9 @@ void loop() {
                     playlistBackground[i].stop();
 
                     do {
+
                         playlistBackground[i].moveRandom(1, i);
+
                     } while (!playlistBackground[i].getCurrentItemEnabled());
 
                     playlistBackground[i].ms_animation_max_duration = animation_duration;
@@ -517,7 +521,7 @@ void loop() {
                 }
 
                 ++playlistBackground[i].fps;
-                playlistBackground[i].render_ms = millis() - playlistStatic[i].last_frame; // FIXME
+                playlistBackground[i].render_ms = millis() - playlistBackground[i].last_frame;
 
             }
 
@@ -551,7 +555,9 @@ void loop() {
                     playlistAudio[i].stop();      
 
                     do {
+
                         playlistAudio[i].moveRandom(1, i);
+                        
                     } while (!playlistAudio[i].getCurrentItemEnabled());
 
                     playlistAudio[i].ms_animation_max_duration = animation_duration;
@@ -626,7 +632,9 @@ void loop() {
                     playlistStatic[i].stop();      
 
                     do {
+
                         playlistStatic[i].moveRandom(1, i);
+
                     } while (!playlistStatic[i].getCurrentItemEnabled());
 
                     playlistStatic[i].ms_animation_max_duration = animation_duration;
@@ -692,7 +700,9 @@ void loop() {
                     playlistForeground[i].stop();      
 
                     do {
+
                         playlistForeground[i].moveRandom(1, i);
+                        
                     } while (!playlistForeground[i].getCurrentItemEnabled());
 
                     playlistForeground[i].ms_animation_max_duration = animation_duration;

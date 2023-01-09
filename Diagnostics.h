@@ -16,22 +16,22 @@ uint32_t actual_fps = 0;
 
 void UpdateDiagnosticsData() {
 
-    #ifdef ONBOARD_RGB_LED
+    #ifdef ONBOARD_RGB_LED_PIN
 
-        if (actual_render_ms > 1000/20) {
+        if (actual_render_ms > 1000/20) { // slower than 20fps
             
-            pixels.setPixelColor(0,255,0,0);
-            pixels.show();
+            statuscontroller->leds()[0] = CRGB::Red;
+            statuscontroller->showLeds(10);
 
-        } else if (actual_render_ms > 1000/30) {
+        } else if (actual_render_ms > 1000/30) { // slower than 30fps
             
-            pixels.setPixelColor(0,255,191,0);
-            pixels.show();
+            statuscontroller->leds()[0] = CRGB::Yellow;
+            statuscontroller->showLeds(10);
 
-        } else {
+        } else { // doing better than 30fps
 
-            pixels.setPixelColor(0,0,255,0);
-            pixels.show();
+            statuscontroller->leds()[0] = CRGB::Green;
+            statuscontroller->showLeds(10);
 
         }
 
