@@ -47,7 +47,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 * Basic BPM detection
 * Removal of other hardware targets
 * Deactivation of some very CPU intensive effects
-* RGB LED on ESP32-S3-DevKitM-1 to do basic frames-per-second monitoring
+* RGB LED on ESP32-S3-DevKitM-1 to do basic frames-per-second monitoring (now via FastLED)
 * Removal of webserver and networking code
 * Added a generic "NOOP" effect so we can do nothing, intentionally, in a playlist.
 * Optional pot for global brightness control (use a 10k pot)
@@ -68,11 +68,6 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
     * https://github.com/kosme/arduinoFFT/tree/develop
     * You'll need to download this as a zip or check it out directly with git.
 
- * Adafruit NeoPixel
-    * https://github.com/adafruit/Adafruit_NeoPixel
-    * (This is ONLY used for the ESP32-S# devkit onboard RGB LED because I'm super lazy.)
-    * TODO: Not add an extra library just to control one LED.
- 
 ### Based on
 
  Lots, including...
