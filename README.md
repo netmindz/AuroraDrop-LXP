@@ -37,7 +37,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 
 ## Latest Updates
 
-1.0.0
+1.0.0 (WIP)
 * Imported much more robust audio reactive code from the WLED AudioReactive usermod
   * ...with some nice finishing touches from MoonModules' version of the same usermod ( I :heart: [MoonModules](https://github.com/MoonModules/WLED) )
 * Code cleanup (lots)
@@ -49,7 +49,9 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 * Deactivation of some very CPU intensive effects
 * RGB LED on ESP32-S3-DevKitM-1 to do basic frames-per-second monitoring
 * Removal of webserver and networking code
-* Added a generic "NOOP" effect so we can do nothing, intentionally.
+* Added a generic "NOOP" effect so we can do nothing, intentionally, in a playlist.
+* Optional pot for global brightness control (use a 10k pot)
+* Optional use of a button (like "boot") to control debug display
 
 ### Libraries
 
