@@ -21,7 +21,9 @@ I suggest using the original AuroraDrop project for details on wiring and if you
 
 ## Hardware Recommendations
 
-This code has been tested with up to two 64x64 pixel HUB74 "E" panels in a horizontal layout. Also works fine with up to two 64x32 panels. More than two 64x64 panels is currently unstable, but two 64x64 panels sits nicely on a small shelf and looks impressive. 
+This code has been tested with up to **FOUR** 64x64 pixel HUB74 "E" panels in a horizontal layout on an ESP32-S3 with 2MB of PSRAM. Also works fine with 64x32 panels (tested with two, expect more will work). A few effects need some love for widths > 128 pixels, and some are disabled on this logic.
+
+At 256 pixels wide the framereate does sometimes suffer - but if you play with the playlist sizes and pick effects that are very fast, 30fps is attainable on 64x256 (four panels) - which is 16,384 LEDs!
 
 The recommended ESP32 target for the project is specificially the ESP32-S3-DevKitM-1 board. 
 
@@ -29,11 +31,19 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32
 
 The board was selected because the HUB75 driver has optimizations for the ESP32-S3 which makes it faster, and the ESP32-S3-DevKitM1 (**not** DevKitC1) board has a VERY advantageous pin arrangement that can be used to directly attach to the HUB75 connector (with some pin header bending!). It doesn't have PSRAM, but that doesn't seem to be as needed at the moment.
 
+Larger matrix widths (over 128 wide) have been tested with a non-Espressif 3rd-parth ESP32-S3-DevKitC1 "type" board - the pinout is better than the Espressif devkit-C1 so we can get 16 pins in an even 2x8 continuous spacing. 
+
+At the moment I'm not sure if the PSRAM is helping large widths - or it's other fixes I've done. Either way, the PSRAM is indeed in use in the HUB75 panel driver.
+
 The audio input is accomplished with the INMP441 microphone. Commonly available circular breakout boards have the needed resistor and capacitor on the breakout.
 
 **If you happen to wire this up on a breadboard, make sure to run a ground between the panel (or the panel PSU) and the ESP32 if you don't have one already.**
 
-The panels will work fine without a ground, but the I2S mic will become hilariously unstable and lead you down a rabbit hole for a week trying to figure out why the mic never seems like it's capturing real audio data. 
+The panels will (mostly) work fine without a ground, but the I2S mic will become hilariously unstable and lead you down a rabbit hole for a week trying to figure out why the mic never seems like it's capturing real audio data. 
+
+I've had 100 issues with the I2S microphone - there's code in there to try and work around bugs in particular ESP IDF versions - but sometimes the "L/R" pin just needs to be moved from GND to VCC or vice-versa to make it work, even with the compile-time fixes.
+
+Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it's to VCC even with the in-line fixes, on different boards with the same ESP32-S3 chip and the same ESP IDF. I have no clue why. 
 
 ## Latest Updates
 
