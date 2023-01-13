@@ -52,6 +52,7 @@ The panels will work fine without a ground, but the I2S mic will become hilariou
 * Added a generic "NOOP" effect so we can do nothing, intentionally, in a playlist.
 * Optional pot for global brightness control (use a 10k pot)
 * Optional use of a button (like "boot") to control debug display
+* Fixes and/or disable logic for some effects when MATRIX_WIDTH > 128 pixels
 
 ### Libraries
 
