@@ -28,6 +28,13 @@ class PatternEffectMunch : public Drawable {
 
       uint8_t bin = 0;
 
+      if (count >= MATRIX_WIDTH) {
+
+        effects.DimAll(254);
+        return 0;
+
+      }
+
       for (byte x = 0; x < MATRIX_WIDTH; x+=2) {
 
         for (byte y = 0; y < MATRIX_HEIGHT; y+=2) {
@@ -42,9 +49,9 @@ class PatternEffectMunch : public Drawable {
           }
 
           effects.leds[XY(x+0, y+0)] += (x+0 ^ y+0 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+0 ^ y+0) << 3) + generation, audio * 2) : CRGB::Black;
-          effects.leds[XY(x+1, y+0)] += (x+1 ^ y+0 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+0) << 3) + generation, audio * 2) : CRGB::Black;
-          effects.leds[XY(x+0, y+1)] += (x+0 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+0 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
-          effects.leds[XY(x+1, y+1)] += (x+1 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
+          // effects.leds[XY(x+1, y+0)] += (x+1 ^ y+0 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+0) << 3) + generation, audio * 2) : CRGB::Black;
+          // effects.leds[XY(x+0, y+1)] += (x+0 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+0 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
+          // effects.leds[XY(x+1, y+1)] += (x+1 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
 
           bin++;
 
@@ -58,7 +65,7 @@ class PatternEffectMunch : public Drawable {
         
       if (count <= 0 || count >= MATRIX_WIDTH) {  // was MATRIX_WIDTH (a bit loud)
 
-        // dir = -dir;
+        effects.DimAll(32);
         return 0;
 
       }

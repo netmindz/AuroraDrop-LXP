@@ -26,11 +26,11 @@
 #define PANEL_HEIGHT 64               
 #define PANELS_NUMBER 2
 
-int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC value if BRIGHT_PIN is defined - otherwise it stays here.
+int GLOBAL_BRIGHTNESS = 64;    //0-255 - this gets overridden with the ADC value if BRIGHT_PIN is defined - otherwise it stays here.
 
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 
-#define PRODUCTION_BOARD
+// #define PRODUCTION_BOARD
 
 #ifdef PRODUCTION_BOARD
 
@@ -86,32 +86,32 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
 
     // HUB75 Pins
     //
-    #define R1_PIN 4
-    #define G1_PIN 5
-    #define B1_PIN 6
+    #define R1_PIN 42
+    #define G1_PIN 6
+    #define B1_PIN 41
     // placeholder GND - 7
-    #define R2_PIN 8
-    #define G2_PIN 9
-    #define B2_PIN 10
-    #define E_PIN 11
-    #define A_PIN 12
-    #define B_PIN 13
-    #define C_PIN 14
-    #define D_PIN 21 // GND on silkscreen, but working example is assigned to a pin tho where "D" should be on the HUB75 connector, after C
-    #define CLK_PIN 47
-    #define LAT_PIN 48
+    #define R2_PIN 40
+    #define G2_PIN 15
+    #define B2_PIN 39
+    #define E_PIN 16
+    #define A_PIN 38
+    #define B_PIN 17
+    #define C_PIN 37
+    #define D_PIN 18 // GND on silkscreen, but working example is assigned to a pin tho where "D" should be on the HUB75 connector, after C
+    #define CLK_PIN 36
+    #define LAT_PIN 8
     #define OE_PIN 35
-    // placeholder GND - G
+    // placeholder GND - 3
 
     // INMP441 Pins
     //
-    #define I2S_WS  1
-    #define I2S_SD  2
-    #define I2S_SCK 17
+    #define I2S_WS  19
+    #define I2S_SD  21
+    #define I2S_SCK 20
 
     // ESP32-S3 Devkit C/M have these
     //
-    // #define ONBOARD_RGB_LED 48
+    #define ONBOARD_RGB_LED_PIN 48
 
     // Brightness ADC pin
     //
@@ -120,8 +120,8 @@ int GLOBAL_BRIGHTNESS = 128;    //0-255 - this gets overridden with the ADC valu
     // Quick definition for debug pin, optional
     // Boot button is often 0 and LOW
     //
-    // #define PIN_FOR_DEBUG_MODE 0
-    // #define PIN_FOR_DEBUG_MODE_STATE LOW
+    #define PIN_FOR_DEBUG_MODE 0
+    #define PIN_FOR_DEBUG_MODE_STATE LOW
 
 #endif
 
@@ -138,12 +138,12 @@ MatrixPanel_I2S_DMA *dma_display = nullptr;
 
 #endif
 
-#define MATRIX_WIDTH (PANEL_WIDTH * PANELS_NUMBER)          // works with 1x and 2x 632x64 and 64x32 panels in landscape
+#define MATRIX_WIDTH (PANEL_WIDTH * PANELS_NUMBER)         // works with 1x to 4x 32x64 and 64x32 panels in landscape
 #define MATRIX_HEIGHT (PANEL_HEIGHT)                        // doesn't seem to making "tall" portrait arrays - yet.
 #define MATRIX_CENTER_X (MATRIX_WIDTH / 2)
 #define MATRIX_CENTER_Y (MATRIX_HEIGHT / 2)
 
-// diagnostic options, these can be set via web interface when enabled
+// diagnostic options, some can be enabled by a button if setup
 //
 bool option1Diagnostics = false;
 bool option2LockFps = false;
@@ -312,9 +312,16 @@ void setup() {
         playlistForeground[i].ms_previous = millis();
         playlistForeground[i].fps_timer = millis();
 
-        // TESTING: enable all the effects
         for (uint8_t j=0; j < playlistForeground[i].getPatternCount(); j++) {
+            
             playlistForeground[i].setItemEnabled(j, 1);
+
+            if (MATRIX_WIDTH > 128+64) {
+
+                if (playlistForeground[i].getItemName(j) == "Munch") playlistForeground[i].setItemEnabled(j, 0);
+
+            }
+
         }
 
     }
@@ -340,7 +347,26 @@ void setup() {
 
         // TESTING: enable all the effects
         for (uint8_t j=0; j < playlistAudio[i].getPatternCount(); j++) {
+            
             playlistAudio[i].setItemEnabled(j, 1);
+
+            if (MATRIX_WIDTH > 128) {
+
+                if (playlistAudio[i].getItemName(j) == "Audio Dots Single") playlistAudio[i].setItemEnabled(j, 0);
+
+                if (playlistAudio[i].getItemName(j) == "AuroraDrop") playlistAudio[i].setItemEnabled(j, 0);
+
+            }
+
+            if (MATRIX_WIDTH > 128+64) {
+
+                if (playlistAudio[i].getItemName(j) == "Test Spectrum Pattern") playlistAudio[i].setItemEnabled(j, 0);
+
+                if (playlistAudio[i].getItemName(j) == "Classic 128 Spectrum") playlistAudio[i].setItemEnabled(j, 0);
+
+            }
+
+
         }
 
     }

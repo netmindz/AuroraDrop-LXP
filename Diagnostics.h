@@ -88,11 +88,13 @@ void UpdateDiagnosticsData() {
 
         dma_display->setTextSize(1);
         dma_display->setTextColor(WHITE);
-
+        dma_display->setTextWrap(false);
+        
         for (uint8_t i=0; i < CountPlaylistsBackground; i++) {
 
             dma_display->setCursor(startx,starty);
-            dma_display->print(playlistBackground[i].getCurrentPatternName());
+            
+            dma_display->printf("%02d %s",playlistBackground[i].render_ms, playlistBackground[i].getCurrentPatternName());
 
             starty += yinc;
 
@@ -101,7 +103,8 @@ void UpdateDiagnosticsData() {
         for (uint8_t i=0; i < CountPlaylistsAudio; i++) {
 
             dma_display->setCursor(startx,starty);
-            dma_display->print(playlistAudio[i].getCurrentPatternName());
+            
+            dma_display->printf("%02d %s",playlistAudio[i].render_ms, playlistAudio[i].getCurrentPatternName());
 
             starty += yinc;
             
@@ -110,7 +113,8 @@ void UpdateDiagnosticsData() {
         for (uint8_t i=0; i < CountPlaylistsStatic; i++) {
 
             dma_display->setCursor(startx,starty);
-            dma_display->print(playlistStatic[i].getCurrentPatternName());
+
+            dma_display->printf("%02d %s",playlistStatic[i].render_ms, playlistStatic[i].getCurrentPatternName());
 
             starty += yinc;
             
@@ -119,8 +123,9 @@ void UpdateDiagnosticsData() {
         for (uint8_t i=0; i < CountPlaylistsForeground; i++) {
 
             dma_display->setCursor(startx,starty);
-            dma_display->print(playlistForeground[i].getCurrentPatternName());
 
+            dma_display->printf("%02d %s",playlistForeground[i].render_ms, playlistForeground[i].getCurrentPatternName());
+            
             starty += yinc;
             
         }
@@ -132,7 +137,7 @@ void UpdateDiagnosticsData() {
     if (option1Diagnostics) {
 
         for (uint8_t i=0; i < 16; i++) {
-
+            
             uint8_t height = map8(fftResult[i],0,32);
             
             dma_display->drawFastVLine(0+(i*4)+0, 0, height, BLUE);
@@ -142,7 +147,7 @@ void UpdateDiagnosticsData() {
 
         }
 
-        for (uint8_t i=0; i < MATRIX_WIDTH; i++) {
+        for (uint8_t i=0; i < 128; i++) {
 
             uint8_t height = map8(fftData.specData[i],0,32);
             

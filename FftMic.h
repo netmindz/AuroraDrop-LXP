@@ -90,7 +90,7 @@ static uint8_t inputLevel = 128;              // UI slider value
 #else
     uint8_t sampleGain = SR_GAIN;               // sample gain (config value)
 #endif
-static uint8_t soundAgc = 1;                  // Automagic gain control: 0 - none, 1 - normal, 2 - vivid, 3 - lazy (config value)
+static uint8_t soundAgc = 2;                  // Automagic gain control: 0 - none, 1 - normal, 2 - vivid, 3 - lazy (config value)
 static uint8_t audioSyncEnabled = 0;          // bit field: bit 0 - send, bit 1 - receive (config value)
 static bool udpSyncConnected = false;         // UDP connection status -> true if connected to multicast group
 
@@ -99,7 +99,7 @@ static bool limiterOn = false;                 // bool: enable / disable dynamic
 static uint16_t attackTime =  30;             // int: attack time in milliseconds. Default 0.08sec
 static uint16_t decayTime = 1100;             // int: decay time in milliseconds.  Default 1.40sec
 // user settable options for FFTResult scaling
-static uint8_t FFTScalingMode = 3;            // 0 none; 1 optimized logarithmic ("Loudness"); 2 optimized linear ("Amplitude"); 3 optimized sqare root ("Energy")
+static uint8_t FFTScalingMode = 2;            // 0 none; 1 optimized logarithmic ("Loudness"); 2 optimized linear ("Amplitude"); 3 optimized sqare root ("Energy")
 
 // 
 // AGC presets
@@ -582,7 +582,8 @@ static void postProcessFFTResults(bool noiseGateOpen, int numberOfChannels) { //
         
         }
         
-        fftResult[i] = constrain((int)currentResult, 0, 255);
+        // fftResult[i] = constrain((int)currentResult, 0, 255); // this seems to end up with lots slammed to 255
+        fftResult[i] = map(currentResult,0,1023,0,255);
     
     }
 
@@ -1397,7 +1398,7 @@ void FFTcode( void * pvParameters) {
 
         for (int i=0; i < 16; i++) {
 
-            AD_fftResult[i] = map(fftCalc[i],0,1024,0,255);
+            AD_fftResult[i] = map(fftCalc[i],0,1023,0,255);
         
         }
             
@@ -1461,7 +1462,7 @@ void FFTcode( void * pvParameters) {
 
                 magThresholdAvg = magThresholdAvg * 0.9 + (AD_fftResult[0]/magAvg) * 0.1;
 
-                if (option1Diagnostics) {
+                if (option1Diagnostics && 1 == 2) {
                     
                     Serial.print("\tBEAT! Interval: ");
                     Serial.print(bpm_interval);
@@ -1495,7 +1496,9 @@ void setupAudio() {
     // but I removed all the "works for everything" logic so it 
     // just inits an INMP441 mic (and similar I2S mics, maybe)
 
-    Serial.println("INMP441 Audio setup...");
+    Serial.print("INMP441 Audio setup: ");
+    Serial.println(I2S_MIC_CHANNEL_TEXT);
+
     esp_err_t err;
 
     i2s_config_t i2s_config = {

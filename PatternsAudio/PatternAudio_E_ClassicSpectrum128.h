@@ -18,7 +18,7 @@ class PatternAudioClassicSpectrum128 : public Drawable {
   public:
     PatternAudioClassicSpectrum128() 
     {
-      name = (char *)"Classic 128 Spectrum ";
+      name = (char *)"Classic 128 Spectrum";
       id = "T";
       enabled = true;
     }

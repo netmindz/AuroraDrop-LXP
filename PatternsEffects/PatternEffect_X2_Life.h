@@ -71,7 +71,7 @@ class PatternEffectLife : public Drawable {
   public:
     PatternEffectLife() {
       name = (char *)"Life";
-      id = "T";
+      id = "L";
       enabled = true;
 
       //world2 = (Cell *)malloc(MATRIX_WIDTH * MATRIX_HEIGHT * sizeof(Cell));
