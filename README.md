@@ -10,10 +10,10 @@ AuroraDrop LXP currently works *only* with HUB75 matrix panels and an INMP441 mi
 
 Major goals of this fork are:
 
-* Using the INMP441 microphone for audio input (other I2S inputs may work with minor modifications)
+* Using the INMP441 microphone for audio input (other I2S inputs will often work with minor modifications)
 * Automatic gain control
 * Basic BPM detection
-* Code cleanup for future modification
+* Code cleanup to ease future modification
 * Removal of all functions that aren't used with the specific target hardware
 * ...and some sort of physical integration with the panel that isn't a jumble of wires.
 
@@ -21,7 +21,7 @@ I suggest using the original AuroraDrop project for details on wiring and if you
 
 ## Hardware Recommendations
 
-This code has been tested with up to **FOUR** 64x64 pixel HUB74 "E" panels in a horizontal layout on an ESP32-S3 with 2MB of PSRAM. Also works fine with 64x32 panels (tested with two, expect more will work). A few effects need some love for widths > 128 pixels, and some are disabled on this logic.
+This code has been tested with up to **FOUR** 64x64 pixel HUB74 "E" panels in a horizontal layout on an ESP32-S3 with 2MB of PSRAM. Also works fine with 64x32 panels (tested with two, expect more will work). A few effects need some love for widths > 128 pixels, and some are disabled based on this logic.
 
 At 256 pixels wide the framereate does sometimes suffer - but if you play with the playlist sizes and pick effects that are very fast, 30fps is attainable on 64x256 (four panels) - which is 16,384 LEDs!
 
@@ -33,7 +33,9 @@ The board was selected because the HUB75 driver has optimizations for the ESP32-
 
 Larger matrix widths (over 128 wide) have been tested with a non-Espressif 3rd-parth ESP32-S3-DevKitC1 "type" board - the pinout is better than the Espressif devkit-C1 so we can get 16 pins in an even 2x8 continuous spacing. 
 
-At the moment I'm not sure if the PSRAM is helping large widths - or it's other fixes I've done. Either way, the PSRAM is indeed in use in the HUB75 panel driver.
+At the moment I'm not sure if the PSRAM is helping large widths - or it's other fixes I've done. Either way, the PSRAM is indeed in use in the HUB75 panel driver if you enable it and your board supports it.
+
+### Audio Input - INMP441 I2S ###
 
 The audio input is accomplished with the INMP441 microphone. Commonly available circular breakout boards have the needed resistor and capacitor on the breakout.
 
@@ -41,9 +43,9 @@ The audio input is accomplished with the INMP441 microphone. Commonly available 
 
 The panels will (mostly) work fine without a ground, but the I2S mic will become hilariously unstable and lead you down a rabbit hole for a week trying to figure out why the mic never seems like it's capturing real audio data. 
 
-I've had 100 issues with the I2S microphone - there's code in there to try and work around bugs in particular ESP IDF versions - but sometimes the "L/R" pin just needs to be moved from GND to VCC or vice-versa to make it work, even with the compile-time fixes.
+I've had 100 issues with I2S in general - there's code in there to try and work around bugs in particular ESP IDF versions - but sometimes the "L/R" pin just needs to be moved from GND to VCC or vice-versa to make it work, even with the compile-time fixes.
 
-Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it's to VCC even with the in-line fixes, on different boards with the same ESP32-S3 chip and the same ESP IDF. I have no clue why. 
+Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it's to VCC even with the in-line fixes, on different boards with the same ESP32-S3 chip and the same ESP IDF. I have no clue why. It does seem to be the board/chip and not the mic.
 
 ## Latest Updates
 
@@ -51,13 +53,15 @@ Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it
 * Imported much more robust audio reactive code from the WLED AudioReactive usermod
   * ...with some nice finishing touches from MoonModules' version of the same usermod ( I :heart: [MoonModules](https://github.com/MoonModules/WLED) )
 * Code cleanup (lots)
+** I've expanded a lot of the more dense syntax to make the code easier to understand. 
 * Better scaling of all the FFT bins based on AudioReactive code  
 * Automatic gain control (now courtesy of AudioReactive)
-* I2S code modernizarion for new ESP32 APIs (now courtesy of AudioReactive)
+* I2S code modernizarion for new ESP32 APIs (now courtesy of AudioReactive hints)
 * Basic BPM detection
 * Removal of other hardware targets
-* Deactivation of some very CPU intensive effects
-* RGB LED on ESP32-S3-DevKitM-1 to do basic frames-per-second monitoring (now via FastLED)
+* Deactivation or optimization of some very CPU intensive effects
+* RGB LED on ESP32-S3 boards to do basic frames-per-second monitoring (now via FastLED)
+** You could also add a single WS2811 or similar if your board doesn't have one
 * Removal of webserver and networking code
 * Added a generic "NOOP" effect so we can do nothing, intentionally, in a playlist.
 * Optional pot for global brightness control (use a 10k pot)

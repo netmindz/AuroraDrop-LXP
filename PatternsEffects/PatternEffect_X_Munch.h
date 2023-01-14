@@ -26,20 +26,19 @@ class PatternEffectMunch : public Drawable {
 
     unsigned int drawFrame(uint8_t _pattern, uint8_t _total) {
 
-      uint8_t bin = 0;
+      if (count >= MATRIX_WIDTH || count < 0) {
 
-      if (count >= MATRIX_WIDTH) {
+        dir = dir * -1;
 
-        effects.DimAll(254);
-        return 0;
+        // effects.DimAll(254);
+        // return 0;
 
       }
 
-      for (byte x = 0; x < MATRIX_WIDTH; x+=2) {
+      for (byte x = 0; x < MATRIX_WIDTH; x += 2) {
 
-        for (byte y = 0; y < MATRIX_HEIGHT; y+=2) {
+        for (byte y = 0; y < MATRIX_HEIGHT; y += 2) {
 
-          // byte audio = fftData.specData[bin];
           byte audio = fftData.specData16[0];
 
           if (audio > 127) {
@@ -49,27 +48,16 @@ class PatternEffectMunch : public Drawable {
           }
 
           effects.leds[XY(x+0, y+0)] += (x+0 ^ y+0 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+0 ^ y+0) << 3) + generation, audio * 2) : CRGB::Black;
-          // effects.leds[XY(x+1, y+0)] += (x+1 ^ y+0 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+0) << 3) + generation, audio * 2) : CRGB::Black;
-          // effects.leds[XY(x+0, y+1)] += (x+0 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+0 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
-          // effects.leds[XY(x+1, y+1)] += (x+1 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
-
-          bin++;
-
-          if (bin >127) bin = 0;
+          effects.leds[XY(x+1, y+0)] += (x+1 ^ y+0 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+0) << 3) + generation, audio * 2) : CRGB::Black;
+          effects.leds[XY(x+0, y+1)] += (x+0 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+0 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
+          effects.leds[XY(x+1, y+1)] += (x+1 ^ y+1 ^ flip) < count ? effects.ColorFromCurrentPalette(((x+1 ^ y+1) << 3) + generation, audio * 2) : CRGB::Black;
 
         }
 
       }
         
       count += dir;
-        
-      if (count <= 0 || count >= MATRIX_WIDTH) {  // was MATRIX_WIDTH (a bit loud)
-
-        effects.DimAll(32);
-        return 0;
-
-      }
-        
+    
       if (count <= 0) {
         if (flip == 0)
           flip = 7; //31
@@ -78,8 +66,7 @@ class PatternEffectMunch : public Drawable {
       }
 
       generation++;
-          
-        
+    
       return 0;
 
     }

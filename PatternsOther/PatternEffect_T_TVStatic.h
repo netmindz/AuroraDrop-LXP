@@ -21,7 +21,7 @@ class PatternEffectTVStatic : public Drawable {
 
     void start(uint8_t _pattern){
 
-      staticsize = random(1,8);
+      staticsize = random(2,8);
 
       int overallcount = MATRIX_WIDTH * MATRIX_HEIGHT * 0.2;
       count = overallcount / (staticsize*staticsize);         // trying to keep the same number of LEDs updated per pass regardless of size

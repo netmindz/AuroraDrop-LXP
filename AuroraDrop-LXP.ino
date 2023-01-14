@@ -106,8 +106,8 @@ int GLOBAL_BRIGHTNESS = 64;    //0-255 - this gets overridden with the ADC value
     // INMP441 Pins
     //
     #define I2S_WS  19
-    #define I2S_SD  21
     #define I2S_SCK 20
+    #define I2S_SD  21
 
     // ESP32-S3 Devkit C/M have these
     //
@@ -234,6 +234,14 @@ uint32_t Xlast_render_ms = millis();
 
 void setup() {
  
+     #ifdef BRIGHT_PIN
+
+        analogReadResolution(8);
+
+        GLOBAL_BRIGHTNESS = analogRead(BRIGHT_PIN);
+    
+    #endif
+
     Serial.begin(115200);
     delay(1000);
 
@@ -422,14 +430,6 @@ void setup() {
     }
 
     Xlast_render_ms = millis();
-
-    #ifdef BRIGHT_PIN
-
-        analogReadResolution(8);
-
-        GLOBAL_BRIGHTNESS = analogRead(BRIGHT_PIN);
-    
-    #endif
 
 }
 
