@@ -236,6 +236,8 @@ void setup() {
  
      #ifdef BRIGHT_PIN
 
+        // set on startup so we don't blow up someone's eyeballs 
+        
         analogReadResolution(8);
 
         GLOBAL_BRIGHTNESS = analogRead(BRIGHT_PIN);
