@@ -67,6 +67,8 @@ Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it
 * Optional pot for global brightness control (use a 10k pot)
 * Optional use of a button (like "boot") to control debug display
 * Fixes and/or disable logic for some effects when MATRIX_WIDTH > 128 pixels
+* A few new effects and some zjuzhing and bugfixes on existing ones
+* Organization of background, foreground, sound, and static patterns into their own specific layers
 
 ### Libraries
 
