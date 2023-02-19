@@ -31,9 +31,9 @@ https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/hw-reference/esp32
 
 The board was selected because the HUB75 driver has optimizations for the ESP32-S3 which makes it faster, and the ESP32-S3-DevKitM1 (**not** DevKitC1) board has a VERY advantageous pin arrangement that can be used to directly attach to the HUB75 connector (with some pin header bending!). It doesn't have PSRAM, but that doesn't seem to be as needed at the moment.
 
-Larger matrix widths (over 128 wide) have been tested with a non-Espressif 3rd-parth ESP32-S3-DevKitC1 "type" board - the pinout is better than the Espressif devkit-C1 so we can get 16 pins in an even 2x8 continuous spacing. 
+Larger matrix widths (over 128 wide) have been tested with a non-Espressif 3rd-party ESP32-S3-DevKitC1 "type" board - the pinout is better than the Espressif devkit-C1 so we can get 16 pins in an even 2x8 continuous spacing. 
 
-At the moment I'm not sure if the PSRAM is helping large widths - or it's other fixes I've done. Either way, the PSRAM is indeed in use in the HUB75 panel driver if you enable it and your board supports it.
+At the moment I'm not sure if the PSRAM is helping large widths - or it's other fixes I've done. Either way, the PSRAM is indeed in use in the HUB75 panel driver if you enable it and your board supports it. There may be other benefits of the S3 with the HUB75 driver as well.
 
 ### Audio Input - INMP441 I2S ###
 
@@ -43,9 +43,9 @@ The audio input is accomplished with the INMP441 microphone. Commonly available 
 
 The panels will (mostly) work fine without a ground, but the I2S mic will become hilariously unstable and lead you down a rabbit hole for a week trying to figure out why the mic never seems like it's capturing real audio data. 
 
-I've had 100 issues with I2S in general - there's code in there to try and work around bugs in particular ESP IDF versions - but sometimes the "L/R" pin just needs to be moved from GND to VCC or vice-versa to make it work, even with the compile-time fixes.
+I've had 100 issues with I2S in general - there's code in there to try and work around bugs in particular ESP IDF versions - but sometimes the "L/R" or "LR" pin just needs to be moved from GND to VCC or vice-versa to make it work, even with the compile-time fixes.
 
-Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it's to VCC even with the in-line fixes, on different boards with the same ESP32-S3 chip and the same ESP IDF. I have no clue why. It does seem to be the board/chip and not the mic.
+Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it's to VCC even with the in-line fixes, on different boards with the same ESP32-S3 chip and the same ESP IDF. I have no clue why. It does seem to be the board/chip and not the mic but ¯⁠\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯
 
 ## Latest Updates
 
