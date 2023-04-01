@@ -17,7 +17,7 @@ Major goals of this fork are:
 * Removal of all functions that aren't used with the specific target hardware
 * ...and some sort of physical integration with the panel that isn't a jumble of wires.
 
-I suggest using the original AuroraDrop project for details on wiring and if you have other needs past HUB75+INMP441 integrations.
+I suggest referring to the original AuroraDrop project for details on wiring or if you have other needs past HUB75+INMP441 integrations.
 
 ## Hardware Recommendations
 
