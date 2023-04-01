@@ -70,6 +70,9 @@ Ideally the "L/R" (or "LR") pin should be to ground, but I've had times where it
 * A few new effects and some zjuzhing and bugfixes on existing ones
 * Organization of background, foreground, sound, and static patterns into their own specific layers
 
+## Bugs
+* After working with the WLED audio reactive code, I've come to realize that squelch is needed - and broken in my code. The current stste will always keep amplifying until it finds "something" to visualize. Should be easy to fix.
+
 ### Libraries
 
  * FastLED
