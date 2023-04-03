@@ -184,7 +184,8 @@ class FFTData{
 
 FFTData fftData;
 
-#include "FftMic.h"
+// #include "FftMic.h"
+#include "wled-listen.h"
 
 // fixed maximums here for memory allocation, these must be >= variables used below
 //

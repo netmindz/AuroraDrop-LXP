@@ -1,5 +1,7 @@
 // Color definitions
 //
+#include "wled-listen.h"
+
 #define BLACK    0x0000
 #define BLUE     0x001F
 #define RED      0xF800
