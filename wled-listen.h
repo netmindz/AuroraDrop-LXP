@@ -11,6 +11,16 @@ static TaskHandle_t FFT_Task = nullptr;
 
 int animation_duration = 60000/120*16;
 
+void FFTcode( void * pvParameters) {
+  for(;;) {
+    if (sync.read()) {
+      for (int b = 0; b < NUM_GEQ_CHANNELS; b++) {
+        uint8_t val = sync.fftResult[b];
+      }
+    }   
+  }
+}
+
 void setupAudio() {
   sync.begin();
   Serial.println("Listening for WLED audio sync data");
@@ -27,13 +37,5 @@ void setupAudio() {
     0);                               // Core where the task should run
   
 }
-void FFTcode( void * pvParameters) {
-  for(;;) {
-    if (sync.read()) {
-      for (int b = 0; b < NUM_GEQ_CHANNELS; b++) {
-        uint8_t val = sync.fftResult[b];
-      }
-    }   
-  }
-}
+
 #endif WLED_LISTEN_H
